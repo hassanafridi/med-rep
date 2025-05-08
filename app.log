@@ -1,0 +1,12 @@
+2025-05-09 00:21:59,327 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,360 - src.database.db - INFO - Database initialized successfully
+2025-05-09 00:21:59,360 - src.database.db - INFO - Database connection closed
+2025-05-09 00:21:59,362 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,363 - src.database.db - INFO - Database connection closed
+2025-05-09 00:21:59,363 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,370 - src.database.db - INFO - Sample data inserted successfully
+2025-05-09 00:21:59,370 - src.database.db - INFO - Database connection closed
+2025-05-09 00:21:59,802 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,809 - database.db - INFO - Database connection closed
+2025-05-09 00:22:33,299 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:22:34,382 - database.db - INFO - Database connection closed
