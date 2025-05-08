@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTabWidget, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QMessageBox
 from PyQt5.QtGui import QIcon
 
 # Add src directory to path for imports
@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from src.ui.new_entry_tab import NewEntryTab
 from src.ui.ledger_tab import LedgerTab
 from src.ui.graphs_tab import GraphsTab
+from src.ui.settings_tab import SettingsTab
 from src.database.db import Database
 
 class MainWindow(QMainWindow):
@@ -65,9 +66,9 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(graphs_tab, "Graphs")
     
     def create_settings_tab(self):
-        """Create and add the Settings tab (placeholder for now)"""
-        tab = QLabel("Settings Tab - Coming Soon")
-        self.tabs.addTab(tab, "Settings")
+        """Create and add the Settings tab"""
+        settings_tab = SettingsTab()
+        self.tabs.addTab(settings_tab, "Settings")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
