@@ -1,0 +1,19 @@
+2025-05-09 01:17:38,480 - matplotlib.font_manager - INFO - generated new fontManager
+2025-05-09 01:17:38,850 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:38,893 - src.database.db - INFO - Database initialized successfully
+2025-05-09 01:17:38,894 - src.database.db - INFO - Database connection closed
+2025-05-09 01:17:38,895 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:38,896 - src.database.db - INFO - Database connection closed
+2025-05-09 01:17:38,897 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:38,903 - src.database.db - INFO - Sample data inserted successfully
+2025-05-09 01:17:38,904 - src.database.db - INFO - Database connection closed
+2025-05-09 01:17:39,252 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:39,253 - database.db - INFO - Database connection closed
+2025-05-09 01:17:39,271 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:39,271 - database.db - INFO - Database connection closed
+2025-05-09 01:17:39,272 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:39,272 - database.db - INFO - Database connection closed
+2025-05-09 01:17:39,296 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:17:39,297 - database.db - INFO - Database connection closed
+2025-05-09 01:18:26,770 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 01:18:28,070 - database.db - INFO - Database connection closed
