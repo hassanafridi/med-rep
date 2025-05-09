@@ -139,3 +139,65 @@ class Database:
             return False
         finally:
             self.close()
+    
+    def execute_query(self, query, params=None):
+        """Execute a query with parameters safely"""
+        try:
+            if params:
+                self.cursor.execute(query, params)
+            else:
+                self.cursor.execute(query)
+            return True
+        except sqlite3.Error as e:
+            logging.error(f"Query execution error: {e}")
+            return False
+        
+    def repair_database(self):
+        """Attempt to repair a corrupted database"""
+        try:
+            # Create a backup first
+            backup_path = f"{self.db_path}.bak"
+            shutil.copy2(self.db_path, backup_path)
+            
+            # Create a new connection and dump/reload the schema
+            temp_conn = sqlite3.connect(self.db_path)
+            dump = "".join(temp_conn.iterdump())
+            temp_conn.close()
+            
+            # Recreate the database
+            os.remove(self.db_path)
+            new_conn = sqlite3.connect(self.db_path)
+            new_conn.executescript(dump)
+            new_conn.close()
+            
+            logging.info(f"Database repaired. Backup saved at {backup_path}")
+            return True
+        except Exception as e:
+            logging.error(f"Database repair failed: {e}")
+            return False
+        
+    def create_indexes(self):
+        """Create indexes for better performance"""
+        try:
+            self.connect()
+            
+            # Index for date lookups
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_entries_date ON entries(date)")
+            
+            # Index for customer lookups
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_entries_customer ON entries(customer_id)")
+            
+            # Index for product lookups
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_entries_product ON entries(product_id)")
+            
+            # Index for entry_id in transactions
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_entry ON transactions(entry_id)")
+            
+            self.conn.commit()
+            logging.info("Indexes created successfully")
+            return True
+        except sqlite3.Error as e:
+            logging.error(f"Failed to create indexes: {e}")
+            return False
+        finally:
+            self.close()

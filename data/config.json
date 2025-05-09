@@ -1,0 +1,8 @@
+{
+    "db_path": "data\\medtran.db",
+    "backup_path": "data\\backups",
+    "currency_format": "$ (USD)",
+    "log_level": "INFO",
+    "window_width": 1000,
+    "window_height": 700
+}

@@ -82,6 +82,9 @@ class LedgerTab(QWidget):
             "ID", "Date", "Customer", "Product", "Quantity", 
             "Unit Price", "Total", "Type", "Notes"
         ])
+        report_btn = QPushButton("Generate Report")
+        report_btn.clicked.connect(self.generateReport)
+        main_layout.addWidget(report_btn)
         
         # Set column widths
         self.entries_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -113,6 +116,11 @@ class LedgerTab(QWidget):
         # Load data
         self.loadCustomers()
         self.loadEntries()
+        
+        # Add Export button
+        self.export_btn = QPushButton("Export to CSV")
+        self.export_btn.clicked.connect(self.exportToCSV)
+        summary_layout.addWidget(self.export_btn)
     
     def loadCustomers(self):
         """Load customers for filter dropdown"""
@@ -265,6 +273,24 @@ class LedgerTab(QWidget):
         delete_action = QAction("Delete Entry", self)
         delete_action.triggered.connect(lambda: self.deleteEntry(entry_id))
         
+                # Get customer ID for the selected entry
+        try:
+            self.db.connect()
+            self.db.cursor.execute("SELECT customer_id FROM entries WHERE id = ?", (entry_id,))
+            result = self.db.cursor.fetchone()
+            if result:
+                customer_id = result[0]
+                
+                # Add customer history action
+                customer_action = QAction("View Customer History", self)
+                customer_action.triggered.connect(lambda: self.viewCustomerHistory(customer_id))
+                context_menu.addAction(customer_action)
+                
+        except Exception as e:
+            print(f"Error getting customer ID: {e}")
+        finally:
+            self.db.close()
+        
         context_menu.addAction(view_action)
         context_menu.addAction(edit_action)
         context_menu.addAction(delete_action)
@@ -319,42 +345,386 @@ class LedgerTab(QWidget):
             self.db.close()
     
     def editEntry(self, entry_id):
-        """Show dialog to edit the selected entry"""
-        # For now, just show a placeholder message
-        # In a complete implementation, this would open a dialog similar to the New Entry form
-        QMessageBox.information(self, "Coming Soon", "Edit functionality will be implemented in a future update.")
-    
-    def deleteEntry(self, entry_id):
-        """Delete the selected entry"""
-        reply = QMessageBox.question(
-            self, "Confirm Deletion",
-            f"Are you sure you want to delete entry #{entry_id}?\nThis action cannot be undone.",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-        )
-        
-        if reply == QMessageBox.Yes:
-            try:
-                self.db.connect()
+        """Edit the selected entry"""
+        try:
+            self.db.connect()
+            
+            # Get entry details
+            query = '''
+                SELECT 
+                    e.id, e.date, e.customer_id, c.name as customer_name, 
+                    e.product_id, p.name as product_name,
+                    e.quantity, e.unit_price, e.is_credit, e.notes
+                FROM entries e
+                JOIN customers c ON e.customer_id = c.id
+                JOIN products p ON e.product_id = p.id
+                WHERE e.id = ?
+            '''
+            
+            self.db.cursor.execute(query, (entry_id,))
+            entry = self.db.cursor.fetchone()
+            
+            if not entry:
+                QMessageBox.warning(self, "Entry Not Found", f"Entry with ID {entry_id} not found.")
+                return
+            
+            # Create edit dialog
+            dialog = QDialog(self)
+            dialog.setWindowTitle(f"Edit Entry #{entry_id}")
+            dialog.setMinimumWidth(400)
+            
+            layout = QFormLayout()
+            
+            # Date field
+            date_edit = QDateEdit()
+            date_edit.setDate(QDate.fromString(entry[1], "yyyy-MM-dd"))
+            date_edit.setCalendarPopup(True)
+            layout.addRow("Date:", date_edit)
+            
+            # Customer (read-only)
+            customer_label = QLineEdit(entry[3])
+            customer_label.setReadOnly(True)
+            layout.addRow("Customer:", customer_label)
+            
+            # Product (read-only)
+            product_label = QLineEdit(entry[5])
+            product_label.setReadOnly(True)
+            layout.addRow("Product:", product_label)
+            
+            # Quantity
+            quantity_spin = QSpinBox()
+            quantity_spin.setMinimum(1)
+            quantity_spin.setMaximum(1000)
+            quantity_spin.setValue(entry[6])
+            layout.addRow("Quantity:", quantity_spin)
+            
+            # Unit price
+            unit_price_spin = QDoubleSpinBox()
+            unit_price_spin.setMinimum(0.01)
+            unit_price_spin.setMaximum(99999.99)
+            unit_price_spin.setValue(entry[7])
+            unit_price_spin.setPrefix("$")
+            layout.addRow("Unit Price:", unit_price_spin)
+            
+            # Total (calculated, read-only)
+            total_field = QLineEdit()
+            total_field.setReadOnly(True)
+            total_field.setText(f"${entry[6] * entry[7]:.2f}")
+            layout.addRow("Total:", total_field)
+            
+            # Update total when quantity or price changes
+            def update_total():
+                total = quantity_spin.value() * unit_price_spin.value()
+                total_field.setText(f"${total:.2f}")
+            
+            quantity_spin.valueChanged.connect(update_total)
+            unit_price_spin.valueChanged.connect(update_total)
+            
+            # Entry type (credit/debit)
+            is_credit = QCheckBox("Credit Entry")
+            is_credit.setChecked(entry[8])
+            layout.addRow("Entry Type:", is_credit)
+            
+            # Notes
+            notes_edit = QLineEdit(entry[9] or "")
+            layout.addRow("Notes:", notes_edit)
+            
+            # Buttons
+            button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(dialog.accept)
+            button_box.rejected.connect(dialog.reject)
+            layout.addRow(button_box)
+            
+            dialog.setLayout(layout)
+            
+            # Execute dialog
+            if dialog.exec_() == QDialog.Accepted:
+                # Update entry in database
+                date = date_edit.date().toString("yyyy-MM-dd")
+                quantity = quantity_spin.value()
+                unit_price = unit_price_spin.value()
+                is_credit_value = is_credit.isChecked()
+                notes = notes_edit.text()
                 
                 # Start transaction
                 self.db.conn.execute("BEGIN")
                 
-                # First, delete from transactions table
-                self.db.cursor.execute("DELETE FROM transactions WHERE entry_id = ?", (entry_id,))
+                try:
+                    # Update entry
+                    self.db.cursor.execute(
+                        "UPDATE entries SET date=?, quantity=?, unit_price=?, is_credit=?, notes=? WHERE id=?",
+                        (date, quantity, unit_price, is_credit_value, notes, entry_id)
+                    )
+                    
+                    # Calculate new total amount
+                    total_amount = quantity * unit_price
+                    
+                    # Get current balance before this transaction
+                    self.db.cursor.execute(
+                        "SELECT id, amount FROM transactions WHERE entry_id=?",
+                        (entry_id,)
+                    )
+                    trans_result = self.db.cursor.fetchone()
+                    
+                    if trans_result:
+                        trans_id, old_amount = trans_result
+                        
+                        # Calculate amount difference
+                        amount_diff = total_amount - old_amount
+                        
+                        # Update transactions table
+                        self.db.cursor.execute(
+                            "UPDATE transactions SET amount=? WHERE id=?",
+                            (total_amount, trans_id)
+                        )
+                        
+                        # Update all following transactions' balances
+                        if amount_diff != 0:
+                            # If entry type changed, double the impact
+                            if is_credit_value != entry[8]:
+                                amount_diff *= 2
+                            
+                            # Adjust sign based on entry type
+                            balance_adj = amount_diff if is_credit_value else -amount_diff
+                            
+                            self.db.cursor.execute(
+                                "UPDATE transactions SET balance = balance + ? WHERE id > ?",
+                                (balance_adj, trans_id)
+                            )
+                    
+                    self.db.conn.commit()
+                    QMessageBox.information(self, "Success", f"Entry #{entry_id} updated successfully.")
+                    
+                    # Refresh entries
+                    self.loadEntries()
+                    
+                except Exception as e:
+                    self.db.conn.rollback()
+                    QMessageBox.critical(self, "Update Error", f"Failed to update entry: {str(e)}")
                 
-                # Then, delete from entries table
-                self.db.cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
+        except Exception as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to load entry details: {str(e)}")
+        finally:
+            self.db.close()
+        
+    def viewCustomerHistory(self, customer_id):
+        """Show transaction history for a specific customer"""
+        try:
+            self.db.connect()
+            
+            # Get customer name
+            self.db.cursor.execute("SELECT name FROM customers WHERE id = ?", (customer_id,))
+            customer = self.db.cursor.fetchone()
+            
+            if not customer:
+                QMessageBox.warning(self, "Customer Not Found", f"Customer with ID {customer_id} not found.")
+                return
+            
+            customer_name = customer[0]
+            
+            # Get all entries for this customer
+            query = """
+                SELECT 
+                    e.id, e.date, p.name as product,
+                    e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
+                    e.is_credit, e.notes
+                FROM entries e
+                JOIN products p ON e.product_id = p.id
+                WHERE e.customer_id = ?
+                ORDER BY e.date DESC, e.id DESC
+            """
+            
+            self.db.cursor.execute(query, (customer_id,))
+            entries = self.db.cursor.fetchall()
+            
+            if not entries:
+                QMessageBox.information(self, "No Transactions", 
+                                        f"No transactions found for customer: {customer_name}")
+                return
+            
+            # Calculate totals
+            total_credit = sum(e[5] for e in entries if e[6])  # sum of total where is_credit is True
+            total_debit = sum(e[5] for e in entries if not e[6])  # sum of total where is_credit is False
+            balance = total_credit - total_debit
+            
+            # Create a dialog to show history
+            dialog = QDialog(self)
+            dialog.setWindowTitle(f"Transaction History - {customer_name}")
+            dialog.setMinimumSize(700, 500)
+            
+            layout = QVBoxLayout()
+            
+            # Summary info
+            summary = QLabel(f"Customer: {customer_name}\n"
+                            f"Total Credit: ${total_credit:.2f}\n"
+                            f"Total Debit: ${total_debit:.2f}\n"
+                            f"Balance: ${balance:.2f}")
+            layout.addWidget(summary)
+            
+            # Transactions table
+            table = QTableWidget()
+            table.setColumnCount(7)
+            table.setHorizontalHeaderLabels([
+                "Date", "Product", "Quantity", "Unit Price", 
+                "Total", "Type", "Notes"
+            ])
+            
+            table.setRowCount(len(entries))
+            
+            for row, entry in enumerate(entries):
+                _, date, product, quantity, unit_price, total, is_credit, notes = entry
                 
-                # Commit changes
-                self.db.conn.commit()
+                table.setItem(row, 0, QTableWidgetItem(date))
+                table.setItem(row, 1, QTableWidgetItem(product))
+                table.setItem(row, 2, QTableWidgetItem(str(quantity)))
+                table.setItem(row, 3, QTableWidgetItem(f"${unit_price:.2f}"))
+                table.setItem(row, 4, QTableWidgetItem(f"${total:.2f}"))
                 
-                QMessageBox.information(self, "Success", f"Entry #{entry_id} deleted successfully.")
+                type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
+                type_item.setForeground(QColor("green" if is_credit else "red"))
+                table.setItem(row, 5, type_item)
                 
-                # Reload entries
-                self.loadEntries()
+                table.setItem(row, 6, QTableWidgetItem(notes or ""))
+            
+            table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            layout.addWidget(table)
+            
+            # Close button
+            close_btn = QPushButton("Close")
+            close_btn.clicked.connect(dialog.accept)
+            layout.addWidget(close_btn)
+            
+            dialog.setLayout(layout)
+            dialog.exec_()
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to load customer history: {str(e)}")
+        finally:
+            self.db.close()
+    
+    def exportToCSV(self):
+        """Export current ledger view to CSV file"""
+        try:
+            # Get save file location
+            options = QFileDialog.Options()
+            file_name, _ = QFileDialog.getSaveFileName(
+                self, "Export to CSV", "", "CSV Files (*.csv);;All Files (*)", options=options
+            )
+            
+            if not file_name:
+                return
+            
+            # Add .csv extension if not present
+            if not file_name.endswith('.csv'):
+                file_name += '.csv'
+            
+            # Open the file for writing
+            with open(file_name, 'w', newline='') as file:
+                import csv
+                writer = csv.writer(file)
                 
-            except Exception as e:
-                self.db.conn.rollback()
-                QMessageBox.critical(self, "Database Error", f"Failed to delete entry: {str(e)}")
-            finally:
-                self.db.close()
+                # Write header row
+                headers = []
+                for col in range(self.entries_table.columnCount()):
+                    headers.append(self.entries_table.horizontalHeaderItem(col).text())
+                writer.writerow(headers)
+                
+                # Write data rows
+                for row in range(self.entries_table.rowCount()):
+                    row_data = []
+                    for col in range(self.entries_table.columnCount()):
+                        item = self.entries_table.item(row, col)
+                        row_data.append(item.text() if item else "")
+                    writer.writerow(row_data)
+            
+            QMessageBox.information(self, "Export Successful", 
+                                f"Data exported successfully to:\n{file_name}")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export data: {str(e)}")
+    
+    def generateReport(self):
+        """Generate a CSV report of the current filtered entries"""
+        try:
+            options = QFileDialog.Options()
+            file_name, _ = QFileDialog.getSaveFileName(
+                self, "Save Report", "", "CSV Files (*.csv);;All Files (*)", 
+                options=options
+            )
+            
+            if not file_name:
+                return
+            
+            # If no extension is provided, add .csv
+            if not file_name.endswith('.csv'):
+                file_name += '.csv'
+            
+            # Get all visible rows from the table
+            rows = []
+            headers = []
+            
+            # Get headers
+            for col in range(self.entries_table.columnCount()):
+                headers.append(self.entries_table.horizontalHeaderItem(col).text())
+            
+            rows.append(','.join(f'"{h}"' for h in headers))
+            
+            # Get data
+            for row in range(self.entries_table.rowCount()):
+                row_data = []
+                for col in range(self.entries_table.columnCount()):
+                    item = self.entries_table.item(row, col)
+                    if item:
+                        # Quote values to handle commas
+                        row_data.append(f'"{item.text()}"')
+                    else:
+                        row_data.append('""')
+                
+                rows.append(','.join(row_data))
+            
+            # Write to file
+            with open(file_name, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(rows))
+            
+            QMessageBox.information(
+                self, "Report Generated", 
+                f"Report has been saved to:\n{file_name}"
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to generate report: {str(e)}")
+
+    # def deleteEntry(self, entry_id):
+    #     """Delete the selected entry"""
+    #     reply = QMessageBox.question(
+    #         self, "Confirm Deletion",
+    #         f"Are you sure you want to delete entry #{entry_id}?\nThis action cannot be undone.",
+    #         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+    #     )
+        
+        # if reply == QMessageBox.Yes:
+        #     try:
+        #         self.db.connect()
+                
+        #         # Start transaction
+        #         self.db.conn.execute("BEGIN")
+                
+        #         # First, delete from transactions table
+        #         self.db.cursor.execute("DELETE FROM transactions WHERE entry_id = ?", (entry_id,))
+                
+        #         # Then, delete from entries table
+        #         self.db.cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
+                
+        #         # Commit changes
+        #         self.db.conn.commit()
+                
+        #         QMessageBox.information(self, "Success", f"Entry #{entry_id} deleted successfully.")
+                
+        #         # Reload entries
+        #         self.loadEntries()
+                
+        #     except Exception as e:
+        #         self.db.conn.rollback()
+        #         QMessageBox.critical(self, "Database Error", f"Failed to delete entry: {str(e)}")
+        #     finally:
+        #         self.db.close()

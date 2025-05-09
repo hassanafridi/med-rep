@@ -144,6 +144,10 @@ class NewEntryTab(QWidget):
     
     def saveEntry(self):
         """Save the entry to database"""
+         # Validate form first
+        if not self.validateForm():
+            return
+        
         try:
             date = self.date_edit.date().toString("yyyy-MM-dd")
             customer_name = self.customer_combo.currentText()
@@ -213,3 +217,27 @@ class NewEntryTab(QWidget):
         # We don't reset customer and product combo boxes
         # But we do update the unit price based on selected product
         self.updateUnitPrice()
+        
+    def validateForm(self):
+        """Validate form fields"""
+        # Check if customer is selected
+        if self.customer_combo.currentIndex() == -1:
+            QMessageBox.warning(self, "Validation Error", "Please select a customer.")
+            return False
+        
+        # Check if product is selected
+        if self.product_combo.currentIndex() == -1:
+            QMessageBox.warning(self, "Validation Error", "Please select a product.")
+            return False
+        
+        # Check quantity
+        if self.quantity_spin.value() <= 0:
+            QMessageBox.warning(self, "Validation Error", "Quantity must be greater than zero.")
+            return False
+        
+        # Check unit price
+        if self.unit_price_spin.value() <= 0:
+            QMessageBox.warning(self, "Validation Error", "Unit price must be greater than zero.")
+            return False
+        
+        return True

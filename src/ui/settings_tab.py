@@ -69,9 +69,10 @@ class RestoreDialog(QDialog):
         super().accept()
 
 class SettingsTab(QWidget):
-    def __init__(self):
+    def __init__(self, config=None):
         super().__init__()
-        self.db = Database()
+        self.config = config
+        self.db = Database(config.get('db_path') if config else None)
         self.initUI()
         
     def initUI(self):
@@ -135,6 +136,16 @@ class SettingsTab(QWidget):
         self.restore_btn.clicked.connect(self.restoreBackup)
         backup_layout.addWidget(self.restore_btn)
         
+        # Export button
+        self.export_btn = QPushButton("Export Data to CSV")
+        self.export_btn.clicked.connect(self.exportData)
+        backup_layout.addWidget(self.export_btn)
+
+        # Import button
+        self.import_btn = QPushButton("Import Data from CSV")
+        self.import_btn.clicked.connect(self.importData)
+        backup_layout.addWidget(self.import_btn)
+
         backup_group.setLayout(backup_layout)
         main_layout.addWidget(backup_group)
         
@@ -335,10 +346,18 @@ class SettingsTab(QWidget):
     
     def saveSettings(self):
         """Save application settings"""
-        # For now, just show a success message
-        # In a complete implementation, this would save settings to a config file
-        QMessageBox.information(self, "Settings Saved", "Application settings have been saved.")
-    
+        if self.config:
+            # Save settings to config
+            self.config.set('db_path', self.db_path_edit.text())
+            self.config.set('backup_path', self.backup_path_edit.text())
+            self.config.set('currency_format', self.currency_combo.currentText())
+            self.config.set('log_level', self.log_level_combo.currentText())
+            
+            QMessageBox.information(self, "Settings Saved", "Application settings have been saved.")
+        else:
+            # Fallback to showing just a success message if no config is available
+            QMessageBox.information(self, "Settings Saved", "Application settings have been saved.")
+            
     def setupCloudSync(self):
         """Provide instructions for cloud sync setup"""
         instruction = (
@@ -356,3 +375,191 @@ class SettingsTab(QWidget):
         )
         
         QMessageBox.information(self, "Cloud Sync Setup", instruction)
+        
+    def exportData(self):
+        """Export database to CSV files"""
+        try:
+            options = QFileDialog.Options()
+            export_dir = QFileDialog.getExistingDirectory(
+                self, "Select Export Directory", "", options=options
+            )
+            
+            if not export_dir:
+                return
+            
+            self.db.connect()
+            
+            # Export customers
+            self.db.cursor.execute("SELECT id, name, contact, address, created_at FROM customers")
+            customers = self.db.cursor.fetchall()
+            
+            with open(os.path.join(export_dir, "customers.csv"), 'w', encoding='utf-8') as f:
+                f.write("id,name,contact,address,created_at\n")
+                for customer in customers:
+                    f.write(','.join(f'"{str(field)}"' for field in customer) + '\n')
+            
+            # Export products
+            self.db.cursor.execute("SELECT id, name, description, unit_price, created_at FROM products")
+            products = self.db.cursor.fetchall()
+            
+            with open(os.path.join(export_dir, "products.csv"), 'w', encoding='utf-8') as f:
+                f.write("id,name,description,unit_price,created_at\n")
+                for product in products:
+                    f.write(','.join(f'"{str(field)}"' for field in product) + '\n')
+            
+            # Export entries
+            self.db.cursor.execute("""
+                SELECT e.id, e.date, c.name, p.name, e.quantity, e.unit_price, 
+                    (e.quantity * e.unit_price) as total, e.is_credit, e.notes, e.created_at
+                FROM entries e
+                JOIN customers c ON e.customer_id = c.id
+                JOIN products p ON e.product_id = p.id
+                ORDER BY e.date, e.id
+            """)
+            entries = self.db.cursor.fetchall()
+            
+            with open(os.path.join(export_dir, "entries.csv"), 'w', encoding='utf-8') as f:
+                f.write("id,date,customer,product,quantity,unit_price,total,is_credit,notes,created_at\n")
+                for entry in entries:
+                    f.write(','.join(f'"{str(field)}"' for field in entry) + '\n')
+            
+            QMessageBox.information(
+                self, "Export Complete", 
+                f"Data has been exported to:\n{export_dir}"
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export data: {str(e)}")
+        finally:
+            self.db.close()
+
+    def importData(self):
+        """Import data from CSV files"""
+        try:
+            options = QFileDialog.Options()
+            import_dir = QFileDialog.getExistingDirectory(
+                self, "Select Import Directory", "", options=options
+            )
+            
+            if not import_dir:
+                return
+            
+            # Check for required files
+            required_files = ['customers.csv', 'products.csv', 'entries.csv']
+            missing_files = []
+            
+            for file in required_files:
+                if not os.path.exists(os.path.join(import_dir, file)):
+                    missing_files.append(file)
+            
+            if missing_files:
+                QMessageBox.warning(
+                    self, "Missing Files", 
+                    f"The following required files are missing:\n{', '.join(missing_files)}"
+                )
+                return
+            
+            # Confirm import
+            reply = QMessageBox.question(
+                self, "Confirm Import",
+                "Importing data will replace all existing data. Continue?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply != QMessageBox.Yes:
+                return
+            
+            self.db.connect()
+            
+            # Start transaction
+            self.db.conn.execute("BEGIN")
+            
+            # Clear existing data
+            self.db.cursor.execute("DELETE FROM transactions")
+            self.db.cursor.execute("DELETE FROM entries")
+            self.db.cursor.execute("DELETE FROM products")
+            self.db.cursor.execute("DELETE FROM customers")
+            
+            # Import customers
+            import csv
+            
+            with open(os.path.join(import_dir, "customers.csv"), 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    self.db.cursor.execute("""
+                        INSERT INTO customers (name, contact, address)
+                        VALUES (?, ?, ?)
+                    """, (row['name'], row['contact'], row['address']))
+            
+            # Import products
+            with open(os.path.join(import_dir, "products.csv"), 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    self.db.cursor.execute("""
+                        INSERT INTO products (name, description, unit_price)
+                        VALUES (?, ?, ?)
+                    """, (row['name'], row['description'], float(row['unit_price'])))
+            
+            # Import entries
+            with open(os.path.join(import_dir, "entries.csv"), 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                
+                # Create a mapping of customer names to IDs
+                self.db.cursor.execute("SELECT id, name FROM customers")
+                customer_map = {name: id for id, name in self.db.cursor.fetchall()}
+                
+                # Create a mapping of product names to IDs
+                self.db.cursor.execute("SELECT id, name FROM products")
+                product_map = {name: id for id, name in self.db.cursor.fetchall()}
+                
+                # Process entries
+                current_balance = 0
+                for row in reader:
+                    customer_id = customer_map.get(row['customer'])
+                    product_id = product_map.get(row['product'])
+                    
+                    if not customer_id or not product_id:
+                        continue
+                    
+                    # Insert entry
+                    self.db.cursor.execute("""
+                        INSERT INTO entries (date, customer_id, product_id, quantity, unit_price, is_credit, notes)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        row['date'], 
+                        customer_id, 
+                        product_id, 
+                        int(row['quantity']), 
+                        float(row['unit_price']), 
+                        int(row['is_credit']), 
+                        row['notes']
+                    ))
+                    
+                    entry_id = self.db.cursor.lastrowid
+                    amount = float(row['total'])
+                    
+                    # Update balance
+                    if int(row['is_credit']):
+                        current_balance += amount
+                    else:
+                        current_balance -= amount
+                    
+                    # Insert transaction
+                    self.db.cursor.execute("""
+                        INSERT INTO transactions (entry_id, amount, balance)
+                        VALUES (?, ?, ?)
+                    """, (entry_id, amount, current_balance))
+            
+            # Commit changes
+            self.db.conn.commit()
+            
+            QMessageBox.information(
+                self, "Import Complete", 
+                "Data has been imported successfully."
+            )
+            
+        except Exception as e:
+            self.db.conn.rollback()
+            QMessageBox.critical(self, "Import Error", f"Failed to import data: {str(e)}")
+        finally:
+            self.db.close()
