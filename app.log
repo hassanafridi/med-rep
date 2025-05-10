@@ -1,0 +1,650 @@
+2025-05-09 00:21:59,327 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,360 - src.database.db - INFO - Database initialized successfully
+2025-05-09 00:21:59,360 - src.database.db - INFO - Database connection closed
+2025-05-09 00:21:59,362 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,363 - src.database.db - INFO - Database connection closed
+2025-05-09 00:21:59,363 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,370 - src.database.db - INFO - Sample data inserted successfully
+2025-05-09 00:21:59,370 - src.database.db - INFO - Database connection closed
+2025-05-09 00:21:59,802 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:21:59,809 - database.db - INFO - Database connection closed
+2025-05-09 00:22:33,299 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:22:34,382 - database.db - INFO - Database connection closed
+2025-05-09 00:30:05,285 - matplotlib.font_manager - INFO - generated new fontManager
+2025-05-09 00:30:06,102 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:06,103 - src.database.db - INFO - Database initialized successfully
+2025-05-09 00:30:06,103 - src.database.db - INFO - Database connection closed
+2025-05-09 00:30:06,104 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:06,104 - src.database.db - INFO - Database connection closed
+2025-05-09 00:30:06,407 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:06,408 - database.db - INFO - Database connection closed
+2025-05-09 00:30:06,437 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:06,438 - database.db - INFO - Database connection closed
+2025-05-09 00:30:06,438 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:06,440 - database.db - INFO - Database connection closed
+2025-05-09 00:30:06,463 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:06,464 - database.db - INFO - Database connection closed
+2025-05-09 00:30:29,769 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:31,190 - database.db - INFO - Database connection closed
+2025-05-09 00:30:48,562 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:49,741 - database.db - INFO - Database connection closed
+2025-05-09 00:30:53,211 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:30:54,540 - database.db - INFO - Database connection closed
+2025-05-09 00:31:12,256 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:12,301 - database.db - INFO - Database connection closed
+2025-05-09 00:31:20,524 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:21,534 - database.db - INFO - Database connection closed
+2025-05-09 00:31:26,704 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:26,719 - database.db - INFO - Database connection closed
+2025-05-09 00:31:28,511 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:28,528 - database.db - INFO - Database connection closed
+2025-05-09 00:31:28,926 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:28,943 - database.db - INFO - Database connection closed
+2025-05-09 00:31:29,118 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:29,135 - database.db - INFO - Database connection closed
+2025-05-09 00:31:29,302 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:29,319 - database.db - INFO - Database connection closed
+2025-05-09 00:31:29,454 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:29,470 - database.db - INFO - Database connection closed
+2025-05-09 00:31:29,622 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:29,639 - database.db - INFO - Database connection closed
+2025-05-09 00:31:29,808 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:29,823 - database.db - INFO - Database connection closed
+2025-05-09 00:31:29,983 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:29,998 - database.db - INFO - Database connection closed
+2025-05-09 00:31:30,159 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:30,175 - database.db - INFO - Database connection closed
+2025-05-09 00:31:30,310 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:30,327 - database.db - INFO - Database connection closed
+2025-05-09 00:31:30,470 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:30,486 - database.db - INFO - Database connection closed
+2025-05-09 00:31:30,639 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:30,655 - database.db - INFO - Database connection closed
+2025-05-09 00:31:30,798 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:30,815 - database.db - INFO - Database connection closed
+2025-05-09 00:31:32,359 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:32,373 - database.db - INFO - Database connection closed
+2025-05-09 00:31:32,559 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:32,573 - database.db - INFO - Database connection closed
+2025-05-09 00:31:32,718 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:32,733 - database.db - INFO - Database connection closed
+2025-05-09 00:31:32,927 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:32,941 - database.db - INFO - Database connection closed
+2025-05-09 00:31:35,686 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:31:35,703 - database.db - INFO - Database connection closed
+2025-05-09 00:34:37,145 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 00:34:38,364 - database.db - INFO - Database connection closed
+2025-05-09 15:28:00,759 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 15:28:00,768 - src.database.db - INFO - Database initialized successfully
+2025-05-09 15:28:00,768 - src.database.db - INFO - Database connection closed
+2025-05-09 15:28:00,769 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 15:28:00,769 - src.database.db - INFO - Database connection closed
+2025-05-09 15:28:01,157 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 15:28:01,160 - database.db - INFO - Database connection closed
+2025-05-09 15:28:01,192 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 15:28:01,193 - database.db - INFO - Database connection closed
+2025-05-09 15:28:01,193 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 15:28:01,196 - database.db - INFO - Database connection closed
+2025-05-09 15:28:01,221 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 15:28:01,248 - database.db - INFO - Database connection closed
+2025-05-09 16:49:14,439 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:14,460 - database.db - INFO - Database connection closed
+2025-05-09 16:49:15,778 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:15,794 - database.db - INFO - Database connection closed
+2025-05-09 16:49:16,057 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:16,074 - database.db - INFO - Database connection closed
+2025-05-09 16:49:16,289 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:16,307 - database.db - INFO - Database connection closed
+2025-05-09 16:49:16,474 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:16,490 - database.db - INFO - Database connection closed
+2025-05-09 16:49:16,673 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:16,690 - database.db - INFO - Database connection closed
+2025-05-09 16:49:21,011 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:21,037 - database.db - INFO - Database connection closed
+2025-05-09 16:49:21,722 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:21,741 - database.db - INFO - Database connection closed
+2025-05-09 16:49:21,930 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:21,948 - database.db - INFO - Database connection closed
+2025-05-09 16:49:22,098 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:22,117 - database.db - INFO - Database connection closed
+2025-05-09 16:49:22,258 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:22,277 - database.db - INFO - Database connection closed
+2025-05-09 16:49:22,426 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:22,444 - database.db - INFO - Database connection closed
+2025-05-09 16:49:22,594 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:22,614 - database.db - INFO - Database connection closed
+2025-05-09 16:49:22,899 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:22,920 - database.db - INFO - Database connection closed
+2025-05-09 16:49:23,074 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:23,094 - database.db - INFO - Database connection closed
+2025-05-09 16:49:23,250 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:23,269 - database.db - INFO - Database connection closed
+2025-05-09 16:49:23,402 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:23,424 - database.db - INFO - Database connection closed
+2025-05-09 16:49:23,563 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:23,584 - database.db - INFO - Database connection closed
+2025-05-09 16:49:23,683 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:23,703 - database.db - INFO - Database connection closed
+2025-05-09 16:49:23,842 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:23,861 - database.db - INFO - Database connection closed
+2025-05-09 16:49:24,042 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:24,061 - database.db - INFO - Database connection closed
+2025-05-09 16:49:38,533 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:39,640 - database.db - INFO - Database connection closed
+2025-05-09 16:49:41,477 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:42,447 - database.db - INFO - Database connection closed
+2025-05-09 16:49:48,701 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:50,071 - database.db - INFO - Database connection closed
+2025-05-09 16:49:55,141 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:55,144 - database.db - INFO - Database connection closed
+2025-05-09 16:49:59,146 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:59,167 - database.db - INFO - Database connection closed
+2025-05-09 16:49:59,883 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:49:59,902 - database.db - INFO - Database connection closed
+2025-05-09 16:50:00,306 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:00,325 - database.db - INFO - Database connection closed
+2025-05-09 16:50:00,524 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:00,544 - database.db - INFO - Database connection closed
+2025-05-09 16:50:00,698 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:00,717 - database.db - INFO - Database connection closed
+2025-05-09 16:50:00,867 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:00,885 - database.db - INFO - Database connection closed
+2025-05-09 16:50:01,034 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:01,134 - database.db - INFO - Database connection closed
+2025-05-09 16:50:01,236 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:01,255 - database.db - INFO - Database connection closed
+2025-05-09 16:50:01,363 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:01,383 - database.db - INFO - Database connection closed
+2025-05-09 16:50:01,500 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:01,519 - database.db - INFO - Database connection closed
+2025-05-09 16:50:01,635 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:01,653 - database.db - INFO - Database connection closed
+2025-05-09 16:50:16,706 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:16,727 - database.db - INFO - Database connection closed
+2025-05-09 16:50:26,305 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:26,326 - database.db - INFO - Database connection closed
+2025-05-09 16:50:27,330 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:27,348 - database.db - INFO - Database connection closed
+2025-05-09 16:50:27,586 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:27,605 - database.db - INFO - Database connection closed
+2025-05-09 16:50:27,746 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:27,766 - database.db - INFO - Database connection closed
+2025-05-09 16:50:27,906 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:27,924 - database.db - INFO - Database connection closed
+2025-05-09 16:50:28,042 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:28,060 - database.db - INFO - Database connection closed
+2025-05-09 16:50:28,194 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:28,212 - database.db - INFO - Database connection closed
+2025-05-09 16:50:38,076 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:38,077 - database.db - INFO - Database connection closed
+2025-05-09 16:50:38,460 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:38,461 - database.db - INFO - Database connection closed
+2025-05-09 16:50:38,645 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:38,646 - database.db - INFO - Database connection closed
+2025-05-09 16:50:38,796 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:38,797 - database.db - INFO - Database connection closed
+2025-05-09 16:50:47,059 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:48,120 - database.db - INFO - Database connection closed
+2025-05-09 16:50:53,213 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:50:54,362 - database.db - INFO - Database connection closed
+2025-05-09 16:51:02,797 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:51:03,879 - database.db - INFO - Database connection closed
+2025-05-09 16:51:08,709 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:51:10,038 - database.db - INFO - Database connection closed
+2025-05-09 16:51:13,410 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:51:13,430 - database.db - INFO - Database connection closed
+2025-05-09 16:51:21,156 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 16:51:21,158 - database.db - INFO - Database connection closed
+2025-05-09 18:05:21,675 - root - INFO - Configuration file not found, using defaults
+2025-05-09 18:05:21,676 - root - INFO - Configuration saved to data\config.json
+2025-05-09 18:05:21,682 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-09 18:05:21,690 - src.database.db - INFO - Database initialized successfully
+2025-05-09 18:05:21,690 - src.database.db - INFO - Database connection closed
+2025-05-09 18:05:21,691 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-09 18:05:21,691 - src.database.db - INFO - Database connection closed
+2025-05-09 18:05:22,417 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 18:05:22,420 - database.db - INFO - Database connection closed
+2025-05-09 18:05:22,455 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 18:05:22,456 - database.db - INFO - Database connection closed
+2025-05-09 18:05:22,456 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 18:05:22,461 - database.db - INFO - Database connection closed
+2025-05-09 18:05:22,485 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 18:05:22,519 - database.db - INFO - Database connection closed
+2025-05-09 18:05:31,175 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-09 18:05:31,192 - database.db - INFO - Database connection closed
+2025-05-09 18:05:47,264 - database.db - INFO - Connected to database: data\medtran.db
+2025-05-09 18:05:48,262 - database.db - INFO - Database connection closed
+2025-05-09 18:08:31,425 - root - INFO - Configuration saved to data\config.json
+2025-05-09 18:08:31,426 - root - INFO - Configuration saved to data\config.json
+2025-05-10 01:48:56,665 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 01:48:56,672 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 01:48:56,680 - src.database.db - INFO - Database initialized successfully
+2025-05-10 01:48:56,680 - src.database.db - INFO - Database connection closed
+2025-05-10 01:48:56,681 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 01:48:56,681 - src.database.db - INFO - Database connection closed
+2025-05-10 01:48:57,019 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:48:57,022 - database.db - INFO - Database connection closed
+2025-05-10 01:48:57,057 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:48:57,057 - database.db - INFO - Database connection closed
+2025-05-10 01:48:57,058 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:48:57,065 - database.db - INFO - Database connection closed
+2025-05-10 01:48:57,090 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:48:57,122 - database.db - INFO - Database connection closed
+2025-05-10 01:48:59,032 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:48:59,972 - database.db - INFO - Database connection closed
+2025-05-10 01:49:03,546 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:04,061 - database.db - INFO - Database connection closed
+2025-05-10 01:49:06,136 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:06,879 - database.db - INFO - Database connection closed
+2025-05-10 01:49:09,993 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:10,671 - database.db - INFO - Database connection closed
+2025-05-10 01:49:14,417 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:14,730 - database.db - INFO - Database connection closed
+2025-05-10 01:49:19,953 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:20,961 - database.db - INFO - Database connection closed
+2025-05-10 01:49:23,977 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:23,979 - database.db - INFO - Database connection closed
+2025-05-10 01:49:31,150 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:31,167 - database.db - INFO - Database connection closed
+2025-05-10 01:49:32,870 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:32,887 - database.db - INFO - Database connection closed
+2025-05-10 01:49:46,121 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:47,229 - database.db - INFO - Database connection closed
+2025-05-10 01:49:52,998 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:53,016 - database.db - INFO - Database connection closed
+2025-05-10 01:49:54,102 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:54,120 - database.db - INFO - Database connection closed
+2025-05-10 01:49:54,502 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:54,521 - database.db - INFO - Database connection closed
+2025-05-10 01:49:54,654 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:49:54,671 - database.db - INFO - Database connection closed
+2025-05-10 01:50:05,160 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:06,659 - database.db - INFO - Database connection closed
+2025-05-10 01:50:08,409 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:09,700 - database.db - INFO - Database connection closed
+2025-05-10 01:50:16,121 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:17,195 - database.db - INFO - Database connection closed
+2025-05-10 01:50:26,289 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:27,540 - database.db - INFO - Database connection closed
+2025-05-10 01:50:31,646 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:31,664 - database.db - INFO - Database connection closed
+2025-05-10 01:50:32,997 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:33,016 - database.db - INFO - Database connection closed
+2025-05-10 01:50:33,303 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:33,322 - database.db - INFO - Database connection closed
+2025-05-10 01:50:33,574 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:33,593 - database.db - INFO - Database connection closed
+2025-05-10 01:50:33,765 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:33,784 - database.db - INFO - Database connection closed
+2025-05-10 01:50:33,925 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:33,943 - database.db - INFO - Database connection closed
+2025-05-10 01:50:34,086 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:34,104 - database.db - INFO - Database connection closed
+2025-05-10 01:50:34,229 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:34,246 - database.db - INFO - Database connection closed
+2025-05-10 01:50:34,358 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:34,376 - database.db - INFO - Database connection closed
+2025-05-10 01:50:34,478 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:34,497 - database.db - INFO - Database connection closed
+2025-05-10 01:50:34,846 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:34,864 - database.db - INFO - Database connection closed
+2025-05-10 01:50:35,029 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:35,047 - database.db - INFO - Database connection closed
+2025-05-10 01:50:35,206 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:35,226 - database.db - INFO - Database connection closed
+2025-05-10 01:50:35,389 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:35,408 - database.db - INFO - Database connection closed
+2025-05-10 01:50:35,829 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:35,847 - database.db - INFO - Database connection closed
+2025-05-10 01:50:35,998 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:36,016 - database.db - INFO - Database connection closed
+2025-05-10 01:50:36,174 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:36,192 - database.db - INFO - Database connection closed
+2025-05-10 01:50:36,342 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:36,361 - database.db - INFO - Database connection closed
+2025-05-10 01:50:36,542 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:36,562 - database.db - INFO - Database connection closed
+2025-05-10 01:50:42,414 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:42,431 - database.db - INFO - Database connection closed
+2025-05-10 01:50:42,590 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:42,607 - database.db - INFO - Database connection closed
+2025-05-10 01:50:42,757 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:42,802 - database.db - INFO - Database connection closed
+2025-05-10 01:50:42,933 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:50:42,950 - database.db - INFO - Database connection closed
+2025-05-10 01:54:33,021 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 01:54:33,022 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 01:54:33,023 - src.database.db - INFO - Database initialized successfully
+2025-05-10 01:54:33,023 - src.database.db - INFO - Database connection closed
+2025-05-10 01:54:33,023 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 01:54:33,024 - src.database.db - INFO - Database connection closed
+2025-05-10 01:54:33,335 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:54:33,336 - database.db - INFO - Database connection closed
+2025-05-10 01:54:33,353 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:54:33,354 - database.db - INFO - Database connection closed
+2025-05-10 01:54:33,354 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:54:33,356 - database.db - INFO - Database connection closed
+2025-05-10 01:54:33,376 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:54:33,403 - database.db - INFO - Database connection closed
+2025-05-10 01:55:10,376 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:55:10,377 - database.db - INFO - Database connection closed
+2025-05-10 01:55:15,444 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:55:15,464 - database.db - INFO - Database connection closed
+2025-05-10 01:56:16,607 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:16,609 - database.db - INFO - Database connection closed
+2025-05-10 01:56:37,303 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:38,747 - database.db - INFO - Database connection closed
+2025-05-10 01:56:43,152 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:43,154 - database.db - INFO - Database connection closed
+2025-05-10 01:56:52,167 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:52,168 - database.db - INFO - Database connection closed
+2025-05-10 01:56:55,799 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:55,800 - database.db - INFO - Database connection closed
+2025-05-10 01:56:56,399 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:56,400 - database.db - INFO - Database connection closed
+2025-05-10 01:56:56,575 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:56,576 - database.db - INFO - Database connection closed
+2025-05-10 01:56:56,759 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:56:56,760 - database.db - INFO - Database connection closed
+2025-05-10 01:57:17,152 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:57:17,153 - database.db - INFO - Database connection closed
+2025-05-10 01:58:32,551 - root - INFO - Configuration saved to data\config.json
+2025-05-10 01:58:32,552 - root - INFO - Configuration saved to data\config.json
+2025-05-10 01:58:41,995 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 01:58:41,996 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 01:58:41,998 - src.database.db - INFO - Database initialized successfully
+2025-05-10 01:58:41,998 - src.database.db - INFO - Database connection closed
+2025-05-10 01:58:41,998 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 01:58:41,999 - src.database.db - INFO - Database connection closed
+2025-05-10 01:58:42,325 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:58:42,326 - database.db - INFO - Database connection closed
+2025-05-10 01:58:42,344 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:58:42,345 - database.db - INFO - Database connection closed
+2025-05-10 01:58:42,345 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:58:42,347 - database.db - INFO - Database connection closed
+2025-05-10 01:58:42,367 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:58:42,399 - database.db - INFO - Database connection closed
+2025-05-10 01:59:04,199 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 01:59:04,200 - database.db - INFO - Database connection closed
+2025-05-10 02:16:18,157 - root - INFO - Configuration saved to data\config.json
+2025-05-10 02:16:18,158 - root - INFO - Configuration saved to data\config.json
+2025-05-10 02:16:32,390 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 02:16:32,391 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 02:16:32,392 - src.database.db - INFO - Database initialized successfully
+2025-05-10 02:16:32,393 - src.database.db - INFO - Database connection closed
+2025-05-10 02:16:32,393 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 02:16:32,394 - src.database.db - INFO - Database connection closed
+2025-05-10 02:16:32,710 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:16:32,711 - database.db - INFO - Database connection closed
+2025-05-10 02:16:32,724 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:16:32,725 - database.db - INFO - Database connection closed
+2025-05-10 02:16:32,726 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:16:32,727 - database.db - INFO - Database connection closed
+2025-05-10 02:16:32,747 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:16:32,771 - database.db - INFO - Database connection closed
+2025-05-10 02:16:48,145 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:16:48,146 - database.db - INFO - Database connection closed
+2025-05-10 02:16:50,718 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:16:53,176 - database.db - INFO - Database connection closed
+2025-05-10 02:17:00,028 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:17:00,028 - database.db - INFO - Database connection closed
+2025-05-10 02:17:11,550 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:17:15,752 - database.db - INFO - Database connection closed
+2025-05-10 02:17:18,740 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:17:18,740 - database.db - INFO - Database connection closed
+2025-05-10 02:17:22,256 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:17:24,953 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:17:24,956 - database.db - INFO - Database connection closed
+2025-05-10 02:17:24,956 - database.db - INFO - Database connection closed
+2025-05-10 02:17:27,556 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:17:27,557 - database.db - INFO - Database connection closed
+2025-05-10 02:18:36,468 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:18:36,468 - database.db - INFO - Database connection closed
+2025-05-10 02:49:48,184 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:49:48,185 - database.db - INFO - Database connection closed
+2025-05-10 02:49:49,664 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:49:58,556 - database.db - INFO - Database connection closed
+2025-05-10 02:50:05,311 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:05,311 - database.db - INFO - Database connection closed
+2025-05-10 02:50:06,184 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:07,203 - database.db - INFO - Database connection closed
+2025-05-10 02:50:08,055 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:08,056 - database.db - INFO - Database connection closed
+2025-05-10 02:50:08,825 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:13,779 - database.db - INFO - Database connection closed
+2025-05-10 02:50:20,541 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:20,560 - database.db - INFO - Database connection closed
+2025-05-10 02:50:21,453 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:21,472 - database.db - INFO - Database connection closed
+2025-05-10 02:50:21,885 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:21,903 - database.db - INFO - Database connection closed
+2025-05-10 02:50:22,046 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:22,064 - database.db - INFO - Database connection closed
+2025-05-10 02:50:22,252 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:50:22,271 - database.db - INFO - Database connection closed
+2025-05-10 02:50:31,000 - root - INFO - Configuration saved to data\config.json
+2025-05-10 02:50:31,001 - root - INFO - Configuration saved to data\config.json
+2025-05-10 02:51:01,321 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 02:51:01,322 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 02:51:01,323 - src.database.db - INFO - Database initialized successfully
+2025-05-10 02:51:01,323 - src.database.db - INFO - Database connection closed
+2025-05-10 02:51:01,324 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 02:51:01,324 - src.database.db - INFO - Database connection closed
+2025-05-10 02:51:01,627 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:51:01,628 - database.db - INFO - Database connection closed
+2025-05-10 02:51:01,642 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:51:01,643 - database.db - INFO - Database connection closed
+2025-05-10 02:51:01,643 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:51:01,645 - database.db - INFO - Database connection closed
+2025-05-10 02:51:01,664 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 02:51:01,689 - database.db - INFO - Database connection closed
+2025-05-10 03:06:49,317 - root - INFO - Configuration saved to data\config.json
+2025-05-10 03:06:49,318 - root - INFO - Configuration saved to data\config.json
+2025-05-10 03:07:05,697 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 03:07:05,698 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 03:07:05,699 - src.database.db - INFO - Database initialized successfully
+2025-05-10 03:07:05,699 - src.database.db - INFO - Database connection closed
+2025-05-10 03:07:05,699 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 03:07:05,700 - src.database.db - INFO - Database connection closed
+2025-05-10 03:07:06,026 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:06,027 - database.db - INFO - Database connection closed
+2025-05-10 03:07:06,043 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:06,044 - database.db - INFO - Database connection closed
+2025-05-10 03:07:06,044 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:06,046 - database.db - INFO - Database connection closed
+2025-05-10 03:07:06,068 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:06,094 - database.db - INFO - Database connection closed
+2025-05-10 03:07:22,933 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:22,934 - database.db - INFO - Database connection closed
+2025-05-10 03:07:24,830 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:26,632 - database.db - INFO - Database connection closed
+2025-05-10 03:07:29,557 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:29,558 - database.db - INFO - Database connection closed
+2025-05-10 03:07:32,581 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:07:32,582 - database.db - INFO - Database connection closed
+2025-05-10 03:15:07,668 - root - INFO - Configuration saved to data\config.json
+2025-05-10 03:15:07,669 - root - INFO - Configuration saved to data\config.json
+2025-05-10 03:15:15,941 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 03:15:15,942 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 03:15:15,943 - src.database.db - INFO - Database initialized successfully
+2025-05-10 03:15:15,943 - src.database.db - INFO - Database connection closed
+2025-05-10 03:15:15,943 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 03:15:15,944 - src.database.db - INFO - Database connection closed
+2025-05-10 03:15:16,234 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:15:16,235 - database.db - INFO - Database connection closed
+2025-05-10 03:15:16,249 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:15:16,249 - database.db - INFO - Database connection closed
+2025-05-10 03:15:16,250 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:15:16,251 - database.db - INFO - Database connection closed
+2025-05-10 03:15:16,270 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:15:16,294 - database.db - INFO - Database connection closed
+2025-05-10 03:16:46,772 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:16:46,773 - database.db - INFO - Database connection closed
+2025-05-10 03:20:16,492 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:20:23,735 - database.db - INFO - Database connection closed
+2025-05-10 03:22:12,468 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:22:12,469 - database.db - INFO - Database connection closed
+2025-05-10 03:22:20,363 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:22:20,364 - database.db - INFO - Database connection closed
+2025-05-10 03:22:44,107 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:22:44,109 - database.db - INFO - Database connection closed
+2025-05-10 03:23:35,600 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:23:35,620 - database.db - INFO - Database connection closed
+2025-05-10 03:26:24,834 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 03:26:24,837 - database.db - INFO - Database connection closed
+2025-05-10 04:45:58,696 - root - INFO - Configuration saved to data\config.json
+2025-05-10 04:45:58,697 - root - INFO - Configuration saved to data\config.json
+2025-05-10 04:46:05,733 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 04:46:05,734 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:46:05,735 - src.database.db - INFO - Database initialized successfully
+2025-05-10 04:46:05,735 - src.database.db - INFO - Database connection closed
+2025-05-10 04:46:05,736 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:46:05,736 - src.database.db - INFO - Database connection closed
+2025-05-10 04:46:06,409 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:46:06,411 - database.db - INFO - Database connection closed
+2025-05-10 04:46:06,425 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:46:06,425 - database.db - INFO - Database connection closed
+2025-05-10 04:46:06,426 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:46:06,428 - database.db - INFO - Database connection closed
+2025-05-10 04:46:06,448 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:46:06,472 - database.db - INFO - Database connection closed
+2025-05-10 04:46:06,570 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:46:06,571 - database.db - INFO - Database connection closed
+2025-05-10 04:46:06,571 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:46:06,572 - database.db - INFO - Database connection closed
+2025-05-10 04:49:47,971 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 04:49:47,971 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:49:47,973 - src.database.db - INFO - Database initialized successfully
+2025-05-10 04:49:47,973 - src.database.db - INFO - Database connection closed
+2025-05-10 04:49:47,973 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:49:47,974 - src.database.db - INFO - Database connection closed
+2025-05-10 04:49:48,277 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:49:48,278 - database.db - INFO - Database connection closed
+2025-05-10 04:49:48,294 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:49:48,295 - database.db - INFO - Database connection closed
+2025-05-10 04:49:48,295 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:49:48,297 - database.db - INFO - Database connection closed
+2025-05-10 04:49:48,315 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:49:48,339 - database.db - INFO - Database connection closed
+2025-05-10 04:49:48,435 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:49:48,436 - database.db - INFO - Database connection closed
+2025-05-10 04:49:48,437 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:49:48,437 - database.db - INFO - Database connection closed
+2025-05-10 04:54:45,827 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 04:54:45,828 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:54:45,829 - src.database.db - INFO - Database initialized successfully
+2025-05-10 04:54:45,829 - src.database.db - INFO - Database connection closed
+2025-05-10 04:54:45,830 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:54:45,830 - src.database.db - INFO - Database connection closed
+2025-05-10 04:54:46,142 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:54:46,143 - database.db - INFO - Database connection closed
+2025-05-10 04:54:46,159 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:54:46,160 - database.db - INFO - Database connection closed
+2025-05-10 04:54:46,160 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:54:46,162 - database.db - INFO - Database connection closed
+2025-05-10 04:54:46,182 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:54:46,205 - database.db - INFO - Database connection closed
+2025-05-10 04:54:46,304 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:54:46,305 - database.db - INFO - Database connection closed
+2025-05-10 04:54:46,305 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:54:46,306 - database.db - INFO - Database connection closed
+2025-05-10 04:55:00,763 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:55:00,782 - database.db - INFO - Database connection closed
+2025-05-10 04:55:03,059 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:55:03,077 - database.db - INFO - Database connection closed
+2025-05-10 04:55:34,202 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:55:35,522 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:55:35,523 - database.db - INFO - Database connection closed
+2025-05-10 04:55:35,523 - database.db - INFO - Database connection closed
+2025-05-10 04:56:29,164 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 04:56:29,165 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:56:29,166 - src.database.db - INFO - Database initialized successfully
+2025-05-10 04:56:29,166 - src.database.db - INFO - Database connection closed
+2025-05-10 04:56:29,166 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 04:56:29,167 - src.database.db - INFO - Database connection closed
+2025-05-10 04:56:29,471 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:56:29,472 - database.db - INFO - Database connection closed
+2025-05-10 04:56:29,488 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:56:29,489 - database.db - INFO - Database connection closed
+2025-05-10 04:56:29,489 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:56:29,491 - database.db - INFO - Database connection closed
+2025-05-10 04:56:29,511 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:56:29,534 - database.db - INFO - Database connection closed
+2025-05-10 04:56:29,633 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:56:29,633 - database.db - INFO - Database connection closed
+2025-05-10 04:56:29,634 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 04:56:29,634 - database.db - INFO - Database connection closed
+2025-05-10 05:04:58,024 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 05:04:58,025 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 05:04:58,026 - src.database.db - INFO - Database initialized successfully
+2025-05-10 05:04:58,026 - src.database.db - INFO - Database connection closed
+2025-05-10 05:04:58,027 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 05:04:58,027 - src.database.db - INFO - Database connection closed
+2025-05-10 05:04:58,408 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:04:58,409 - database.db - INFO - Database connection closed
+2025-05-10 05:04:58,424 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:04:58,425 - database.db - INFO - Database connection closed
+2025-05-10 05:04:58,425 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:04:58,427 - database.db - INFO - Database connection closed
+2025-05-10 05:04:58,446 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:04:58,468 - database.db - INFO - Database connection closed
+2025-05-10 05:04:58,562 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:04:58,563 - database.db - INFO - Database connection closed
+2025-05-10 05:04:58,563 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:04:58,564 - database.db - INFO - Database connection closed
+2025-05-10 05:11:08,485 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 05:11:08,486 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 05:11:08,487 - src.database.db - INFO - Database initialized successfully
+2025-05-10 05:11:08,487 - src.database.db - INFO - Database connection closed
+2025-05-10 05:11:08,487 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 05:11:08,488 - src.database.db - INFO - Database connection closed
+2025-05-10 05:11:08,780 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:08,781 - database.db - INFO - Database connection closed
+2025-05-10 05:11:08,797 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:08,798 - database.db - INFO - Database connection closed
+2025-05-10 05:11:08,798 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:08,800 - database.db - INFO - Database connection closed
+2025-05-10 05:11:08,825 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:08,852 - database.db - INFO - Database connection closed
+2025-05-10 05:11:08,953 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:08,953 - database.db - INFO - Database connection closed
+2025-05-10 05:11:08,954 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:08,954 - database.db - INFO - Database connection closed
+2025-05-10 05:11:30,116 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:11:36,302 - database.db - INFO - Database connection closed
+2025-05-10 05:16:30,640 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:16:30,659 - database.db - INFO - Database connection closed
+2025-05-10 05:17:20,287 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:17:20,288 - database.db - INFO - Database connection closed
+2025-05-10 05:17:42,442 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:17:42,443 - database.db - INFO - Database connection closed
+2025-05-10 05:24:08,002 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:24:08,004 - database.db - INFO - Database connection closed
+2025-05-10 05:24:29,970 - root - INFO - Configuration saved to data\config.json
+2025-05-10 05:24:29,971 - root - INFO - Configuration saved to data\config.json
+2025-05-10 05:26:45,505 - root - INFO - Configuration loaded from data\config.json
+2025-05-10 05:26:45,506 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 05:26:45,507 - src.database.db - INFO - Database initialized successfully
+2025-05-10 05:26:45,508 - src.database.db - INFO - Database connection closed
+2025-05-10 05:26:45,508 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-05-10 05:26:45,509 - src.database.db - INFO - Database connection closed
+2025-05-10 05:26:45,827 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:26:45,828 - database.db - INFO - Database connection closed
+2025-05-10 05:26:45,844 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:26:45,845 - database.db - INFO - Database connection closed
+2025-05-10 05:26:45,845 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:26:45,847 - database.db - INFO - Database connection closed
+2025-05-10 05:26:45,868 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:26:45,896 - database.db - INFO - Database connection closed
+2025-05-10 05:26:46,013 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:26:46,014 - database.db - INFO - Database connection closed
+2025-05-10 05:26:46,015 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:26:46,015 - database.db - INFO - Database connection closed
+2025-05-10 05:27:01,249 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:27:02,574 - database.db - INFO - Database connection closed
+2025-05-10 05:27:13,722 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:27:15,045 - database.db - INFO - Database connection closed
+2025-05-10 05:27:18,370 - database.db - INFO - Connected to database: data/medtran.db
+2025-05-10 05:27:18,372 - database.db - INFO - Database connection closed
+2025-05-10 05:27:56,306 - root - INFO - Configuration saved to data\config.json
+2025-05-10 05:27:56,307 - root - INFO - Configuration saved to data\config.json
