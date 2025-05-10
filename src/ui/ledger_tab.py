@@ -1,12 +1,37 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-    QPushButton, QLineEdit, QLabel, QDateEdit, QComboBox, QMenu, 
-    QAction, QMessageBox, QHeaderView, QGroupBox, QFormLayout
+    QWidget, 
+    QVBoxLayout, 
+    QHBoxLayout, 
+    QTableWidget, 
+    QTableWidgetItem,
+    QPushButton, 
+    QLineEdit, 
+    QLabel, 
+    QDateEdit, 
+    QComboBox, 
+    QMenu, 
+    QAction, 
+    QMessageBox, 
+    QHeaderView, 
+    QGroupBox, 
+    QFormLayout, 
+    QFileDialog,
+    QDialog, 
+    QDialogButtonBox, 
+    QCheckBox, 
+    QSpinBox,
+    QDoubleSpinBox,
 )
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QColor
 import sys
 import os
+import csv
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -82,9 +107,12 @@ class LedgerTab(QWidget):
             "ID", "Date", "Customer", "Product", "Quantity", 
             "Unit Price", "Total", "Type", "Notes"
         ])
-        report_btn = QPushButton("Generate Report")
-        report_btn.clicked.connect(self.generateReport)
-        main_layout.addWidget(report_btn)
+        # Add Generate Report button (if not already defined)
+        self.report_btn = QPushButton("Generate Report")
+        self.report_btn.clicked.connect(self.generateReport)
+
+        # Add it to your layout (you might need to adjust this to match your existing layout)
+        button_layout.addWidget(self.report_btn)  # or add it to summary_layout if that's where it belongs
         
         # Set column widths
         self.entries_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -648,16 +676,21 @@ class LedgerTab(QWidget):
         try:
             options = QFileDialog.Options()
             file_name, _ = QFileDialog.getSaveFileName(
-                self, "Save Report", "", "CSV Files (*.csv);;All Files (*)", 
+                self, "Save Report", "", "PDF Files (*.pdf);;Text Files (*.txt);;All Files (*)", 
                 options=options
             )
             
             if not file_name:
                 return
             
-            # If no extension is provided, add .csv
-            if not file_name.endswith('.csv'):
-                file_name += '.csv'
+            # Add appropriate extension if not present
+            if file_name.endswith('.pdf'):
+                self.generatePDFReport(file_name)
+            elif file_name.endswith('.txt'):
+                self.generateTextReport(file_name)
+            else:
+                # Default to text report if no extension
+                self.generateTextReport(file_name + '.txt')
             
             # Get all visible rows from the table
             rows = []
@@ -686,45 +719,181 @@ class LedgerTab(QWidget):
             with open(file_name, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(rows))
             
-            QMessageBox.information(
-                self, "Report Generated", 
-                f"Report has been saved to:\n{file_name}"
-            )
+            # QMessageBox.information(
+            #     self, "Report Generated", 
+            #     f"Report has been saved to:\n{file_name}"
+            # )
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to generate report: {str(e)}")
+            
+    def generateTextReport(self, file_name):
+        """Generate a simple text report"""
+        try:
+            with open(file_name, 'w') as f:
+                # Write header
+                f.write("Medical Rep Transaction Report\n")
+                f.write("=" * 80 + "\n\n")
+                
+                # Write date range
+                from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
+                to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
+                f.write(f"Date Range: {from_date} to {to_date}\n\n")
+                
+                # Write summary information
+                f.write(f"Total Entries: {self.entries_table.rowCount()}\n")
+                f.write(f"Total Credit: {self.total_credit_label.text().split('$')[1]}\n")
+                f.write(f"Total Debit: {self.total_debit_label.text().split('$')[1]}\n")
+                f.write(f"Current Balance: {self.balance_label.text().split('$')[1]}\n\n")
+                
+                # Write table header
+                headers = []
+                for col in range(self.entries_table.columnCount()):
+                    headers.append(self.entries_table.horizontalHeaderItem(col).text())
+                
+                # Calculate column widths
+                col_widths = [max(len(header), 15) for header in headers]
+                
+                # Write header row
+                header_row = "  ".join(h.ljust(w) for h, w in zip(headers, col_widths))
+                f.write(header_row + "\n")
+                f.write("-" * len(header_row) + "\n")
+                
+                # Write data rows
+                for row in range(self.entries_table.rowCount()):
+                    row_data = []
+                    for col in range(self.entries_table.columnCount()):
+                        item = self.entries_table.item(row, col)
+                        text = item.text() if item else ""
+                        row_data.append(text.ljust(col_widths[col]))
+                    f.write("  ".join(row_data) + "\n")
+            
+            QMessageBox.information(self, "Report Generated", 
+                                f"Report saved successfully to:\n{file_name}")
+                                
+        except Exception as e:
+            raise Exception(f"Error writing text report: {str(e)}")
 
-    # def deleteEntry(self, entry_id):
-    #     """Delete the selected entry"""
-    #     reply = QMessageBox.question(
-    #         self, "Confirm Deletion",
-    #         f"Are you sure you want to delete entry #{entry_id}?\nThis action cannot be undone.",
-    #         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-    #     )
+    def generatePDFReport(self, file_name):
+        """Generate a PDF report (requires reportlab)"""
+        try:
+            # Check if reportlab is installed
+            try:
+                from reportlab.lib.pagesizes import letter
+                from reportlab.lib import colors
+                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+                from reportlab.lib.styles import getSampleStyleSheet
+            except ImportError:
+                QMessageBox.warning(self, "Missing Library", 
+                                "ReportLab library is required for PDF reports.\n"
+                                "Generating text report instead.")
+                return self.generateTextReport(file_name.replace('.pdf', '.txt'))
+            
+            # Create PDF document
+            doc = SimpleDocTemplate(file_name, pagesize=letter)
+            elements = []
+            
+            # Add title
+            styles = getSampleStyleSheet()
+            elements.append(Paragraph("Medical Rep Transaction Report", styles['Title']))
+            elements.append(Spacer(1, 12))
+            
+            # Add date range
+            from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
+            to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
+            elements.append(Paragraph(f"Date Range: {from_date} to {to_date}", styles['Normal']))
+            elements.append(Spacer(1, 12))
+            
+            # Add summary information
+            elements.append(Paragraph(f"Total Entries: {self.entries_table.rowCount()}", styles['Normal']))
+            elements.append(Paragraph(f"Total Credit: {self.total_credit_label.text()}", styles['Normal']))
+            elements.append(Paragraph(f"Total Debit: {self.total_debit_label.text()}", styles['Normal']))
+            elements.append(Paragraph(f"Current Balance: {self.balance_label.text()}", styles['Normal']))
+            elements.append(Spacer(1, 24))
+            
+            # Create table data
+            data = []
+            
+            # Add header row
+            headers = []
+            for col in range(min(7, self.entries_table.columnCount())):  # Limit to first 7 columns to fit page
+                headers.append(self.entries_table.horizontalHeaderItem(col).text())
+            data.append(headers)
+            
+            # Add data rows
+            for row in range(self.entries_table.rowCount()):
+                row_data = []
+                for col in range(min(7, self.entries_table.columnCount())):
+                    item = self.entries_table.item(row, col)
+                    row_data.append(item.text() if item else "")
+                data.append(row_data)
+            
+            # Create table
+            table = Table(data)
+            
+            # Add table style
+            style = TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ])
+            
+            # Alternate row colors for readability
+            for row in range(1, len(data)):
+                if row % 2 == 0:
+                    style.add('BACKGROUND', (0, row), (-1, row), colors.lightgrey)
+            
+            table.setStyle(style)
+            elements.append(table)
+            
+            # Build PDF
+            doc.build(elements)
+            
+            QMessageBox.information(self, "Report Generated", 
+                                f"PDF report saved successfully to:\n{file_name}")
+                                
+        except Exception as e:
+            raise Exception(f"Error generating PDF report: {str(e)}")
+
+    def deleteEntry(self, entry_id):
+        """Delete the selected entry"""
+        reply = QMessageBox.question(
+            self, "Confirm Deletion",
+            f"Are you sure you want to delete entry #{entry_id}?\nThis action cannot be undone.",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
         
-        # if reply == QMessageBox.Yes:
-        #     try:
-        #         self.db.connect()
+        if reply == QMessageBox.Yes:
+            try:
+                self.db.connect()
                 
-        #         # Start transaction
-        #         self.db.conn.execute("BEGIN")
+                # Start transaction
+                self.db.conn.execute("BEGIN")
                 
-        #         # First, delete from transactions table
-        #         self.db.cursor.execute("DELETE FROM transactions WHERE entry_id = ?", (entry_id,))
+                # First, delete from transactions table
+                self.db.cursor.execute("DELETE FROM transactions WHERE entry_id = ?", (entry_id,))
                 
-        #         # Then, delete from entries table
-        #         self.db.cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
+                # Then, delete from entries table
+                self.db.cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
                 
-        #         # Commit changes
-        #         self.db.conn.commit()
+                # Commit changes
+                self.db.conn.commit()
                 
-        #         QMessageBox.information(self, "Success", f"Entry #{entry_id} deleted successfully.")
+                QMessageBox.information(self, "Success", f"Entry #{entry_id} deleted successfully.")
                 
-        #         # Reload entries
-        #         self.loadEntries()
+                # Reload entries
+                self.loadEntries()
                 
-        #     except Exception as e:
-        #         self.db.conn.rollback()
-        #         QMessageBox.critical(self, "Database Error", f"Failed to delete entry: {str(e)}")
-        #     finally:
-        #         self.db.close()
+            except Exception as e:
+                self.db.conn.rollback()
+                QMessageBox.critical(self, "Database Error", f"Failed to delete entry: {str(e)}")
+            finally:
+                self.db.close()

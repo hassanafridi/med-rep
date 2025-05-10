@@ -11,6 +11,7 @@ from src.ui.new_entry_tab import NewEntryTab
 from src.ui.ledger_tab import LedgerTab
 from src.ui.graphs_tab import GraphsTab
 from src.ui.settings_tab import SettingsTab
+from src.ui.manage_data_tab import ManageDataTab
 from src.database.db import Database
 from src.config import Config
 
@@ -34,6 +35,7 @@ class MainWindow(QMainWindow):
         
         # Setup UI
         self.setWindowTitle("Medical Rep Transaction Software")
+        self.setGeometry(100, 100, 1000, 700)
         
         # Set window size from config
         width = self.config.get('window_width', 1000)
@@ -51,6 +53,7 @@ class MainWindow(QMainWindow):
         self.create_new_entry_tab()
         self.create_ledger_tab()
         self.create_graphs_tab()
+        self.create_manage_data_tab()
         self.create_settings_tab()
     
     def init_database(self):
@@ -89,6 +92,11 @@ class MainWindow(QMainWindow):
         """Create and add the Graphs tab"""
         graphs_tab = GraphsTab()
         self.tabs.addTab(graphs_tab, "Graphs")
+        
+    def create_manage_data_tab(self):
+        """Create and add the Manage Data tab"""
+        manage_data_tab = ManageDataTab()
+        self.tabs.addTab(manage_data_tab, "Manage Data")
     
     def create_settings_tab(self):
         """Create and add the Settings tab"""

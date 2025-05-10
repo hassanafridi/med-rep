@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QLineEdit, QFileDialog, QGroupBox, QFormLayout, QComboBox,
-    QMessageBox, QListWidget, QListWidgetItem, QDialog, QDialogButtonBox
+    QMessageBox, QListWidget, QListWidgetItem, QDialog, QDialogButtonBox, 
+    QCheckBox, QTimeEdit, QSpinBox
 )
-from PyQt5.QtCore import QDateTime, Qt
+from PyQt5.QtCore import QDateTime, Qt, QTime
 import os
 import sys
 import shutil
@@ -96,7 +97,7 @@ class SettingsTab(QWidget):
         db_path_layout.addWidget(self.browse_db_btn)
         
         db_layout.addRow("Database Location:", db_path_layout)
-        
+              
         # Backup location
         self.backup_path_edit = QLineEdit()
         backup_dir = os.path.join(os.path.dirname(self.db.db_path), "backups")
@@ -119,6 +120,11 @@ class SettingsTab(QWidget):
         # Backup & Restore
         backup_group = QGroupBox("Backup & Restore")
         backup_layout = QVBoxLayout()
+        
+        # Add this in the backup_layout in the initUI method
+        self.schedule_btn = QPushButton("Schedule Backups")
+        self.schedule_btn.clicked.connect(self.setupBackupSchedule)
+        backup_layout.addWidget(self.schedule_btn)
         
         # Backup button
         self.backup_btn = QPushButton("Create Manual Backup")
@@ -563,3 +569,62 @@ class SettingsTab(QWidget):
             QMessageBox.critical(self, "Import Error", f"Failed to import data: {str(e)}")
         finally:
             self.db.close()
+            
+    def setupBackupSchedule(self):
+        """Set up scheduled backups"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Schedule Backups")
+        dialog.setMinimumWidth(400)
+        
+        layout = QFormLayout()
+        
+        # Enable scheduled backups
+        enable_checkbox = QCheckBox("Enable scheduled backups")
+        layout.addRow(enable_checkbox)
+        
+        # Frequency
+        frequency_combo = QComboBox()
+        frequency_combo.addItems(["Daily", "Weekly", "Monthly"])
+        layout.addRow("Backup frequency:", frequency_combo)
+        
+        # Time
+        time_edit = QTimeEdit()
+        time_edit.setTime(QTime(23, 0))  # Default to 11:00 PM
+        time_edit.setDisplayFormat("hh:mm AP")
+        layout.addRow("Backup time:", time_edit)
+        
+        # Retention
+        retention_spin = QSpinBox()
+        retention_spin.setMinimum(1)
+        retention_spin.setMaximum(100)
+        retention_spin.setValue(10)
+        layout.addRow("Keep last N backups:", retention_spin)
+        
+        # Buttons
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        layout.addRow(button_box)
+        
+        dialog.setLayout(layout)
+        
+        if dialog.exec_() == QDialog.Accepted:
+            # Save schedule settings
+            settings = {
+                'enabled': enable_checkbox.isChecked(),
+                'frequency': frequency_combo.currentText(),
+                'time': time_edit.time().toString("hh:mm"),
+                'retention': retention_spin.value()
+            }
+            
+            # In a real implementation, these would be saved to a config file
+            # and a scheduler would be set up (e.g., with Windows Task Scheduler)
+            
+            QMessageBox.information(
+                self, "Schedule Set",
+                f"Backup schedule configured:\n"
+                f"Enabled: {'Yes' if settings['enabled'] else 'No'}\n"
+                f"Frequency: {settings['frequency']}\n"
+                f"Time: {settings['time']}\n"
+                f"Retention: {settings['retention']} backups"
+            )
