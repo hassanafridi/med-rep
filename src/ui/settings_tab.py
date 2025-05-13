@@ -2,8 +2,10 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QLineEdit, QFileDialog, QGroupBox, QFormLayout, QComboBox,
     QMessageBox, QListWidget, QListWidgetItem, QDialog, QDialogButtonBox, 
-    QCheckBox, QTimeEdit, QSpinBox
+    QCheckBox, QTimeEdit, QSpinBox, QProgressDialog, QApplication
 )
+from src.database.database_maintenance import DatabaseMaintenance
+from src.utils.auto_updater import AutoUpdater
 from PyQt5.QtCore import QDateTime, Qt, QTime
 import os
 import sys
@@ -80,9 +82,25 @@ class SettingsTab(QWidget):
         """Initialize the UI components"""
         main_layout = QVBoxLayout()
         
+        # Add update button in update group
+        update_group = QGroupBox("Updates")
+        update_layout = QVBoxLayout()
+        
+        self.update_btn = QPushButton("Check for Updates")
+        self.update_btn.clicked.connect(self.checkForUpdates)
+        update_layout.addWidget(self.update_btn)  # Use update_layout instead of layout
+        
+        update_group.setLayout(update_layout)
+        main_layout.addWidget(update_group)
+        
         # Database Settings
         db_group = QGroupBox("Database Settings")
         db_layout = QFormLayout()
+        
+        # Add maintenance button
+        self.maintenance_btn = QPushButton("Database Maintenance")
+        self.maintenance_btn.clicked.connect(self.showDatabaseMaintenance)
+        db_layout.addRow("Maintenance:", self.maintenance_btn)
         
         # DB path
         self.db_path_edit = QLineEdit()
@@ -210,6 +228,46 @@ class SettingsTab(QWidget):
         
         self.setLayout(main_layout)
     
+    def checkForUpdates(self):
+        """Check for application updates"""
+        app_version = "1.0.0"  # Hardcoded for this example
+        updater = AutoUpdater(app_version, "https://example.com/updates", self)
+        
+        # Show checking message
+        checking_dialog = QProgressDialog("Checking for updates...", None, 0, 0, self)
+        checking_dialog.setWindowTitle("Update Check")
+        checking_dialog.setWindowModality(Qt.WindowModal)
+        checking_dialog.show()
+        
+        # Process events to show dialog
+        QApplication.processEvents()
+        
+        # Check for updates
+        update_available, update_info = updater.check_for_updates()
+        
+        # Close checking dialog
+        checking_dialog.cancel()
+        
+        if update_available:
+            # Show update available message
+            reply = QMessageBox.question(
+                self, "Update Available",
+                f"A new version is available: {update_info['version']}\n\n"
+                f"Current version: {app_version}\n\n"
+                f"Changes:\n{update_info.get('changes', 'No change information available.')}\n\n"
+                "Do you want to download and install this update?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.Yes:
+                # Download update
+                updater.download_update(update_info)
+        else:
+            QMessageBox.information(
+                self, "No Updates Available",
+                f"You are using the latest version ({app_version})."
+            )
+        
     def browseDbPath(self):
         """Browse for new database path"""
         options = QFileDialog.Options()
@@ -231,6 +289,103 @@ class SettingsTab(QWidget):
         
         if backup_dir:
             self.backup_path_edit.setText(backup_dir)
+    
+    def showDatabaseMaintenance(self):
+        """Show database maintenance dialog"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Database Maintenance")
+        dialog.setMinimumWidth(500)
+        
+        layout = QVBoxLayout()
+        
+        # Create database maintenance instance
+        db_maintenance = DatabaseMaintenance(self.db.db_path)
+        
+        # Get database info
+        db_info = db_maintenance.get_database_info()
+        
+        # Info group
+        info_group = QGroupBox("Database Information")
+        info_layout = QFormLayout()
+        
+        if db_info:
+            info_layout.addRow("Database Size:", QLabel(f"{db_info['file_size']:.2f} MB"))
+            info_layout.addRow("Last Modified:", QLabel(db_info['last_modified']))
+            info_layout.addRow("Total Records:", QLabel(str(db_info['total_rows'])))
+            
+            table_info = ""
+            for table in db_info['tables']:
+                table_info += f"{table['name']}: {table['rows']} rows\n"
+            
+            table_label = QLabel(table_info)
+            table_label.setWordWrap(True)
+            info_layout.addRow("Tables:", table_label)
+        else:
+            info_layout.addRow("Status:", QLabel("Failed to retrieve database information"))
+        
+        info_group.setLayout(info_layout)
+        layout.addWidget(info_group)
+        
+        # Actions group
+        actions_group = QGroupBox("Maintenance Actions")
+        actions_layout = QVBoxLayout()
+        
+        # Integrity check button
+        integrity_btn = QPushButton("Check Database Integrity")
+        integrity_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.check_integrity, "Integrity Check"))
+        
+        # Vacuum button
+        vacuum_btn = QPushButton("Vacuum Database")
+        vacuum_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.vacuum_database, "Vacuum"))
+        
+        # Optimize button
+        optimize_btn = QPushButton("Optimize Database")
+        optimize_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.optimize_database, "Optimization"))
+        
+        # Repair button
+        repair_btn = QPushButton("Repair Database")
+        repair_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.repair_database, "Repair"))
+        
+        actions_layout.addWidget(integrity_btn)
+        actions_layout.addWidget(vacuum_btn)
+        actions_layout.addWidget(optimize_btn)
+        actions_layout.addWidget(repair_btn)
+        
+        actions_group.setLayout(actions_layout)
+        layout.addWidget(actions_group)
+        
+        # Close button
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def runMaintenance(self, maintenance_func, action_name):
+        """Run a maintenance function with progress dialog"""
+        # Create progress dialog
+        progress = QProgressDialog(f"{action_name} in progress...", "Cancel", 0, 0, self)
+        progress.setWindowTitle(f"Database {action_name}")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        progress.show()
+        
+        # Process events to show dialog
+        QApplication.processEvents()
+        
+        # Run maintenance function
+        success, message = maintenance_func()
+        
+        # Close progress dialog
+        progress.cancel()
+        
+        # Show result
+        if success:
+            QMessageBox.information(self, f"{action_name} Completed", message)
+        else:
+            QMessageBox.critical(self, f"{action_name} Failed", message)
     
     def loadBackupsList(self):
         """Load list of backups from backup directory"""

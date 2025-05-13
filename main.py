@@ -1,19 +1,29 @@
 import sys
 import os
 import logging
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QMessageBox
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QTabWidget, QMessageBox, QDialog,
+    QAction, QVBoxLayout, QLabel, QPushButton, QMenuBar
+)
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, Qt
 
 # Add src directory to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from src.ui.new_entry_tab import NewEntryTab
 from src.ui.ledger_tab import LedgerTab
 from src.ui.graphs_tab import GraphsTab
+from src.ui.reports_tab import ReportsTab
 from src.ui.settings_tab import SettingsTab
 from src.ui.manage_data_tab import ManageDataTab
 from src.database.db import Database
 from src.config import Config
+from src.user_auth import UserAuth
+from src.ui.login_dialog import LoginDialog
+from src.ui.advanced_charts import AdvancedChartsTab
+from src.ui.invoice_generator import InvoiceGenerator
+from src.ui.help_system import HelpBrowser
+from src.database.audit_trail import AuditTrail
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +42,22 @@ class MainWindow(QMainWindow):
         # Set logging level from config
         log_level = getattr(logging, self.config.get('log_level', 'INFO'))
         logging.getLogger().setLevel(log_level)
+                
+        # Initialize database
+        self.db = Database(self.config.get('db_path'))
+        self.init_database()
+        
+        # Initialize user authentication
+        self.auth_manager = UserAuth(self.db.db_path)
+        self.current_user = None
+        
+        # Show login dialog
+        if not self.login():
+            # If login fails, exit application
+            sys.exit(0)
+            
+        # # Initialize UI
+        # self.initUI()
         
         # Setup UI
         self.setWindowTitle("Medical Rep Transaction Software")
@@ -42,8 +68,44 @@ class MainWindow(QMainWindow):
         height = self.config.get('window_height', 700)
         self.resize(width, height)
         
-        # Initialize database
-        self.init_database()
+        # Create menu bar
+        menubar = self.menuBar()
+        
+        # File menu
+        file_menu = menubar.addMenu('File')
+        
+        # Exit action
+        exit_action = QAction('Exit', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+        
+        # Tools menu
+        tools_menu = menubar.addMenu('Tools')
+        
+        # Invoice Generator action
+        invoice_action = QAction('Invoice Generator', self)
+        invoice_action.triggered.connect(self.showInvoiceGenerator)
+        tools_menu.addAction(invoice_action)
+        
+        # Advanced Charts action
+        charts_action = QAction('Advanced Charts', self)
+        charts_action.triggered.connect(self.showAdvancedCharts)
+        tools_menu.addAction(charts_action)
+        
+        # Help menu
+        help_menu = menubar.addMenu('Help')
+        
+        # Help action
+        help_action = QAction('Help Contents', self)
+        help_action.setShortcut('F1')
+        help_action.triggered.connect(self.showHelp)
+        help_menu.addAction(help_action)
+        
+        # About action
+        about_action = QAction('About', self)
+        about_action.triggered.connect(self.showAbout)
+        help_menu.addAction(about_action)
         
         # Create tabs
         self.tabs = QTabWidget()
@@ -53,9 +115,92 @@ class MainWindow(QMainWindow):
         self.create_new_entry_tab()
         self.create_ledger_tab()
         self.create_graphs_tab()
+        self.create_reports_tab()
         self.create_manage_data_tab()
         self.create_settings_tab()
+        
+    def showInvoiceGenerator(self):
+        """Show the invoice generator dialog"""
+        invoice_generator = InvoiceGenerator(self.current_user)
+        invoice_generator.show()
+
+    def showAdvancedCharts(self):
+        """Show the advanced charts window"""
+        charts_window = QMainWindow(self)
+        charts_window.setWindowTitle("Advanced Charts")
+        charts_window.setMinimumSize(900, 600)
+        
+        charts_tab = AdvancedChartsTab()
+        charts_window.setCentralWidget(charts_tab)
+        
+        charts_window.show()
+
+    def showHelp(self):
+        """Show the help browser"""
+        self.help_browser = HelpBrowser()
+        self.help_browser.show()
+
+    def showAbout(self):
+        """Show the About dialog"""
+        about_dialog = QDialog(self)
+        about_dialog.setWindowTitle("About Medical Rep Transaction Software")
+        about_dialog.setMinimumWidth(400)
+        
+        layout = QVBoxLayout()
+        
+        # App title
+        title_label = QLabel("Medical Rep Transaction Software")
+        title_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        title_label.setAlignment(Qt.AlignCenter)
+        
+        # Version
+        version_label = QLabel("Version 1.0.0")
+        version_label.setAlignment(Qt.AlignCenter)
+        
+        # Description
+        description = QLabel(
+            "A comprehensive solution for medical representatives to manage "
+            "their sales, customers, and financial transactions."
+        )
+        description.setWordWrap(True)
+        description.setAlignment(Qt.AlignCenter)
+        
+        # Copyright
+        copyright_label = QLabel("© 2025 Your Company")
+        copyright_label.setAlignment(Qt.AlignCenter)
+        
+        # Close button
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(about_dialog.accept)
+        
+        layout.addWidget(title_label)
+        layout.addWidget(version_label)
+        layout.addSpacing(10)
+        layout.addWidget(description)
+        layout.addSpacing(10)
+        layout.addWidget(copyright_label)
+        layout.addSpacing(20)
+        layout.addWidget(close_btn)
+        
+        about_dialog.setLayout(layout)
+        about_dialog.exec_()
+        
+    def login(self):
+        """Show login dialog and authenticate user"""
+        dialog = LoginDialog(self.auth_manager)
+        result = dialog.exec_()
+        
+        if result == QDialog.Accepted:
+            self.current_user = dialog.user_info
+            return True
+        
+        return False
     
+    def create_reports_tab(self):
+        """Create and add the Reports tab"""
+        reports_tab = ReportsTab()
+        self.tabs.addTab(reports_tab, "Reports")
+        
     def init_database(self):
         """Initialize the database and add sample data if needed"""
         try:

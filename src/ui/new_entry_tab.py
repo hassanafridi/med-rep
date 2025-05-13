@@ -11,6 +11,7 @@ import os
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.db import Database
+from database.audit_trail import AuditTrail  # Add this line
 
 class NewEntryTab(QWidget):
     def __init__(self):
@@ -144,7 +145,7 @@ class NewEntryTab(QWidget):
     
     def saveEntry(self):
         """Save the entry to database"""
-         # Validate form first
+        # Validate form first
         if not self.validateForm():
             return
         
@@ -171,39 +172,75 @@ class NewEntryTab(QWidget):
             # Start transaction
             self.db.conn.execute("BEGIN")
             
-            # Insert into entries table
-            self.db.cursor.execute('''
-                INSERT INTO entries 
-                (date, customer_id, product_id, quantity, unit_price, is_credit, notes) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (date, customer_id, product_id, quantity, unit_price, is_credit, notes))
-            
-            entry_id = self.db.cursor.lastrowid
-            total_amount = quantity * unit_price
-            
-            # Get current balance
-            self.db.cursor.execute("SELECT MAX(balance) FROM transactions")
-            result = self.db.cursor.fetchone()
-            current_balance = result[0] if result[0] is not None else 0
-            
-            # Calculate new balance
-            new_balance = current_balance + total_amount if is_credit else current_balance - total_amount
-            
-            # Insert into transactions table
-            self.db.cursor.execute('''
-                INSERT INTO transactions
-                (entry_id, amount, balance)
-                VALUES (?, ?, ?)
-            ''', (entry_id, total_amount, new_balance))
-            
-            # Commit transaction
-            self.db.conn.commit()
-            
-            QMessageBox.information(self, "Success", "Entry saved successfully!")
-            self.clearForm()
-            
+            try:
+                # Insert into entries table
+                self.db.cursor.execute('''
+                    INSERT INTO entries 
+                    (date, customer_id, product_id, quantity, unit_price, is_credit, notes) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (date, customer_id, product_id, quantity, unit_price, is_credit, notes))
+                
+                entry_id = self.db.cursor.lastrowid
+                total_amount = quantity * unit_price
+                
+                # Get current balance
+                self.db.cursor.execute("SELECT MAX(balance) FROM transactions")
+                result = self.db.cursor.fetchone()
+                current_balance = result[0] if result[0] is not None else 0
+                
+                # Calculate new balance
+                new_balance = current_balance + total_amount if is_credit else current_balance - total_amount
+                
+                # Insert into transactions table
+                self.db.cursor.execute('''
+                    INSERT INTO transactions
+                    (entry_id, amount, balance)
+                    VALUES (?, ?, ?)
+                ''', (entry_id, total_amount, new_balance))
+                
+                # Prepare audit data
+                entry_data = {
+                    'date': date,
+                    'customer_id': customer_id,
+                    'customer_name': customer_name,
+                    'product_id': product_id,
+                    'product_name': product_name,
+                    'quantity': quantity,
+                    'unit_price': unit_price,
+                    'total_amount': total_amount,
+                    'is_credit': is_credit,
+                    'notes': notes,
+                    'balance': new_balance
+                }
+                
+                # Get current user info from main window
+                main_window = self.window()
+                user_id = main_window.current_user['user_id'] if hasattr(main_window, 'current_user') else None
+                username = main_window.current_user['username'] if hasattr(main_window, 'current_user') else 'system'
+                
+                # Log the action in audit trail
+                audit_trail = AuditTrail(self.db.db_path)
+                audit_trail.log_data_change(
+                    user_id=user_id,
+                    username=username,
+                    operation="INSERT",
+                    table_name="entries",
+                    record_id=entry_id,
+                    new_values=entry_data
+                )
+                
+                # Commit transaction
+                self.db.conn.commit()
+                
+                QMessageBox.information(self, "Success", "Entry saved successfully!")
+                self.clearForm()
+                
+            except Exception as e:
+                # Rollback transaction on error
+                self.db.conn.rollback()
+                raise e
+                
         except Exception as e:
-            self.db.conn.rollback()
             QMessageBox.critical(self, "Error", f"Failed to save entry: {str(e)}")
         finally:
             self.db.close()
