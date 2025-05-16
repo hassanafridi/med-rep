@@ -1,12 +1,16 @@
+import datetime
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QLineEdit, QFileDialog, QGroupBox, QFormLayout, QComboBox,
     QMessageBox, QListWidget, QListWidgetItem, QDialog, QDialogButtonBox, 
-    QCheckBox, QTimeEdit, QSpinBox, QProgressDialog, QApplication
+    QCheckBox, QTimeEdit, QSpinBox, QProgressDialog, QApplication, QLabel,
+    QProgressBar
 )
 from src.database.database_maintenance import DatabaseMaintenance
 from src.utils.auto_updater import AutoUpdater
+from src.utils.sync_manager import SyncManager, SyncStatus
 from PyQt5.QtCore import QDateTime, Qt, QTime
+from PyQt5.QtGui import QColor
 import os
 import sys
 import shutil
@@ -23,7 +27,12 @@ class RestoreDialog(QDialog):
         self.backup_files = backup_files
         self.selected_backup = None
         self.initUI()
-        
+        self.sync_manager = SyncManager(self.db.db_path)
+        self.sync_manager.sync_started.connect(self.onSyncStarted)
+        self.sync_manager.sync_completed.connect(self.onSyncCompleted)
+        self.sync_manager.sync_progress.connect(self.onSyncProgress)
+        self.sync_manager.sync_status_changed.connect(self.onSyncStatusChanged)
+
     def initUI(self):
         """Initialize the dialog UI"""
         self.setWindowTitle("Restore Backup")
@@ -209,6 +218,10 @@ class SettingsTab(QWidget):
         cloud_info.setWordWrap(True)
         cloud_layout.addWidget(cloud_info)
         
+        # Sync status
+        self.sync_status_label = QLabel("Sync Status: Not configured")
+        cloud_layout.addWidget(self.sync_status_label)
+        
         # Setup cloud button
         self.setup_cloud_btn = QPushButton("Setup Cloud Sync")
         self.setup_cloud_btn.clicked.connect(self.setupCloudSync)
@@ -216,6 +229,21 @@ class SettingsTab(QWidget):
         
         cloud_group.setLayout(cloud_layout)
         main_layout.addWidget(cloud_group)
+        
+        # Sync progress bar
+        self.sync_progress = QProgressBar()
+        self.sync_progress.setVisible(False)
+        cloud_layout.addWidget(self.sync_progress)
+
+        # Sync info
+        self.sync_info_label = QLabel("")
+        cloud_layout.addWidget(self.sync_info_label)
+
+        # Manual sync button
+        self.sync_now_btn = QPushButton("Sync Now")
+        self.sync_now_btn.setEnabled(False)
+        self.sync_now_btn.clicked.connect(self.syncNow)
+        cloud_layout.addWidget(self.sync_now_btn)
         
         # About
         about_label = QLabel(
@@ -228,6 +256,155 @@ class SettingsTab(QWidget):
         
         self.setLayout(main_layout)
     
+    def setupCloudSync(self):
+        """Set up cloud sync"""
+        # Check if sync is already configured
+        if self.sync_manager.sync_enabled:
+            reply = QMessageBox.question(
+                self, "Cloud Sync",
+                f"Cloud sync is already configured to:\n{self.sync_manager.sync_dir}\n\nDo you want to reconfigure it?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply == QMessageBox.No:
+                return
+        
+        # Show folder selection dialog
+        sync_dir = QFileDialog.getExistingDirectory(
+            self, "Select Cloud Sync Folder",
+            self.sync_manager.sync_dir or os.path.expanduser("~"),
+            QFileDialog.ShowDirsOnly
+        )
+        
+        if sync_dir:
+            # Configure sync
+            self.sync_manager.set_sync_directory(sync_dir)
+            
+            # Update UI
+            self.updateSyncStatus()
+            
+            # Ask about auto-sync
+            reply = QMessageBox.question(
+                self, "Auto Sync",
+                "Do you want to enable automatic synchronization?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.Yes:
+                self.configureAutoSync()
+
+    def configureAutoSync(self):
+        """Configure auto sync settings"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Auto Sync Settings")
+        dialog.setMinimumWidth(300)
+        
+        layout = QFormLayout()
+        
+        # Enable checkbox
+        enable_checkbox = QCheckBox("Enable automatic synchronization")
+        enable_checkbox.setChecked(self.sync_manager.auto_sync_enabled)
+        layout.addRow(enable_checkbox)
+        
+        # Interval spinner
+        interval_spinner = QSpinBox()
+        interval_spinner.setMinimum(5)
+        interval_spinner.setMaximum(1440)  # 24 hours
+        interval_spinner.setValue(self.sync_manager.sync_interval)
+        interval_spinner.setSuffix(" minutes")
+        layout.addRow("Sync interval:", interval_spinner)
+        
+        # Buttons
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        layout.addRow(button_box)
+        
+        dialog.setLayout(layout)
+        
+        if dialog.exec_() == QDialog.Accepted:
+            # Save settings
+            self.sync_manager.set_auto_sync(
+                enable_checkbox.isChecked(),
+                interval_spinner.value()
+            )
+            
+            # Update UI
+            self.updateSyncStatus()
+
+    def syncNow(self):
+        """Manually trigger synchronization"""
+        if self.sync_manager.sync_enabled:
+            self.sync_manager.sync()
+
+    def onSyncStarted(self):
+        """Handle sync started signal"""
+        self.sync_progress.setVisible(True)
+        self.sync_progress.setValue(0)
+        self.sync_info_label.setText("Synchronization in progress...")
+        self.sync_now_btn.setEnabled(False)
+
+    def onSyncCompleted(self, success, message):
+        """Handle sync completed signal"""
+        self.sync_progress.setVisible(False)
+        self.sync_info_label.setText(message)
+        self.sync_now_btn.setEnabled(True)
+        self.updateSyncStatus()
+
+    def onSyncProgress(self, progress, message):
+        """Handle sync progress signal"""
+        self.sync_progress.setValue(progress)
+        self.sync_info_label.setText(message)
+
+    def onSyncStatusChanged(self, status):
+        """Handle sync status change signal"""
+        self.updateSyncStatus()
+
+    def updateSyncStatus(self):
+        """Update sync status display"""
+        if not self.sync_manager.sync_enabled:
+            self.sync_status_label.setText("Sync Status: Not configured")
+            self.sync_now_btn.setEnabled(False)
+            return
+        
+        status_text = "Unknown"
+        status_color = "black"
+        
+        if self.sync_manager.sync_status == SyncStatus.IDLE:
+            status_text = "Idle"
+            status_color = "black"
+        elif self.sync_manager.sync_status == SyncStatus.SYNCING:
+            status_text = "Syncing..."
+            status_color = "blue"
+        elif self.sync_manager.sync_status == SyncStatus.ERROR:
+            status_text = "Error"
+            status_color = "red"
+        elif self.sync_manager.sync_status == SyncStatus.SUCCESS:
+            status_text = "Synchronized"
+            status_color = "green"
+        
+        # Update sync info
+        sync_info = f"Sync Directory: {self.sync_manager.sync_dir}"
+        
+        if self.sync_manager.auto_sync_enabled:
+            sync_info += f"\nAuto Sync: Every {self.sync_manager.sync_interval} minutes"
+        else:
+            sync_info += "\nAuto Sync: Disabled"
+        
+        if self.sync_manager.last_sync_time:
+            try:
+                last_sync = datetime.datetime.fromisoformat(self.sync_manager.last_sync_time)
+                sync_info += f"\nLast Sync: {last_sync.strftime('%Y-%m-%d %H:%M:%S')}"
+            except:
+                sync_info += f"\nLast Sync: {self.sync_manager.last_sync_time}"
+        else:
+            sync_info += "\nLast Sync: Never"
+            
+        self.sync_status_label.setText(f"Sync Status: <span style='color: {status_color};'>{status_text}</span>")
+        self.sync_status_label.setTextFormat(Qt.RichText)
+        self.sync_info_label.setText(sync_info)
+        self.sync_now_btn.setEnabled(self.sync_manager.sync_enabled and self.sync_manager.sync_status != SyncStatus.SYNCING)
+        
     def checkForUpdates(self):
         """Check for application updates"""
         app_version = "1.0.0"  # Hardcoded for this example

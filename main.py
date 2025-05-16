@@ -24,6 +24,7 @@ from src.ui.advanced_charts import AdvancedChartsTab
 from src.ui.invoice_generator import InvoiceGenerator
 from src.ui.help_system import HelpBrowser
 from src.database.audit_trail import AuditTrail
+from src.ui.dashboard_tab import DashboardTab
 
 # Configure logging
 logging.basicConfig(
@@ -112,6 +113,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabs)
         
         # Create tab content
+        self.create_dashboard_tab()
         self.create_new_entry_tab()
         self.create_ledger_tab()
         self.create_graphs_tab()
@@ -255,6 +257,11 @@ class MainWindow(QMainWindow):
         self.config.set('window_height', self.height())
         
         event.accept()
+        
+    def create_dashboard_tab(self):
+        """Create and add the Dashboard tab"""
+        dashboard_tab = DashboardTab(self.current_user)
+        self.tabs.addTab(dashboard_tab, "Dashboard")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

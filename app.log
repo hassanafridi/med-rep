@@ -917,3 +917,5 @@
 2025-05-14 02:19:39,440 - database.db - INFO - Database connection closed
 2025-05-14 02:19:46,637 - database.db - INFO - Connected to database: data/medtran.db
 2025-05-14 02:19:46,638 - database.db - INFO - Database connection closed
+2025-05-14 02:23:05,133 - root - INFO - Configuration saved to data\config.json
+2025-05-14 02:23:05,133 - root - INFO - Configuration saved to data\config.json
