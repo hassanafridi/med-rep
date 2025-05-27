@@ -16,7 +16,7 @@ class Config:
         self.default_config = {
             'db_path': os.path.join('data', 'medtran.db'),
             'backup_path': os.path.join('data', 'backups'),
-            'currency_format': '$ (USD)',
+            'currency_format': 'Rs.  (PKR)',
             'log_level': 'INFO',
             'window_width': 1000,
             'window_height': 700

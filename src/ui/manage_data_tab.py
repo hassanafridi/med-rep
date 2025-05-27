@@ -2,10 +2,10 @@ from PyQt5.QtWidgets import (
     QWidget, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
     QPushButton, QLineEdit, QLabel, QMessageBox, QHeaderView, QGroupBox, QFormLayout,
     QDialog, QDialogButtonBox, QDoubleSpinBox, QTextEdit, QFileDialog, QAction, QMenu,
-    
+    QDateEdit
     
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 import sys
 import os
 import csv
@@ -66,9 +66,9 @@ class CustomerDialog(QDialog):
 class ProductDialog(QDialog):
     def __init__(self, parent=None, product_data=None):
         super().__init__(parent)
-        self.product_data = product_data  # (id, name, description, unit_price)
+        self.product_data = product_data  # (id, name, description, unit_price, batch_number, expiry_date)
         self.setWindowTitle("Product Details")
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(500)
         self.initUI()
         
     def initUI(self):
@@ -92,11 +92,31 @@ class ProductDialog(QDialog):
         self.price_input = QDoubleSpinBox()
         self.price_input.setMinimum(0.01)
         self.price_input.setMaximum(99999.99)
-        self.price_input.setPrefix("$")
+        self.price_input.setPrefix("Rs. ")
         self.price_input.setDecimals(2)
         if self.product_data:
             self.price_input.setValue(self.product_data[3])
         layout.addRow("Unit Price:", self.price_input)
+        
+        # Batch number
+        self.batch_input = QLineEdit()
+        self.batch_input.setPlaceholderText("e.g., MCR-2024-001")
+        if self.product_data:
+            self.batch_input.setText(self.product_data[4] or "")
+        layout.addRow("Batch Number:", self.batch_input)
+        
+        # Expiry date
+        self.expiry_input = QDateEdit()
+        self.expiry_input.setCalendarPopup(True)
+        self.expiry_input.setDate(QDate.currentDate().addYears(1))  # Default to 1 year from now
+        if self.product_data and self.product_data[5]:
+            try:
+                expiry_date = QDate.fromString(self.product_data[5], "yyyy-MM-dd")
+                if expiry_date.isValid():
+                    self.expiry_input.setDate(expiry_date)
+            except:
+                pass  # Use default date if parsing fails
+        layout.addRow("Expiry Date:", self.expiry_input)
         
         # Buttons
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -111,7 +131,9 @@ class ProductDialog(QDialog):
         return {
             'name': self.name_input.text(),
             'description': self.description_input.toPlainText(),
-            'unit_price': self.price_input.value()
+            'unit_price': self.price_input.value(),
+            'batch_number': self.batch_input.text(),
+            'expiry_date': self.expiry_input.date().toString("yyyy-MM-dd")
         }
 
 class ManageDataTab(QWidget):
@@ -183,16 +205,20 @@ class ManageDataTab(QWidget):
         self.add_product_btn = QPushButton("Add Product")
         self.add_product_btn.clicked.connect(self.addProduct)
         
+        self.check_expiry_btn = QPushButton("Check Expiry")
+        self.check_expiry_btn.clicked.connect(self.checkExpiredProducts)
+        
         product_controls.addWidget(QLabel("Search:"))
         product_controls.addWidget(self.product_search, 1)
         product_controls.addWidget(self.add_product_btn)
+        product_controls.addWidget(self.check_expiry_btn)
         
         products_layout.addLayout(product_controls)
         
-        # Product table
+        # Product table with new columns
         self.products_table = QTableWidget()
-        self.products_table.setColumnCount(4)
-        self.products_table.setHorizontalHeaderLabels(["ID", "Name", "Description", "Unit Price"])
+        self.products_table.setColumnCount(6)
+        self.products_table.setHorizontalHeaderLabels(["ID", "Name", "Description", "Unit Price", "Batch Number", "Expiry Date"])
         self.products_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.products_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.products_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -244,8 +270,10 @@ class ManageDataTab(QWidget):
         try:
             self.db.connect()
             
-            # Get all products
-            self.db.cursor.execute('SELECT id, name, description, unit_price FROM products ORDER BY name')
+            # Get all products with new fields
+            self.db.cursor.execute(
+                'SELECT id, name, description, unit_price, batch_number, expiry_date FROM products ORDER BY name, expiry_date DESC'
+            )
             products = self.db.cursor.fetchall()
             
             # Clear and set row count
@@ -256,10 +284,33 @@ class ManageDataTab(QWidget):
             for row, product in enumerate(products):
                 for col, value in enumerate(product):
                     if col == 3:  # Format price
-                        text = f"${value:.2f}"
+                        text = f"Rs. {value:.2f}"
+                    elif col == 5:  # Format expiry date
+                        try:
+                            expiry_date = QDate.fromString(str(value), "yyyy-MM-dd")
+                            if expiry_date.isValid():
+                                # Check if expired and highlight
+                                if expiry_date < QDate.currentDate():
+                                    text = f"{value} (EXPIRED)"
+                                elif expiry_date < QDate.currentDate().addDays(30):
+                                    text = f"{value} (EXPIRING SOON)"
+                                else:
+                                    text = str(value)
+                            else:
+                                text = str(value)
+                        except:
+                            text = str(value) if value else ""
                     else:
                         text = str(value) if value else ""
+                    
                     item = QTableWidgetItem(text)
+                    
+                    # Color code expired/expiring products
+                    if col == 5 and "EXPIRED" in text:
+                        item.setBackground(Qt.red)
+                    elif col == 5 and "EXPIRING SOON" in text:
+                        item.setBackground(Qt.yellow)
+                    
                     self.products_table.setItem(row, col, item)
                 
         except Exception as e:
@@ -287,7 +338,7 @@ class ManageDataTab(QWidget):
         
         for row in range(self.products_table.rowCount()):
             visible = False
-            for col in range(1, 3):  # Skip ID column and price
+            for col in range(1, 6):  # Skip ID column
                 item = self.products_table.item(row, col)
                 if item and search_text in item.text().lower():
                     visible = True
@@ -419,6 +470,10 @@ class ManageDataTab(QWidget):
                 QMessageBox.warning(self, "Validation Error", "Product name is required.")
                 return
             
+            if not product_data['batch_number']:
+                QMessageBox.warning(self, "Validation Error", "Batch number is required.")
+                return
+            
             if product_data['unit_price'] <= 0:
                 QMessageBox.warning(self, "Validation Error", "Unit price must be greater than zero.")
                 return
@@ -426,10 +481,21 @@ class ManageDataTab(QWidget):
             try:
                 self.db.connect()
                 
+                # Check if batch number already exists
+                self.db.cursor.execute(
+                    'SELECT COUNT(*) FROM products WHERE batch_number = ?',
+                    (product_data['batch_number'],)
+                )
+                
+                if self.db.cursor.fetchone()[0] > 0:
+                    QMessageBox.warning(self, "Validation Error", "Batch number already exists. Please use a unique batch number.")
+                    return
+                
                 # Insert new product
                 self.db.cursor.execute(
-                    'INSERT INTO products (name, description, unit_price) VALUES (?, ?, ?)',
-                    (product_data['name'], product_data['description'], product_data['unit_price'])
+                    'INSERT INTO products (name, description, unit_price, batch_number, expiry_date) VALUES (?, ?, ?, ?, ?)',
+                    (product_data['name'], product_data['description'], product_data['unit_price'], 
+                     product_data['batch_number'], product_data['expiry_date'])
                 )
                 
                 self.db.conn.commit()
@@ -450,7 +516,7 @@ class ManageDataTab(QWidget):
             
             # Get product data
             self.db.cursor.execute(
-                'SELECT id, name, description, unit_price FROM products WHERE id = ?',
+                'SELECT id, name, description, unit_price, batch_number, expiry_date FROM products WHERE id = ?',
                 (product_id,)
             )
             
@@ -470,14 +536,29 @@ class ManageDataTab(QWidget):
                     QMessageBox.warning(self, "Validation Error", "Product name is required.")
                     return
                 
+                if not product_data['batch_number']:
+                    QMessageBox.warning(self, "Validation Error", "Batch number is required.")
+                    return
+                
                 if product_data['unit_price'] <= 0:
                     QMessageBox.warning(self, "Validation Error", "Unit price must be greater than zero.")
                     return
                 
+                # Check if batch number already exists (excluding current product)
+                self.db.cursor.execute(
+                    'SELECT COUNT(*) FROM products WHERE batch_number = ? AND id != ?',
+                    (product_data['batch_number'], product_id)
+                )
+                
+                if self.db.cursor.fetchone()[0] > 0:
+                    QMessageBox.warning(self, "Validation Error", "Batch number already exists. Please use a unique batch number.")
+                    return
+                
                 # Update product
                 self.db.cursor.execute(
-                    'UPDATE products SET name = ?, description = ?, unit_price = ? WHERE id = ?',
-                    (product_data['name'], product_data['description'], product_data['unit_price'], product_id)
+                    'UPDATE products SET name = ?, description = ?, unit_price = ?, batch_number = ?, expiry_date = ? WHERE id = ?',
+                    (product_data['name'], product_data['description'], product_data['unit_price'], 
+                     product_data['batch_number'], product_data['expiry_date'], product_id)
                 )
                 
                 self.db.conn.commit()
@@ -526,6 +607,44 @@ class ManageDataTab(QWidget):
                 
         except Exception as e:
             QMessageBox.critical(self, "Database Error", f"Failed to delete product: {str(e)}")
+        finally:
+            self.db.close()
+    
+    def checkExpiredProducts(self):
+        """Check for expired or expiring products"""
+        try:
+            current_date = QDate.currentDate().toString("yyyy-MM-dd")
+            upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
+            
+            expired_products = self.db.get_expired_products(current_date)
+            
+            self.db.connect()
+            self.db.cursor.execute(
+                'SELECT id, name, batch_number, expiry_date FROM products WHERE expiry_date > ? AND expiry_date <= ? ORDER BY expiry_date',
+                (current_date, upcoming_date)
+            )
+            expiring_products = self.db.cursor.fetchall()
+            
+            message = ""
+            
+            if expired_products:
+                message += "EXPIRED PRODUCTS:\n"
+                for product in expired_products:
+                    message += f"• {product[1]} (Batch: {product[2]}) - Expired: {product[3]}\n"
+                message += "\n"
+            
+            if expiring_products:
+                message += "PRODUCTS EXPIRING IN 30 DAYS:\n"
+                for product in expiring_products:
+                    message += f"• {product[1]} (Batch: {product[2]}) - Expires: {product[3]}\n"
+            
+            if not message:
+                message = "No expired or expiring products found."
+            
+            QMessageBox.information(self, "Product Expiry Check", message)
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to check expired products: {str(e)}")
         finally:
             self.db.close()
     
@@ -617,9 +736,9 @@ class ManageDataTab(QWidget):
                 headers = ["ID", "Name", "Contact", "Address"]
                 
             else:  # Products
-                self.db.cursor.execute('SELECT id, name, description, unit_price FROM products ORDER BY name')
+                self.db.cursor.execute('SELECT id, name, description, unit_price, batch_number, expiry_date FROM products ORDER BY name, expiry_date DESC')
                 data = self.db.cursor.fetchall()
-                headers = ["ID", "Name", "Description", "Unit Price"]
+                headers = ["ID", "Name", "Description", "Unit Price", "Batch Number", "Expiry Date"]
             
             # Write to CSV
             with open(file_name, 'w', newline='', encoding='utf-8') as csv_file:

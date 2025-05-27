@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QPushButton, QComboBox, QSizePolicy, QGridLayout,
-    QScrollArea
+    QScrollArea, QMessageBox
 )
-from PyQt5.QtCore import Qt, QDate, QSize
+from PyQt5.QtCore import Qt, QDate, QSize, pyqtSignal
 from PyQt5.QtGui import QColor, QPainter, QFont
 from PyQt5.QtChart import QChart, QChartView, QBarSeries, QBarSet, QValueAxis, QBarCategoryAxis, QPieSeries
 
@@ -24,7 +24,7 @@ class KPICard(QFrame):
             QFrame {{
                 border-left: 4px solid {color};
                 background-color: white;
-                border-radius: 4px;
+                # border-radius: 0px;
                 padding: 15px;
             }}
         """)
@@ -81,7 +81,62 @@ class ChartCard(QFrame):
         layout.setContentsMargins(15, 15, 15, 15)
         self.setLayout(layout)
 
+class AlertCard(QFrame):
+    """Card widget to display alerts and warnings"""
+    def __init__(self, title, alerts, alert_type="warning"):
+        super().__init__()
+        self.setFrameShape(QFrame.StyledPanel)
+        self.setFrameShadow(QFrame.Raised)
+        
+        # Color scheme based on alert type
+        colors = {
+            "warning": {"border": "#f39c12", "bg": "#fef9e7", "text": "#8b6914"},
+            "danger": {"border": "#e74c3c", "bg": "#fdf2f2", "text": "#c53030"},
+            "info": {"border": "#3498db", "bg": "#ebf8ff", "text": "#2b77a6"}
+        }
+        
+        color_scheme = colors.get(alert_type, colors["warning"])
+        
+        self.setStyleSheet(f"""
+            QFrame {{
+                border-left: 4px solid {color_scheme['border']};
+                background-color: {color_scheme['bg']};
+                border-radius: 4px;
+                padding: 15px;
+            }}
+        """)
+        
+        layout = QVBoxLayout()
+        
+        # Title
+        title_label = QLabel(title)
+        title_label.setStyleSheet(f"color: {color_scheme['text']}; font-size: 14px; font-weight: bold;")
+        layout.addWidget(title_label)
+        
+        # Alert items
+        for alert in alerts[:5]:  # Limit to 5 alerts
+            alert_label = QLabel(f"• {alert}")
+            alert_label.setStyleSheet(f"color: {color_scheme['text']}; font-size: 12px; margin-left: 10px;")
+            alert_label.setWordWrap(True)
+            layout.addWidget(alert_label)
+        
+        # Show count if more alerts exist
+        if len(alerts) > 5:
+            more_label = QLabel(f"... and {len(alerts) - 5} more")
+            more_label.setStyleSheet(f"color: {color_scheme['text']}; font-size: 11px; font-style: italic; margin-left: 10px;")
+            layout.addWidget(more_label)
+        
+        layout.setContentsMargins(15, 15, 15, 15)
+        self.setLayout(layout)
+        
+        # Set minimum size policy
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.setMinimumHeight(120)
+
 class DashboardTab(QWidget):
+    # Signal to communicate with main window
+    switch_to_ledger = pyqtSignal()
+    
     def __init__(self, current_user=None):
         super().__init__()
         self.db = Database()
@@ -123,6 +178,25 @@ class DashboardTab(QWidget):
         dashboard_layout = QVBoxLayout(dashboard_widget)
         dashboard_layout.setSpacing(20)
         
+        # Alerts section (for expired/expiring products)
+        alerts = self.getProductAlerts()
+        if alerts['expired'] or alerts['expiring']:
+            alerts_layout = QHBoxLayout()
+            
+            if alerts['expired']:
+                expired_card = AlertCard("Expired Products", alerts['expired'], "danger")
+                alerts_layout.addWidget(expired_card)
+            
+            if alerts['expiring']:
+                expiring_card = AlertCard("Products Expiring Soon", alerts['expiring'], "warning")
+                alerts_layout.addWidget(expiring_card)
+            
+            # Add spacer if only one alert type
+            if not alerts['expired'] or not alerts['expiring']:
+                alerts_layout.addStretch(1)
+            
+            dashboard_layout.addLayout(alerts_layout)
+        
         # KPI Cards section
         kpi_layout = QHBoxLayout()
         
@@ -130,22 +204,28 @@ class DashboardTab(QWidget):
         metrics = self.loadKPIMetrics()
         
         # Create KPI cards
-        total_sales_card = KPICard("Total Sales", f"${metrics['total_sales']:.2f}", 
+        total_sales_card = KPICard("Total Sales", f"Rs. {metrics['total_sales']:.2f}", 
                                f"{metrics['sales_change']}% from last month", "#4e73df")
         
         total_transactions_card = KPICard("Total Transactions", str(metrics['transaction_count']),
                                      f"{metrics['transaction_change']}% from last month", "#1cc88a")
         
-        average_sale_card = KPICard("Average Sale", f"${metrics['average_sale']:.2f}",
+        average_sale_card = KPICard("Average Sale", f"Rs. {metrics['average_sale']:.2f}",
                                 f"{metrics['average_change']}% from last month", "#36b9cc")
         
-        balance_card = KPICard("Current Balance", f"${metrics['current_balance']:.2f}",
+        balance_card = KPICard("Current Balance", f"Rs. {metrics['current_balance']:.2f}",
                           "Updated just now", "#f6c23e")
+        
+        # Add batch tracking metrics
+        batch_metrics = self.getBatchMetrics()
+        batch_diversity_card = KPICard("Active Batches", str(batch_metrics['active_batches']),
+                                   f"{batch_metrics['total_products']} total products", "#e83e8c")
         
         kpi_layout.addWidget(total_sales_card)
         kpi_layout.addWidget(total_transactions_card)
         kpi_layout.addWidget(average_sale_card)
         kpi_layout.addWidget(balance_card)
+        kpi_layout.addWidget(batch_diversity_card)
         
         dashboard_layout.addLayout(kpi_layout)
         
@@ -161,7 +241,7 @@ class DashboardTab(QWidget):
         sales_card = ChartCard("Monthly Sales", sales_chart_view)
         charts_layout.addWidget(sales_card, 0, 0)
         
-        # Product distribution chart
+        # Product distribution chart (by product name, not individual batches)
         product_chart = self.createProductChart()
         product_chart_view = QChartView(product_chart)
         product_chart_view.setRenderHint(QPainter.Antialiasing)
@@ -169,6 +249,15 @@ class DashboardTab(QWidget):
         
         product_card = ChartCard("Product Distribution", product_chart_view)
         charts_layout.addWidget(product_card, 0, 1)
+        
+        # Batch expiry timeline chart
+        expiry_chart = self.createExpiryChart()
+        expiry_chart_view = QChartView(expiry_chart)
+        expiry_chart_view.setRenderHint(QPainter.Antialiasing)
+        expiry_chart_view.setMinimumHeight(300)
+        
+        expiry_card = ChartCard("Expiry Timeline", expiry_chart_view)
+        charts_layout.addWidget(expiry_card, 1, 0, 1, 2)  # Span across both columns
         
         dashboard_layout.addLayout(charts_layout)
         
@@ -198,22 +287,45 @@ class DashboardTab(QWidget):
                 date_label = QLabel(transaction[0])
                 customer_label = QLabel(transaction[1])
                 customer_label.setStyleSheet("font-weight: bold;")
-                product_label = QLabel(transaction[2])
                 
-                amount_label = QLabel(f"${transaction[4]:.2f}")
+                # Enhanced product info with batch
+                product_info = transaction[2]
+                if len(transaction) > 6 and transaction[6]:  # batch_number exists
+                    product_info += f" (Batch: {transaction[6]})"
+                product_label = QLabel(product_info)
+                
+                amount_label = QLabel(f"Rs. {transaction[4]:.2f}")
                 if transaction[3]:  # is_credit
                     amount_label.setStyleSheet("color: green; font-weight: bold;")
                 else:
                     amount_label.setStyleSheet("color: red; font-weight: bold;")
                 
+                # Add expiry warning if applicable
+                expiry_warning = ""
+                if len(transaction) > 7 and transaction[7]:  # expiry_date exists
+                    try:
+                        expiry_date = QDate.fromString(transaction[7], "yyyy-MM-dd")
+                        if expiry_date.isValid():
+                            if expiry_date < QDate.currentDate():
+                                expiry_warning = "⚠️ EXPIRED"
+                            elif expiry_date < QDate.currentDate().addDays(30):
+                                expiry_warning = "⚠️ EXPIRING"
+                    except:
+                        pass
+                
                 transaction_layout.addWidget(date_label)
                 transaction_layout.addWidget(customer_label)
                 transaction_layout.addWidget(product_label)
+                if expiry_warning:
+                    warning_label = QLabel(expiry_warning)
+                    warning_label.setStyleSheet("color: #e74c3c; font-weight: bold; font-size: 10px;")
+                    transaction_layout.addWidget(warning_label)
                 transaction_layout.addStretch(1)
                 transaction_layout.addWidget(amount_label)
                 
                 transactions_layout.addWidget(transaction_frame)
             
+            # Add the "View All Transactions" button with functionality
             view_all_btn = QPushButton("View All Transactions")
             view_all_btn.setStyleSheet("""
                 QPushButton {
@@ -227,6 +339,8 @@ class DashboardTab(QWidget):
                     background-color: #2e59d9;
                 }
             """)
+            # Connect the button to switch to ledger tab
+            view_all_btn.clicked.connect(self.viewAllTransactions)
             transactions_layout.addWidget(view_all_btn)
             
             dashboard_layout.addLayout(transactions_layout)
@@ -236,6 +350,121 @@ class DashboardTab(QWidget):
         main_layout.addWidget(scroll_area)
         
         self.setLayout(main_layout)
+    
+    def viewAllTransactions(self):
+        """Switch to the Ledger tab to view all transactions"""
+        try:
+            # Try to find the main window and switch to ledger tab
+            main_window = self.window()
+            if hasattr(main_window, 'tabs'):
+                # Find the Ledger tab index
+                for i in range(main_window.tabs.count()):
+                    if main_window.tabs.tabText(i) == "Ledger":
+                        main_window.tabs.setCurrentIndex(i)
+                        return
+                
+                # If Ledger tab not found, show message
+                QMessageBox.information(self, "Navigate to Ledger", 
+                                      "Please click on the 'Ledger' tab to view all transactions.")
+            else:
+                # Fallback message
+                QMessageBox.information(self, "View Transactions", 
+                                      "To view all transactions, please navigate to the Ledger tab.")
+        except Exception as e:
+            QMessageBox.information(self, "Navigate to Ledger", 
+                                  "Please click on the 'Ledger' tab to view all transactions.")
+    
+    def getProductAlerts(self):
+        """Get alerts for expired and expiring products"""
+        try:
+            self.db.connect()
+            
+            current_date = QDate.currentDate().toString("yyyy-MM-dd")
+            upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
+            
+            # Get expired products with sales data
+            self.db.cursor.execute('''
+                SELECT DISTINCT p.name, p.batch_number, p.expiry_date,
+                       SUM(e.quantity * e.unit_price) as total_sales
+                FROM products p
+                LEFT JOIN entries e ON p.id = e.product_id AND e.is_credit = 1
+                WHERE p.expiry_date < ?
+                GROUP BY p.id, p.name, p.batch_number, p.expiry_date
+                HAVING total_sales > 0
+                ORDER BY p.expiry_date
+            ''', (current_date,))
+            expired_products = self.db.cursor.fetchall()
+            
+            # Get expiring products with sales data
+            self.db.cursor.execute('''
+                SELECT DISTINCT p.name, p.batch_number, p.expiry_date,
+                       SUM(e.quantity * e.unit_price) as total_sales
+                FROM products p
+                LEFT JOIN entries e ON p.id = e.product_id AND e.is_credit = 1
+                WHERE p.expiry_date >= ? AND p.expiry_date <= ?
+                GROUP BY p.id, p.name, p.batch_number, p.expiry_date
+                HAVING total_sales > 0
+                ORDER BY p.expiry_date
+            ''', (current_date, upcoming_date))
+            expiring_products = self.db.cursor.fetchall()
+            
+            # Format alerts
+            expired_alerts = []
+            for name, batch, expiry, sales in expired_products:
+                expired_alerts.append(f"{name} (Batch: {batch}) - Expired: {expiry}")
+            
+            expiring_alerts = []
+            for name, batch, expiry, sales in expiring_products:
+                days_until = QDate.currentDate().daysTo(QDate.fromString(expiry, "yyyy-MM-dd"))
+                expiring_alerts.append(f"{name} (Batch: {batch}) - Expires in {days_until} days")
+            
+            return {
+                'expired': expired_alerts,
+                'expiring': expiring_alerts
+            }
+            
+        except Exception as e:
+            print(f"Error getting product alerts: {e}")
+            return {'expired': [], 'expiring': []}
+        finally:
+            self.db.close()
+    
+    def getBatchMetrics(self):
+        """Get batch-related metrics"""
+        try:
+            self.db.connect()
+            
+            # Get active batches (products with sales)
+            self.db.cursor.execute('''
+                SELECT COUNT(DISTINCT p.id) as active_batches,
+                       COUNT(DISTINCT p.name) as unique_products
+                FROM products p
+                JOIN entries e ON p.id = e.product_id
+                WHERE e.is_credit = 1
+            ''')
+            result = self.db.cursor.fetchone()
+            active_batches = result[0] if result else 0
+            unique_products = result[1] if result else 0
+            
+            # Get total products in inventory
+            self.db.cursor.execute('SELECT COUNT(*) FROM products')
+            total_products = self.db.cursor.fetchone()[0]
+            
+            return {
+                'active_batches': active_batches,
+                'unique_products': unique_products,
+                'total_products': total_products
+            }
+            
+        except Exception as e:
+            print(f"Error getting batch metrics: {e}")
+            return {
+                'active_batches': 0,
+                'unique_products': 0,
+                'total_products': 0
+            }
+        finally:
+            self.db.close()
         
     def loadKPIMetrics(self):
         """Load KPI metrics from database"""
@@ -256,7 +485,8 @@ class DashboardTab(QWidget):
                 FROM entries 
                 WHERE is_credit = 1 AND date >= ?
             ''', (current_month_start,))
-            current_sales = self.db.cursor.fetchone()[0] or 0
+            result = self.db.cursor.fetchone()
+            current_sales = result[0] if result and result[0] is not None else 0
             
             # Get total sales for last month
             self.db.cursor.execute('''
@@ -264,7 +494,8 @@ class DashboardTab(QWidget):
                 FROM entries 
                 WHERE is_credit = 1 AND date >= ? AND date <= ?
             ''', (last_month_start, last_month_end))
-            last_month_sales = self.db.cursor.fetchone()[0] or 0
+            result = self.db.cursor.fetchone()
+            last_month_sales = result[0] if result and result[0] is not None else 0
             
             # Calculate sales change percentage
             sales_change = 0
@@ -277,7 +508,8 @@ class DashboardTab(QWidget):
                 FROM entries 
                 WHERE date >= ?
             ''', (current_month_start,))
-            current_count = self.db.cursor.fetchone()[0] or 0
+            result = self.db.cursor.fetchone()
+            current_count = result[0] if result and result[0] is not None else 0
             
             # Get transaction count for last month
             self.db.cursor.execute('''
@@ -285,7 +517,8 @@ class DashboardTab(QWidget):
                 FROM entries 
                 WHERE date >= ? AND date <= ?
             ''', (last_month_start, last_month_end))
-            last_month_count = self.db.cursor.fetchone()[0] or 0
+            result = self.db.cursor.fetchone()
+            last_month_count = result[0] if result and result[0] is not None else 0
             
             # Calculate transaction change percentage
             transaction_change = 0
@@ -309,7 +542,8 @@ class DashboardTab(QWidget):
             
             # Get current balance
             self.db.cursor.execute('SELECT MAX(balance) FROM transactions')
-            current_balance = self.db.cursor.fetchone()[0] or 0
+            result = self.db.cursor.fetchone()
+            current_balance = result[0] if result and result[0] is not None else 0
             
             return {
                 'total_sales': current_sales,
@@ -368,7 +602,8 @@ class DashboardTab(QWidget):
                     FROM entries 
                     WHERE is_credit = 1 AND date >= ? AND date <= ?
                 ''', (month_start, month_end))
-                month_credits = self.db.cursor.fetchone()[0] or 0
+                result = self.db.cursor.fetchone()
+                month_credits = result[0] if result and result[0] is not None else 0
                 credits.append(month_credits)
                 
                 # Get debits for this month
@@ -377,50 +612,57 @@ class DashboardTab(QWidget):
                     FROM entries 
                     WHERE is_credit = 0 AND date >= ? AND date <= ?
                 ''', (month_start, month_end))
-                month_debits = self.db.cursor.fetchone()[0] or 0
+                result = self.db.cursor.fetchone()
+                month_debits = result[0] if result and result[0] is not None else 0
                 debits.append(month_debits)
             
-            # Create bar sets
-            credit_set = QBarSet("Credits")
-            credit_set.setColor(QColor("#4e73df"))
-            credit_set.append(credits)
-            
-            debit_set = QBarSet("Debits")
-            debit_set.setColor(QColor("#e74a3b"))
-            debit_set.append(debits)
-            
-            # Create bar series
-            series = QBarSeries()
-            series.append(credit_set)
-            series.append(debit_set)
-            
-            chart.addSeries(series)
-            
-            # Create axes
-            axisX = QBarCategoryAxis()
-            axisX.append(months)
-            chart.addAxis(axisX, Qt.AlignBottom)
-            series.attachAxis(axisX)
-            
-            axisY = QValueAxis()
-            axisY.setTitleText("Amount ($)")
-            axisY.setLabelsAngle(0)
-            chart.addAxis(axisY, Qt.AlignLeft)
-            series.attachAxis(axisY)
-            
-            # Set legend
-            chart.legend().setVisible(True)
-            chart.legend().setAlignment(Qt.AlignBottom)
-            
+            # Only create chart if we have data
+            if any(credits) or any(debits):
+                # Create bar sets
+                credit_set = QBarSet("Credits")
+                credit_set.setColor(QColor("#4e73df"))
+                credit_set.append(credits)
+                
+                debit_set = QBarSet("Debits")
+                debit_set.setColor(QColor("#e74a3b"))
+                debit_set.append(debits)
+                
+                # Create bar series
+                series = QBarSeries()
+                series.append(credit_set)
+                series.append(debit_set)
+                
+                chart.addSeries(series)
+                
+                # Create axes
+                axisX = QBarCategoryAxis()
+                axisX.append(months)
+                chart.addAxis(axisX, Qt.AlignBottom)
+                series.attachAxis(axisX)
+                
+                axisY = QValueAxis()
+                axisY.setTitleText("Amount (Rs. )")
+                axisY.setLabelsAngle(0)
+                chart.addAxis(axisY, Qt.AlignLeft)
+                series.attachAxis(axisY)
+                
+                # Set legend
+                chart.legend().setVisible(True)
+                chart.legend().setAlignment(Qt.AlignBottom)
+            else:
+                # Create empty chart with message
+                chart.setTitle("Monthly Sales - No Data Available")
+                
         except Exception as e:
             print(f"Error creating sales chart: {e}")
+            chart.setTitle("Monthly Sales - Error Loading Data")
         finally:
             self.db.close()
         
         return chart
     
     def createProductChart(self):
-        """Create product distribution pie chart"""
+        """Create product distribution pie chart (grouped by product name)"""
         chart = QChart()
         chart.setTitle("Product Distribution")
         chart.setAnimationOptions(QChart.SeriesAnimations)
@@ -428,9 +670,10 @@ class DashboardTab(QWidget):
         try:
             self.db.connect()
             
-            # Get product sales data
+            # Get product sales data grouped by product name (combines all batches)
             self.db.cursor.execute('''
-                SELECT p.name, SUM(e.quantity * e.unit_price) as total
+                SELECT p.name, SUM(e.quantity * e.unit_price) as total,
+                       COUNT(DISTINCT p.batch_number) as batch_count
                 FROM entries e
                 JOIN products p ON e.product_id = p.id
                 WHERE e.is_credit = 1
@@ -440,53 +683,135 @@ class DashboardTab(QWidget):
             ''')
             products = self.db.cursor.fetchall()
             
-            series = QPieSeries()
-            
             if products:
-                for product, total in products:
-                    series.append(product, total)
+                series = QPieSeries()
                 
-                # Add "Other" slice for remaining products
+                # Get total sales for percentage calculation
                 self.db.cursor.execute('''
                     SELECT SUM(e.quantity * e.unit_price) as total
                     FROM entries e
                     WHERE e.is_credit = 1
                 ''')
-                total_sales = self.db.cursor.fetchone()[0] or 0
+                result = self.db.cursor.fetchone()
+                total_sales = result[0] if result and result[0] is not None else 0
                 
-                top_sales = sum(total for _, total in products)
-                
-                if total_sales > top_sales:
-                    series.append("Other", total_sales - top_sales)
-                
-                # Customize slices
-                for i in range(series.count()):
-                    slice = series.slices()[i]
-                    slice.setLabelVisible(True)
-                    percentage = (slice.value() / total_sales) * 100
-                    slice.setLabel(f"{slice.label()}: {percentage:.1f}%")
-            
-            chart.addSeries(series)
-            
-            # Set legend
-            chart.legend().setVisible(True)
-            chart.legend().setAlignment(Qt.AlignRight)
+                if total_sales > 0:
+                    for product, total, batch_count in products:
+                        series.append(product, total)
+                    
+                    # Add "Other" slice for remaining products if needed
+                    top_sales = sum(total for _, total, _ in products)
+                    
+                    if total_sales > top_sales:
+                        series.append("Other", total_sales - top_sales)
+                    
+                    # Customize slices
+                    for i in range(series.count()):
+                        slice = series.slices()[i]
+                        slice.setLabelVisible(False)  # Hide default labels
+                        percentage = (slice.value() / total_sales) * 100
+                        
+                        # Add batch count info for main products (not "Other")
+                        if i < len(products):
+                            batch_count = products[i][2]
+                            batch_info = f" ({batch_count} batch{'es' if batch_count > 1 else ''})"
+                            slice.setLabel(f"{slice.label()}{batch_info}: {percentage:.1f}%")
+                        else:
+                            slice.setLabel(f"{slice.label()}: {percentage:.1f}%")
+                    
+                    chart.addSeries(series)
+                    
+                    # Set legend
+                    chart.legend().setVisible(True)
+                    chart.legend().setAlignment(Qt.AlignRight)
+                else:
+                    chart.setTitle("Product Distribution - No Sales Data")
+            else:
+                chart.setTitle("Product Distribution - No Data Available")
             
         except Exception as e:
             print(f"Error creating product chart: {e}")
+            chart.setTitle("Product Distribution - Error Loading Data")
+        finally:
+            self.db.close()
+        
+        return chart
+    
+    def createExpiryChart(self):
+        """Create expiry timeline chart showing products by expiry status"""
+        chart = QChart()
+        chart.setTitle("Product Expiry Status")
+        chart.setAnimationOptions(QChart.SeriesAnimations)
+        
+        try:
+            self.db.connect()
+            
+            current_date = QDate.currentDate().toString("yyyy-MM-dd")
+            upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
+            
+            # Get products with sales, categorized by expiry status
+            self.db.cursor.execute('''
+                SELECT 
+                    CASE 
+                        WHEN p.expiry_date < ? THEN 'Expired'
+                        WHEN p.expiry_date <= ? THEN 'Expiring Soon'
+                        ELSE 'Valid'
+                    END as status,
+                    COUNT(DISTINCT p.id) as product_count,
+                    SUM(e.quantity * e.unit_price) as total_sales
+                FROM products p
+                JOIN entries e ON p.id = e.product_id
+                WHERE e.is_credit = 1
+                GROUP BY status
+            ''', (current_date, upcoming_date))
+            
+            expiry_data = self.db.cursor.fetchall()
+            
+            if expiry_data:
+                # Create pie chart for expiry status
+                series = QPieSeries()
+                
+                colors = {
+                    'Expired': QColor("#e74c3c"),      # Red
+                    'Expiring Soon': QColor("#f39c12"), # Orange
+                    'Valid': QColor("#27ae60")         # Green
+                }
+                
+                total_products = sum(count for _, count, _ in expiry_data)
+                
+                for status, count, sales in expiry_data:
+                    slice = series.append(status, count)
+                    slice.setColor(colors.get(status, QColor("#95a5a6")))
+                    percentage = (count / total_products) * 100 if total_products > 0 else 0
+                    slice.setLabel(f"{status}: {count} products ({percentage:.1f}%)")
+                    slice.setLabelVisible(True)
+                
+                chart.addSeries(series)
+                
+                # Set legend
+                chart.legend().setVisible(True)
+                chart.legend().setAlignment(Qt.AlignBottom)
+            else:
+                chart.setTitle("Product Expiry Status - No Data Available")
+            
+        except Exception as e:
+            print(f"Error creating expiry chart: {e}")
+            chart.setTitle("Product Expiry Status - Error Loading Data")
         finally:
             self.db.close()
         
         return chart
     
     def getRecentTransactions(self):
-        """Get recent transactions"""
+        """Get recent transactions with batch and expiry information"""
         try:
             self.db.connect()
             
-            # Get recent transactions
+            # Get recent transactions with batch and expiry data
             self.db.cursor.execute('''
-                SELECT e.date, c.name, p.name, e.is_credit, (e.quantity * e.unit_price) as total
+                SELECT e.date, c.name, p.name, e.is_credit, 
+                       (e.quantity * e.unit_price) as total,
+                       e.quantity, p.batch_number, p.expiry_date
                 FROM entries e
                 JOIN customers c ON e.customer_id = c.id
                 JOIN products p ON e.product_id = p.id

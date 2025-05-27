@@ -188,7 +188,7 @@ class SettingsTab(QWidget):
         
         # Currency format
         self.currency_combo = QComboBox()
-        self.currency_combo.addItems(["$ (USD)", "€ (EUR)", "£ (GBP)", "¥ (JPY)"])
+        self.currency_combo.addItems(["Rs.  (PKR)", "$ (USD)"])
         app_layout.addRow("Currency Format:", self.currency_combo)
         
         # Log level
@@ -249,7 +249,7 @@ class SettingsTab(QWidget):
         about_label = QLabel(
             "Medical Rep Transaction Software\n"
             "Version 1.0\n"
-            "© 2025 Your Company"
+            "© 2025 BSOLS Technologies\n"
         )
         about_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(about_label)

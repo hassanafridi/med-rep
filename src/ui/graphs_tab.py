@@ -1,26 +1,24 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QComboBox, 
-    QLabel, QPushButton, QGroupBox, QFormLayout, QRadioButton,
-    QButtonGroup, QDateEdit, QMessageBox
+    QLabel, QPushButton, QGroupBox, QFormLayout,
+    QRadioButton, QButtonGroup, QDateEdit, QMessageBox,
+    QCheckBox
 )
 from PyQt5.QtCore import QDate
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import numpy as np
-from datetime import datetime, timedelta
+from PyQt5.QtChart import (
+    QChart, QChartView, QBarSeries, QBarSet, 
+    QValueAxis, QBarCategoryAxis, QPieSeries,
+    QLineSeries, QDateTimeAxis, QScatterSeries
+)
+from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtCore import Qt, QDateTime
 import sys
 import os
+from datetime import datetime, timedelta
 
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.db import Database
-
-class MatplotlibCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = self.fig.add_subplot(111)
-        super(MatplotlibCanvas, self).__init__(self.fig)
 
 class GraphsTab(QWidget):
     def __init__(self):
@@ -43,8 +41,11 @@ class GraphsTab(QWidget):
             "Weekly Transactions", 
             "Monthly Transactions",
             "Customer Distribution",
-            "Product Performance"
+            "Product Performance",
+            "Product Batch Analysis",
+            "Expiry Date Analysis"
         ])
+        self.chart_type.currentIndexChanged.connect(self.updateChartOptions)
         options_layout.addRow("Chart Type:", self.chart_type)
         
         # Date range selection
@@ -86,23 +87,66 @@ class GraphsTab(QWidget):
         
         options_layout.addRow("Data Type:", data_type_layout)
         
-        # Generate chart button
-        self.generate_btn = QPushButton("Generate Chart")
-        self.generate_btn.clicked.connect(self.generateChart)
-        options_layout.addRow("", self.generate_btn)
+        # Additional options container
+        self.additional_options_layout = QFormLayout()
+        options_layout.addRow(self.additional_options_layout)
         
         options_group.setLayout(options_layout)
         main_layout.addWidget(options_group)
         
-        # Chart canvas
-        self.chart_canvas = MatplotlibCanvas(self, width=8, height=6, dpi=100)
-        main_layout.addWidget(self.chart_canvas)
+        # Generate chart button
+        generate_layout = QHBoxLayout()
+        
+        self.generate_btn = QPushButton("Generate Chart")
+        self.generate_btn.clicked.connect(self.generateChart)
+        generate_layout.addWidget(self.generate_btn)
+        
+        main_layout.addLayout(generate_layout)
+        
+        # Chart view
+        self.chart_view = QChartView()
+        self.chart_view.setRenderHint(QPainter.Antialiasing)
+        main_layout.addWidget(self.chart_view)
         
         self.setLayout(main_layout)
         
-        # Generate initial chart
-        self.generateChart()
-    
+        # Initialize with empty chart
+        self.showEmptyChart("Select options and click Generate Chart")
+        
+        # Initialize additional options
+        self.updateChartOptions()
+        
+    def updateChartOptions(self):
+        """Update chart options based on selected chart type"""
+        # Clear existing additional options
+        while self.additional_options_layout.count():
+            item = self.additional_options_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        chart_type = self.chart_type.currentText()
+        
+        if chart_type == "Product Batch Analysis":
+            # Option to show expired products only
+            self.show_expired_only = QCheckBox("Show expired batches only")
+            self.additional_options_layout.addRow("Filter:", self.show_expired_only)
+            
+            # Option to group by product name
+            self.group_by_product = QCheckBox("Group by product name")
+            self.group_by_product.setChecked(True)
+            self.additional_options_layout.addRow("Grouping:", self.group_by_product)
+            
+        elif chart_type == "Expiry Date Analysis":
+            # Option to show expiry timeline
+            self.expiry_timeline = QCheckBox("Show expiry timeline")
+            self.expiry_timeline.setChecked(True)
+            self.additional_options_layout.addRow("View:", self.expiry_timeline)
+            
+            # Option for expiry threshold
+            self.expiry_threshold = QComboBox()
+            self.expiry_threshold.addItems(["30 days", "60 days", "90 days", "6 months", "1 year"])
+            self.additional_options_layout.addRow("Show products expiring within:", self.expiry_threshold)
+        
     def generateChart(self):
         """Generate the selected chart type"""
         try:
@@ -110,7 +154,31 @@ class GraphsTab(QWidget):
             from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
             to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
             
-            # Determine data type filter
+            # Generate appropriate chart based on selection
+            if chart_type == "Daily Transactions":
+                self.generateDailyChart(from_date, to_date)
+            elif chart_type == "Weekly Transactions":
+                self.generateWeeklyChart(from_date, to_date)
+            elif chart_type == "Monthly Transactions":
+                self.generateMonthlyChart(from_date, to_date)
+            elif chart_type == "Customer Distribution":
+                self.generateCustomerChart(from_date, to_date)
+            elif chart_type == "Product Performance":
+                self.generateProductChart(from_date, to_date)
+            elif chart_type == "Product Batch Analysis":
+                self.generateBatchAnalysisChart(from_date, to_date)
+            elif chart_type == "Expiry Date Analysis":
+                self.generateExpiryAnalysisChart(from_date, to_date)
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Chart Error", f"Failed to generate chart: {str(e)}")
+    
+    def generateDailyChart(self, from_date, to_date):
+        """Generate daily transaction chart"""
+        try:
+            self.db.connect()
+            
+            # Determine data type condition
             if self.radio_credit.isChecked():
                 data_type_filter = "AND e.is_credit = 1"
             elif self.radio_debit.isChecked():
@@ -118,33 +186,6 @@ class GraphsTab(QWidget):
             else:
                 data_type_filter = ""
             
-            # Clear the current chart
-            self.chart_canvas.axes.clear()
-            
-            # Generate the appropriate chart based on selection
-            if chart_type == "Daily Transactions":
-                self.generateDailyChart(from_date, to_date, data_type_filter)
-            elif chart_type == "Weekly Transactions":
-                self.generateWeeklyChart(from_date, to_date, data_type_filter)
-            elif chart_type == "Monthly Transactions":
-                self.generateMonthlyChart(from_date, to_date, data_type_filter)
-            elif chart_type == "Customer Distribution":
-                self.generateCustomerChart(from_date, to_date, data_type_filter)
-            elif chart_type == "Product Performance":
-                self.generateProductChart(from_date, to_date, data_type_filter)
-            
-            # Refresh the canvas
-            self.chart_canvas.fig.tight_layout()
-            self.chart_canvas.draw()
-            
-        except Exception as e:
-            QMessageBox.critical(self, "Chart Error", f"Failed to generate chart: {str(e)}")
-    
-    def generateDailyChart(self, from_date, to_date, data_type_filter):
-        """Generate daily transaction chart"""
-        try:
-            self.db.connect()
-            
             query = f"""
                 SELECT 
                     e.date,
@@ -161,235 +202,278 @@ class GraphsTab(QWidget):
             data = self.db.cursor.fetchall()
             
             if not data:
-                self.chart_canvas.axes.text(
-                    0.5, 0.5, "No data available for the selected period",
-                    horizontalalignment='center', verticalalignment='center'
-                )
+                self.showEmptyChart("No data available for the selected period")
                 return
             
-            # Parse data for plotting
+            # Create chart
+            chart = QChart()
+            chart.setTitle("Daily Transactions")
+            chart.setAnimationOptions(QChart.SeriesAnimations)
+            
+            # Create bar series
+            series = QBarSeries()
+            
+            # Prepare data
             dates = []
-            credits = []
-            debits = []
+            credit_amounts = []
+            debit_amounts = []
             
             for date_str, credit, debit in data:
-                dates.append(datetime.strptime(date_str, '%Y-%m-%d'))
-                credits.append(credit)
-                debits.append(debit)
+                dates.append(date_str)
+                credit_amounts.append(credit)
+                debit_amounts.append(debit)
             
-            # Create the chart
-            ax = self.chart_canvas.axes
-            
+            # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
-                ax.bar(dates, credits, label='Credit', color='green', alpha=0.7)
-                ax.bar(dates, debits, label='Debit', color='red', alpha=0.7)
-                ax.legend()
+                credit_set = QBarSet("Credit")
+                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.append(credit_amounts)
+                
+                debit_set = QBarSet("Debit")
+                debit_set.setColor(QColor("#F44336"))
+                debit_set.append(debit_amounts)
+                
+                series.append(credit_set)
+                series.append(debit_set)
             elif self.radio_credit.isChecked():
-                ax.bar(dates, credits, color='green', alpha=0.7)
+                credit_set = QBarSet("Credit")
+                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.append(credit_amounts)
+                series.append(credit_set)
             else:
-                ax.bar(dates, debits, color='red', alpha=0.7)
+                debit_set = QBarSet("Debit")
+                debit_set.setColor(QColor("#F44336"))
+                debit_set.append(debit_amounts)
+                series.append(debit_set)
             
-            # Format the chart
-            ax.set_title('Daily Transactions')
-            ax.set_xlabel('Date')
-            ax.set_ylabel('Amount ($)')
+            chart.addSeries(series)
             
-            # Format date axis
-            self.chart_canvas.fig.autofmt_xdate()
+            # Create axes
+            axisX = QBarCategoryAxis()
+            axisX.append(dates)
+            chart.addAxis(axisX, Qt.AlignBottom)
+            series.attachAxis(axisX)
+            
+            axisY = QValueAxis()
+            axisY.setTitleText("Amount (Rs. )")
+            chart.addAxis(axisY, Qt.AlignLeft)
+            series.attachAxis(axisY)
+            
+            # Set chart to view
+            self.chart_view.setChart(chart)
             
         except Exception as e:
-            raise e
+            self.showEmptyChart(f"Error generating chart: {str(e)}")
         finally:
             self.db.close()
     
-    def generateWeeklyChart(self, from_date, to_date, data_type_filter):
+    def generateWeeklyChart(self, from_date, to_date):
         """Generate weekly transaction chart"""
         try:
             self.db.connect()
             
-            # SQLite doesn't have built-in week functions, so we'll group by week manually
-            from_date_obj = datetime.strptime(from_date, '%Y-%m-%d')
-            to_date_obj = datetime.strptime(to_date, '%Y-%m-%d')
-            
-            # Get all transactions in date range
-            query = f"""
+            # Get daily data first, then group by week
+            query = """
                 SELECT 
                     e.date,
                     SUM(CASE WHEN e.is_credit = 1 THEN e.quantity * e.unit_price ELSE 0 END) as credit,
                     SUM(CASE WHEN e.is_credit = 0 THEN e.quantity * e.unit_price ELSE 0 END) as debit
                 FROM entries e
                 WHERE e.date BETWEEN ? AND ?
-                {data_type_filter}
                 GROUP BY e.date
                 ORDER BY e.date
             """
             
             self.db.cursor.execute(query, (from_date, to_date))
-            data = self.db.cursor.fetchall()
+            daily_data = self.db.cursor.fetchall()
             
-            if not data:
-                self.chart_canvas.axes.text(
-                    0.5, 0.5, "No data available for the selected period",
-                    horizontalalignment='center', verticalalignment='center'
-                )
+            if not daily_data:
+                self.showEmptyChart("No data available for the selected period")
                 return
             
             # Group by week
             weekly_data = {}
             
-            for date_str, credit, debit in data:
-                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                # Get week number
-                week_key = date_obj.strftime('%Y-%U')  # Year-Week format
-                
-                if week_key not in weekly_data:
-                    weekly_data[week_key] = {'credit': 0, 'debit': 0, 'date': date_obj}
-                
-                weekly_data[week_key]['credit'] += credit
-                weekly_data[week_key]['debit'] += debit
+            for date_str, credit, debit in daily_data:
+                try:
+                    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+                    # Get week number (year-week format)
+                    week_key = date_obj.strftime('%Y-W%U')
+                    
+                    if week_key not in weekly_data:
+                        weekly_data[week_key] = {'credit': 0, 'debit': 0}
+                    
+                    weekly_data[week_key]['credit'] += credit
+                    weekly_data[week_key]['debit'] += debit
+                except ValueError:
+                    continue  # Skip invalid dates
             
-            # Sort weeks
+            if not weekly_data:
+                self.showEmptyChart("No valid data available for the selected period")
+                return
+            
+            # Create chart
+            chart = QChart()
+            chart.setTitle("Weekly Transactions")
+            chart.setAnimationOptions(QChart.SeriesAnimations)
+            
+            # Create bar series
+            series = QBarSeries()
+            
+            # Sort weeks and prepare data
             sorted_weeks = sorted(weekly_data.keys())
-            
-            # Extract data for plotting
             weeks = []
-            credits = []
-            debits = []
+            credit_amounts = []
+            debit_amounts = []
             
             for week in sorted_weeks:
-                weeks.append(weekly_data[week]['date'])
-                credits.append(weekly_data[week]['credit'])
-                debits.append(weekly_data[week]['debit'])
+                weeks.append(week)
+                credit_amounts.append(weekly_data[week]['credit'])
+                debit_amounts.append(weekly_data[week]['debit'])
             
-            # Create the chart
-            ax = self.chart_canvas.axes
-            
+            # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
-                ax.bar(weeks, credits, label='Credit', color='green', alpha=0.7)
-                ax.bar(weeks, debits, label='Debit', color='red', alpha=0.7)
-                ax.legend()
+                credit_set = QBarSet("Credit")
+                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.append(credit_amounts)
+                
+                debit_set = QBarSet("Debit")
+                debit_set.setColor(QColor("#F44336"))
+                debit_set.append(debit_amounts)
+                
+                series.append(credit_set)
+                series.append(debit_set)
             elif self.radio_credit.isChecked():
-                ax.bar(weeks, credits, color='green', alpha=0.7)
+                credit_set = QBarSet("Credit")
+                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.append(credit_amounts)
+                series.append(credit_set)
             else:
-                ax.bar(weeks, debits, color='red', alpha=0.7)
+                debit_set = QBarSet("Debit")
+                debit_set.setColor(QColor("#F44336"))
+                debit_set.append(debit_amounts)
+                series.append(debit_set)
             
-            # Format the chart
-            ax.set_title('Weekly Transactions')
-            ax.set_xlabel('Week')
-            ax.set_ylabel('Amount ($)')
+            chart.addSeries(series)
             
-            # Format date axis
-            self.chart_canvas.fig.autofmt_xdate()
+            # Create axes
+            axisX = QBarCategoryAxis()
+            axisX.append(weeks)
+            chart.addAxis(axisX, Qt.AlignBottom)
+            series.attachAxis(axisX)
+            
+            axisY = QValueAxis()
+            axisY.setTitleText("Amount (Rs. )")
+            chart.addAxis(axisY, Qt.AlignLeft)
+            series.attachAxis(axisY)
+            
+            # Set chart to view
+            self.chart_view.setChart(chart)
             
         except Exception as e:
-            raise e
+            self.showEmptyChart(f"Error generating chart: {str(e)}")
         finally:
             self.db.close()
     
-    def generateMonthlyChart(self, from_date, to_date, data_type_filter):
+    def generateMonthlyChart(self, from_date, to_date):
         """Generate monthly transaction chart"""
         try:
             self.db.connect()
             
-            # SQLite doesn't have built-in month functions, so we'll group by month manually
-            from_date_obj = datetime.strptime(from_date, '%Y-%m-%d')
-            to_date_obj = datetime.strptime(to_date, '%Y-%m-%d')
-            
-            # Get all transactions in date range
-            query = f"""
+            # Get data grouped by month
+            query = """
                 SELECT 
-                    e.date,
+                    strftime('%Y-%m', e.date) as month,
                     SUM(CASE WHEN e.is_credit = 1 THEN e.quantity * e.unit_price ELSE 0 END) as credit,
                     SUM(CASE WHEN e.is_credit = 0 THEN e.quantity * e.unit_price ELSE 0 END) as debit
                 FROM entries e
                 WHERE e.date BETWEEN ? AND ?
-                {data_type_filter}
-                GROUP BY e.date
-                ORDER BY e.date
+                GROUP BY month
+                ORDER BY month
             """
             
             self.db.cursor.execute(query, (from_date, to_date))
             data = self.db.cursor.fetchall()
             
             if not data:
-                self.chart_canvas.axes.text(
-                    0.5, 0.5, "No data available for the selected period",
-                    horizontalalignment='center', verticalalignment='center'
-                )
+                self.showEmptyChart("No data available for the selected period")
                 return
             
-            # Group by month
-            monthly_data = {}
+            # Create chart
+            chart = QChart()
+            chart.setTitle("Monthly Transactions")
+            chart.setAnimationOptions(QChart.SeriesAnimations)
             
-            for date_str, credit, debit in data:
-                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                # Get month number
-                month_key = date_obj.strftime('%Y-%m')  # Year-Month format
-                
-                if month_key not in monthly_data:
-                    monthly_data[month_key] = {'credit': 0, 'debit': 0, 'date': date_obj}
-                
-                monthly_data[month_key]['credit'] += credit
-                monthly_data[month_key]['debit'] += debit
+            # Create bar series
+            series = QBarSeries()
             
-            # Sort months
-            sorted_months = sorted(monthly_data.keys())
-            
-            # Extract data for plotting
+            # Prepare data
             months = []
-            credits = []
-            debits = []
+            credit_amounts = []
+            debit_amounts = []
             
-            for month in sorted_months:
-                months.append(monthly_data[month]['date'])
-                credits.append(monthly_data[month]['credit'])
-                debits.append(monthly_data[month]['debit'])
+            for month, credit, debit in data:
+                months.append(month)
+                credit_amounts.append(credit)
+                debit_amounts.append(debit)
             
-            # Create the chart
-            ax = self.chart_canvas.axes
-            
+            # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
-                ax.bar(months, credits, label='Credit', color='green', alpha=0.7)
-                ax.bar(months, debits, label='Debit', color='red', alpha=0.7)
-                ax.legend()
+                credit_set = QBarSet("Credit")
+                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.append(credit_amounts)
+                
+                debit_set = QBarSet("Debit")
+                debit_set.setColor(QColor("#F44336"))
+                debit_set.append(debit_amounts)
+                
+                series.append(credit_set)
+                series.append(debit_set)
             elif self.radio_credit.isChecked():
-                ax.bar(months, credits, color='green', alpha=0.7)
+                credit_set = QBarSet("Credit")
+                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.append(credit_amounts)
+                series.append(credit_set)
             else:
-                ax.bar(months, debits, color='red', alpha=0.7)
+                debit_set = QBarSet("Debit")
+                debit_set.setColor(QColor("#F44336"))
+                debit_set.append(debit_amounts)
+                series.append(debit_set)
             
-            # Format the chart
-            ax.set_title('Monthly Transactions')
-            ax.set_xlabel('Month')
-            ax.set_ylabel('Amount ($)')
+            chart.addSeries(series)
             
-            # Format date axis to show month names
-            ax.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%b %Y'))
-            self.chart_canvas.fig.autofmt_xdate()
+            # Create axes
+            axisX = QBarCategoryAxis()
+            axisX.append(months)
+            chart.addAxis(axisX, Qt.AlignBottom)
+            series.attachAxis(axisX)
+            
+            axisY = QValueAxis()
+            axisY.setTitleText("Amount (Rs. )")
+            chart.addAxis(axisY, Qt.AlignLeft)
+            series.attachAxis(axisY)
+            
+            # Set chart to view
+            self.chart_view.setChart(chart)
             
         except Exception as e:
-            raise e
+            self.showEmptyChart(f"Error generating chart: {str(e)}")
         finally:
             self.db.close()
     
-    def generateCustomerChart(self, from_date, to_date, data_type_filter):
+    def generateCustomerChart(self, from_date, to_date):
         """Generate customer distribution pie chart"""
         try:
             self.db.connect()
             
-            # Prepare the data type condition for the SQL query
-            if data_type_filter:
-                data_type_cond = data_type_filter.replace("AND", "WHERE")
-            else:
-                data_type_cond = ""
-            
-            query = f"""
+            # Get customer data
+            query = """
                 SELECT 
                     c.name,
                     SUM(e.quantity * e.unit_price) as total
                 FROM entries e
                 JOIN customers c ON e.customer_id = c.id
-                WHERE e.date BETWEEN ? AND ?
-                {data_type_filter}
+                WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1
                 GROUP BY c.name
                 ORDER BY total DESC
                 LIMIT 10
@@ -399,101 +483,378 @@ class GraphsTab(QWidget):
             data = self.db.cursor.fetchall()
             
             if not data:
-                self.chart_canvas.axes.text(
-                    0.5, 0.5, "No data available for the selected period",
-                    horizontalalignment='center', verticalalignment='center'
-                )
+                self.showEmptyChart("No customer data available for the selected period")
                 return
             
-            # Parse data for plotting
-            customers = []
-            amounts = []
+            # Create chart
+            chart = QChart()
+            chart.setTitle("Customer Distribution (Top 10)")
+            chart.setAnimationOptions(QChart.SeriesAnimations)
+            
+            # Create pie series
+            series = QPieSeries()
+            
+            total_amount = sum(amount for _, amount in data)
             
             for customer, amount in data:
-                customers.append(customer)
-                amounts.append(amount)
+                slice = series.append(customer, amount)
+                # Calculate percentage
+                percentage = (amount / total_amount) * 100
+                slice.setLabel(f"{customer}: {percentage:.1f}%")
+                slice.setLabelVisible(True)
             
-            # Create the pie chart
-            ax = self.chart_canvas.axes
-            ax.pie(amounts, labels=customers, autopct='%1.1f%%', startangle=90)
-            ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
+            chart.addSeries(series)
             
-            # Format the chart
-            title_suffix = ""
-            if self.radio_credit.isChecked():
-                title_suffix = " (Credits Only)"
-            elif self.radio_debit.isChecked():
-                title_suffix = " (Debits Only)"
-                
-            ax.set_title(f'Top 10 Customers by Transaction Volume{title_suffix}')
+            # Set chart to view
+            self.chart_view.setChart(chart)
             
         except Exception as e:
-            raise e
+            self.showEmptyChart(f"Error generating chart: {str(e)}")
         finally:
             self.db.close()
     
-    def generateProductChart(self, from_date, to_date, data_type_filter):
-        """Generate product performance chart"""
+    def generateProductChart(self, from_date, to_date):
+        """Generate product performance chart (grouped by product name)"""
         try:
             self.db.connect()
             
-            query = f"""
+            # Get product data grouped by product name (combines all batches)
+            query = """
                 SELECT 
                     p.name,
-                    SUM(e.quantity * e.unit_price) as total
+                    SUM(e.quantity * e.unit_price) as total,
+                    COUNT(DISTINCT p.batch_number) as batch_count
                 FROM entries e
                 JOIN products p ON e.product_id = p.id
-                WHERE e.date BETWEEN ? AND ?
-                {data_type_filter}
+                WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1
                 GROUP BY p.name
                 ORDER BY total DESC
+                LIMIT 10
             """
             
             self.db.cursor.execute(query, (from_date, to_date))
             data = self.db.cursor.fetchall()
             
             if not data:
-                self.chart_canvas.axes.text(
-                    0.5, 0.5, "No data available for the selected period",
-                    horizontalalignment='center', verticalalignment='center'
-                )
+                self.showEmptyChart("No product data available for the selected period")
                 return
             
-            # Parse data for plotting
+            # Create chart
+            chart = QChart()
+            chart.setTitle("Product Performance (Top 10 by Sales)")
+            chart.setAnimationOptions(QChart.SeriesAnimations)
+            
+            # Create bar series
+            series = QBarSeries()
+            
+            # Prepare data
             products = []
             amounts = []
             
-            for product, amount in data:
-                products.append(product)
+            for product, amount, batch_count in data:
+                # Add batch count info to product name
+                product_label = f"{product}\n({batch_count} batch{'es' if batch_count > 1 else ''})"
+                products.append(product_label)
                 amounts.append(amount)
             
-            # Create the horizontal bar chart
-            ax = self.chart_canvas.axes
-            y_pos = np.arange(len(products))
+            # Create bar set
+            bar_set = QBarSet("Sales")
+            bar_set.setColor(QColor("#2196F3"))
+            bar_set.append(amounts)
             
-            # Determine bar color based on selection
-            bar_color = 'blue'
-            if self.radio_credit.isChecked():
-                bar_color = 'green'
-            elif self.radio_debit.isChecked():
-                bar_color = 'red'
-                
-            ax.barh(y_pos, amounts, align='center', color=bar_color, alpha=0.7)
-            ax.set_yticks(y_pos)
-            ax.set_yticklabels(products)
-            ax.invert_yaxis()  # Labels read top-to-bottom
+            series.append(bar_set)
+            chart.addSeries(series)
             
-            # Format the chart
-            title_suffix = ""
-            if self.radio_credit.isChecked():
-                title_suffix = " (Credits Only)"
-            elif self.radio_debit.isChecked():
-                title_suffix = " (Debits Only)"
-                
-            ax.set_title(f'Product Performance{title_suffix}')
-            ax.set_xlabel('Total Amount ($)')
+            # Create axes
+            axisX = QBarCategoryAxis()
+            axisX.append(products)
+            chart.addAxis(axisX, Qt.AlignBottom)
+            series.attachAxis(axisX)
+            
+            axisY = QValueAxis()
+            axisY.setTitleText("Sales Amount (Rs. )")
+            chart.addAxis(axisY, Qt.AlignLeft)
+            series.attachAxis(axisY)
+            
+            # Set chart to view
+            self.chart_view.setChart(chart)
             
         except Exception as e:
-            raise e
+            self.showEmptyChart(f"Error generating chart: {str(e)}")
         finally:
             self.db.close()
+    
+    def generateBatchAnalysisChart(self, from_date, to_date):
+        """Generate batch analysis chart"""
+        try:
+            self.db.connect()
+            
+            # Check if we should show expired batches only
+            expired_filter = ""
+            current_date = QDate.currentDate().toString("yyyy-MM-dd")
+            
+            if hasattr(self, 'show_expired_only') and self.show_expired_only.isChecked():
+                expired_filter = f"AND p.expiry_date < '{current_date}'"
+            
+            # Check grouping option
+            group_by_product = hasattr(self, 'group_by_product') and self.group_by_product.isChecked()
+            
+            if group_by_product:
+                # Group by product name, showing total sales across all batches
+                query = f"""
+                    SELECT 
+                        p.name as label,
+                        SUM(e.quantity * e.unit_price) as total,
+                        COUNT(DISTINCT p.batch_number) as batch_count,
+                        COUNT(DISTINCT CASE WHEN p.expiry_date < '{current_date}' THEN p.batch_number END) as expired_batches
+                    FROM entries e
+                    JOIN products p ON e.product_id = p.id
+                    WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1 {expired_filter}
+                    GROUP BY p.name
+                    ORDER BY total DESC
+                    LIMIT 10
+                """
+            else:
+                # Show individual batches
+                query = f"""
+                    SELECT 
+                        p.name || ' (' || p.batch_number || ')' as label,
+                        SUM(e.quantity * e.unit_price) as total,
+                        1 as batch_count,
+                        CASE WHEN p.expiry_date < '{current_date}' THEN 1 ELSE 0 END as expired_batches
+                    FROM entries e
+                    JOIN products p ON e.product_id = p.id
+                    WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1 {expired_filter}
+                    GROUP BY p.id, p.name, p.batch_number
+                    ORDER BY total DESC
+                    LIMIT 15
+                """
+            
+            self.db.cursor.execute(query, (from_date, to_date))
+            data = self.db.cursor.fetchall()
+            
+            if not data:
+                self.showEmptyChart("No batch data available for the selected criteria")
+                return
+            
+            # Create chart
+            chart = QChart()
+            title = "Product Batch Analysis"
+            if hasattr(self, 'show_expired_only') and self.show_expired_only.isChecked():
+                title += " (Expired Batches Only)"
+            chart.setTitle(title)
+            chart.setAnimationOptions(QChart.SeriesAnimations)
+            
+            # Create bar series
+            series = QBarSeries()
+            
+            # Prepare data
+            labels = []
+            amounts = []
+            
+            for label, amount, batch_count, expired_batches in data:
+                labels.append(label)
+                amounts.append(amount)
+            
+            # Create bar set with color coding
+            bar_set = QBarSet("Sales")
+            
+            # Color based on expiry status if showing individual batches
+            if not group_by_product:
+                # Individual batches - color expired ones red
+                for i, (label, amount, batch_count, expired_batches) in enumerate(data):
+                    if expired_batches > 0:
+                        bar_set.setColor(QColor("#F44336"))  # Red for expired
+                    else:
+                        bar_set.setColor(QColor("#4CAF50"))  # Green for valid
+            else:
+                bar_set.setColor(QColor("#2196F3"))  # Blue for grouped view
+            
+            bar_set.append(amounts)
+            
+            series.append(bar_set)
+            chart.addSeries(series)
+            
+            # Create axes
+            axisX = QBarCategoryAxis()
+            axisX.append(labels)
+            chart.addAxis(axisX, Qt.AlignBottom)
+            series.attachAxis(axisX)
+            
+            axisY = QValueAxis()
+            axisY.setTitleText("Sales Amount (Rs. )")
+            chart.addAxis(axisY, Qt.AlignLeft)
+            series.attachAxis(axisY)
+            
+            # Set chart to view
+            self.chart_view.setChart(chart)
+            
+        except Exception as e:
+            self.showEmptyChart(f"Error generating batch analysis chart: {str(e)}")
+        finally:
+            self.db.close()
+    
+    def generateExpiryAnalysisChart(self, from_date, to_date):
+        """Generate expiry date analysis chart"""
+        try:
+            self.db.connect()
+            
+            # Get threshold from combobox
+            threshold_text = "30 days"
+            if hasattr(self, 'expiry_threshold'):
+                threshold_text = self.expiry_threshold.currentText()
+            
+            # Convert threshold to days
+            threshold_days = {
+                "30 days": 30,
+                "60 days": 60,
+                "90 days": 90,
+                "6 months": 180,
+                "1 year": 365
+            }.get(threshold_text, 30)
+            
+            current_date = QDate.currentDate()
+            threshold_date = current_date.addDays(threshold_days).toString("yyyy-MM-dd")
+            current_date_str = current_date.toString("yyyy-MM-dd")
+            
+            # Get products with sales in the date range and their expiry status
+            query = """
+                SELECT 
+                    p.name,
+                    p.batch_number,
+                    p.expiry_date,
+                    SUM(e.quantity * e.unit_price) as total_sales,
+                    CASE 
+                        WHEN p.expiry_date < ? THEN 'Expired'
+                        WHEN p.expiry_date <= ? THEN 'Expiring Soon'
+                        ELSE 'Valid'
+                    END as expiry_status
+                FROM entries e
+                JOIN products p ON e.product_id = p.id
+                WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1
+                GROUP BY p.id, p.name, p.batch_number, p.expiry_date
+                ORDER BY p.expiry_date
+            """
+            
+            self.db.cursor.execute(query, (current_date_str, threshold_date, from_date, to_date))
+            data = self.db.cursor.fetchall()
+            
+            if not data:
+                self.showEmptyChart("No product expiry data available for the selected period")
+                return
+            
+            # Check if we should show timeline view
+            show_timeline = hasattr(self, 'expiry_timeline') and self.expiry_timeline.isChecked()
+            
+            if show_timeline:
+                # Create a pie chart showing distribution by expiry status
+                chart = QChart()
+                chart.setTitle(f"Product Expiry Status Distribution\n(Products expiring within {threshold_text})")
+                chart.setAnimationOptions(QChart.SeriesAnimations)
+                
+                # Group data by expiry status
+                status_totals = {'Expired': 0, 'Expiring Soon': 0, 'Valid': 0}
+                
+                for name, batch, expiry_date, sales, status in data:
+                    status_totals[status] += sales
+                
+                # Create pie series
+                series = QPieSeries()
+                
+                colors = {
+                    'Expired': QColor("#F44336"),      # Red
+                    'Expiring Soon': QColor("#FF9800"), # Orange
+                    'Valid': QColor("#4CAF50")         # Green
+                }
+                
+                total_sales = sum(status_totals.values())
+                
+                for status, amount in status_totals.items():
+                    if amount > 0:
+                        slice = series.append(status, amount)
+                        slice.setColor(colors[status])
+                        percentage = (amount / total_sales) * 100 if total_sales > 0 else 0
+                        slice.setLabel(f"{status}: Rs. {amount:.0f} ({percentage:.1f}%)")
+                        slice.setLabelVisible(True)
+                
+                chart.addSeries(series)
+                
+            else:
+                # Create a bar chart showing individual products/batches
+                chart = QChart()
+                chart.setTitle(f"Product Sales by Expiry Date\n(Showing products expiring within {threshold_text})")
+                chart.setAnimationOptions(QChart.SeriesAnimations)
+                
+                # Filter to show only expiring/expired products
+                filtered_data = [item for item in data if item[4] in ['Expired', 'Expiring Soon']]
+                
+                if not filtered_data:
+                    self.showEmptyChart(f"No products expiring within {threshold_text}")
+                    return
+                
+                # Limit to top 10 by sales
+                filtered_data = filtered_data[:10]
+                
+                # Create bar series
+                series = QBarSeries()
+                
+                # Prepare data
+                labels = []
+                amounts = []
+                
+                for name, batch, expiry_date, sales, status in filtered_data:
+                    label = f"{name}\n({batch})\nExp: {expiry_date}"
+                    labels.append(label)
+                    amounts.append(sales)
+                
+                # Create bar sets by status
+                expired_amounts = []
+                expiring_amounts = []
+                
+                for name, batch, expiry_date, sales, status in filtered_data:
+                    if status == 'Expired':
+                        expired_amounts.append(sales)
+                        expiring_amounts.append(0)
+                    else:
+                        expired_amounts.append(0)
+                        expiring_amounts.append(sales)
+                
+                # Add bar sets
+                if any(expired_amounts):
+                    expired_set = QBarSet("Expired")
+                    expired_set.setColor(QColor("#F44336"))
+                    expired_set.append(expired_amounts)
+                    series.append(expired_set)
+                
+                if any(expiring_amounts):
+                    expiring_set = QBarSet("Expiring Soon")
+                    expiring_set.setColor(QColor("#FF9800"))
+                    expiring_set.append(expiring_amounts)
+                    series.append(expiring_set)
+                
+                chart.addSeries(series)
+                
+                # Create axes
+                axisX = QBarCategoryAxis()
+                axisX.append(labels)
+                chart.addAxis(axisX, Qt.AlignBottom)
+                series.attachAxis(axisX)
+                
+                axisY = QValueAxis()
+                axisY.setTitleText("Sales Amount (Rs. )")
+                chart.addAxis(axisY, Qt.AlignLeft)
+                series.attachAxis(axisY)
+            
+            # Set chart to view
+            self.chart_view.setChart(chart)
+            
+        except Exception as e:
+            self.showEmptyChart(f"Error generating expiry analysis chart: {str(e)}")
+        finally:
+            self.db.close()
+    
+    def showEmptyChart(self, message):
+        """Show an empty chart with message"""
+        chart = QChart()
+        chart.setTitle(message)
+        self.chart_view.setChart(chart)
