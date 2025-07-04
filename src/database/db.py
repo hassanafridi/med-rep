@@ -54,13 +54,15 @@ class Database:
                 )
             ''')
             
-            # Create Products table
+            # Create Products table with batch number and expiry date
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     description TEXT,
                     unit_price REAL,
+                    batch_number TEXT NOT NULL,
+                    expiry_date TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -95,6 +97,10 @@ class Database:
             ''')
             
             self.conn.commit()
+            
+            # Check if we need to migrate existing products table
+            self._migrate_products_table()
+            
             logger.info("Database initialized successfully")
             return True
         except sqlite3.Error as e:
@@ -102,6 +108,51 @@ class Database:
             return False
         finally:
             self.close()
+    
+    def _migrate_products_table(self):
+        """Migrate existing products table to include batch_number and expiry_date"""
+        try:
+            # Check if batch_number column exists
+            self.cursor.execute("PRAGMA table_info(products)")
+            columns = [column[1] for column in self.cursor.fetchall()]
+            
+            if 'batch_number' not in columns or 'expiry_date' not in columns:
+                logger.info("Migrating products table to include batch_number and expiry_date")
+                
+                # Get existing data
+                self.cursor.execute("SELECT id, name, description, unit_price, created_at FROM products")
+                existing_products = self.cursor.fetchall()
+                
+                # Drop the old table
+                self.cursor.execute("DROP TABLE products")
+                
+                # Create new table with updated schema
+                self.cursor.execute('''
+                    CREATE TABLE products (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT,
+                        unit_price REAL,
+                        batch_number TEXT NOT NULL,
+                        expiry_date TEXT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                
+                # Migrate existing data with default values
+                for product in existing_products:
+                    product_id, name, description, unit_price, created_at = product
+                    self.cursor.execute('''
+                        INSERT INTO products (id, name, description, unit_price, batch_number, expiry_date, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (product_id, name, description, unit_price, 'LEGACY-001', '2025-12-31', created_at))
+                
+                self.conn.commit()
+                logger.info("Products table migration completed successfully")
+                
+        except sqlite3.Error as e:
+            logger.error(f"Migration error: {e}")
+            raise
     
     def insert_sample_data(self):
         """Insert sample data for testing"""
@@ -120,15 +171,18 @@ class Database:
                 customers
             )
             
-            # Sample products
+            # Sample products with batch numbers and expiry dates
             products = [
-                ('MediCure', 'General antibiotic', 25.50),
-                ('PainAway', 'Pain reliever', 12.75),
-                ('HealthBoost', 'Vitamin supplement', 35.00)
+                ('MediCure', 'General antibiotic', 25.50, 'MCR-2024-001', '2025-12-31'),
+                ('MediCure', 'General antibiotic', 25.50, 'MCR-2024-002', '2026-06-30'),
+                ('PainAway', 'Pain reliever', 12.75, 'PA-2024-101', '2025-08-15'),
+                ('PainAway', 'Pain reliever', 12.75, 'PA-2024-102', '2025-11-30'),
+                ('HealthBoost', 'Vitamin supplement', 35.00, 'HB-2024-001', '2027-03-20'),
+                ('HealthBoost', 'Vitamin supplement', 35.00, 'HB-2024-002', '2026-09-10')
             ]
             
             self.cursor.executemany(
-                'INSERT INTO products (name, description, unit_price) VALUES (?, ?, ?)',
+                'INSERT INTO products (name, description, unit_price, batch_number, expiry_date) VALUES (?, ?, ?, ?, ?)',
                 products
             )
             
@@ -194,11 +248,50 @@ class Database:
             # Index for entry_id in transactions
             self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_entry ON transactions(entry_id)")
             
+            # Index for product batch lookups
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_products_batch ON products(batch_number)")
+            
+            # Index for product expiry lookups
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_products_expiry ON products(expiry_date)")
+            
+            # Composite index for product name and batch
+            self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_products_name_batch ON products(name, batch_number)")
+            
             self.conn.commit()
             logging.info("Indexes created successfully")
             return True
         except sqlite3.Error as e:
             logging.error(f"Failed to create indexes: {e}")
             return False
+        finally:
+            self.close()
+            
+    def get_products_by_name(self, product_name):
+        """Get all products with the same name but different batches"""
+        try:
+            self.connect()
+            self.cursor.execute(
+                'SELECT id, name, description, unit_price, batch_number, expiry_date FROM products WHERE name = ? ORDER BY expiry_date DESC',
+                (product_name,)
+            )
+            return self.cursor.fetchall()
+        except sqlite3.Error as e:
+            logger.error(f"Error getting products by name: {e}")
+            return []
+        finally:
+            self.close()
+            
+    def get_expired_products(self, current_date):
+        """Get products that are expired or expiring soon"""
+        try:
+            self.connect()
+            self.cursor.execute(
+                'SELECT id, name, batch_number, expiry_date FROM products WHERE expiry_date <= ? ORDER BY expiry_date',
+                (current_date,)
+            )
+            return self.cursor.fetchall()
+        except sqlite3.Error as e:
+            logger.error(f"Error getting expired products: {e}")
+            return []
         finally:
             self.close()

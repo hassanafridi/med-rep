@@ -74,6 +74,16 @@ class LedgerTab(QWidget):
         self.customer_filter.addItem("All Customers", None)
         filter_layout.addRow("Customer:", self.customer_filter)
         
+        # Product filter (by name)
+        self.product_filter = QComboBox()
+        self.product_filter.addItem("All Products", None)
+        filter_layout.addRow("Product:", self.product_filter)
+        
+        # Batch number filter
+        self.batch_filter = QLineEdit()
+        self.batch_filter.setPlaceholderText("Search by batch number...")
+        filter_layout.addRow("Batch Number:", self.batch_filter)
+        
         # Search by note text
         self.search_text = QLineEdit()
         self.search_text.setPlaceholderText("Search by notes...")
@@ -83,6 +93,11 @@ class LedgerTab(QWidget):
         self.entry_type_filter = QComboBox()
         self.entry_type_filter.addItems(["All Entries", "Credit Only", "Debit Only"])
         filter_layout.addRow("Entry Type:", self.entry_type_filter)
+        
+        # Expiry status filter
+        self.expiry_filter = QComboBox()
+        self.expiry_filter.addItems(["All Products", "Expired Products", "Expiring Soon", "Valid Products"])
+        filter_layout.addRow("Expiry Status:", self.expiry_filter)
         
         # Apply filter button
         button_layout = QHBoxLayout()
@@ -100,13 +115,14 @@ class LedgerTab(QWidget):
         filter_group.setLayout(filter_layout)
         main_layout.addWidget(filter_group)
         
-        # Create table for entries
+        # Create table for entries with additional columns
         self.entries_table = QTableWidget()
-        self.entries_table.setColumnCount(9)
+        self.entries_table.setColumnCount(12)
         self.entries_table.setHorizontalHeaderLabels([
-            "ID", "Date", "Customer", "Product", "Quantity", 
-            "Unit Price", "Total", "Type", "Notes"
+            "ID", "Date", "Customer", "Product", "Batch Number", "Expiry Date", 
+            "Quantity", "Unit Price", "Total", "Type", "Notes", "Status"
         ])
+        
         # Add Generate Report button (if not already defined)
         self.report_btn = QPushButton("Generate Report")
         self.report_btn.clicked.connect(self.generateReport)
@@ -117,6 +133,8 @@ class LedgerTab(QWidget):
         # Set column widths
         self.entries_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.entries_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)  # ID column
+        self.entries_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)  # Batch column
+        self.entries_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)  # Expiry column
         
         # Enable context menu
         self.entries_table.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -127,9 +145,9 @@ class LedgerTab(QWidget):
         # Summary section
         summary_layout = QHBoxLayout()
         self.total_entries_label = QLabel("Total Entries: 0")
-        self.total_credit_label = QLabel("Total Credit: $0.00")
-        self.total_debit_label = QLabel("Total Debit: $0.00")
-        self.balance_label = QLabel("Current Balance: $0.00")
+        self.total_credit_label = QLabel("Total Credit: Rs0.00")
+        self.total_debit_label = QLabel("Total Debit: Rs0.00")
+        self.balance_label = QLabel("Current Balance: Rs0.00")
         
         summary_layout.addWidget(self.total_entries_label)
         summary_layout.addWidget(self.total_credit_label)
@@ -143,6 +161,7 @@ class LedgerTab(QWidget):
         
         # Load data
         self.loadCustomers()
+        self.loadProducts()
         self.loadEntries()
         
         # Add Export button
@@ -168,6 +187,24 @@ class LedgerTab(QWidget):
         finally:
             self.db.close()
     
+    def loadProducts(self):
+        """Load products for filter dropdown (by name, not individual batches)"""
+        try:
+            self.db.connect()
+            
+            # Get distinct product names
+            self.db.cursor.execute('SELECT DISTINCT name FROM products ORDER BY name')
+            products = self.db.cursor.fetchall()
+            
+            # Add products to filter dropdown
+            for (name,) in products:
+                self.product_filter.addItem(name, name)
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to load products: {str(e)}")
+        finally:
+            self.db.close()
+    
     def loadEntries(self):
         """Load entries based on current filters"""
         try:
@@ -176,7 +213,7 @@ class LedgerTab(QWidget):
             # Build query based on filters
             query = '''
                 SELECT 
-                    e.id, e.date, c.name as customer, p.name as product,
+                    e.id, e.date, c.name as customer, p.name as product, p.batch_number, p.expiry_date,
                     e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
                     e.is_credit, e.notes
                 FROM entries e
@@ -199,6 +236,18 @@ class LedgerTab(QWidget):
                 query += " AND e.customer_id = ?"
                 params.append(selected_customer_id)
             
+            # Product filter (by name)
+            selected_product_name = self.product_filter.currentData()
+            if selected_product_name is not None:
+                query += " AND p.name = ?"
+                params.append(selected_product_name)
+            
+            # Batch number filter
+            batch_text = self.batch_filter.text().strip()
+            if batch_text:
+                query += " AND p.batch_number LIKE ?"
+                params.append(f"%{batch_text}%")
+            
             # Note text search
             search_text = self.search_text.text().strip()
             if search_text:
@@ -211,6 +260,21 @@ class LedgerTab(QWidget):
                 query += " AND e.is_credit = 1"
             elif entry_type == "Debit Only":
                 query += " AND e.is_credit = 0"
+            
+            # Expiry status filter
+            expiry_status = self.expiry_filter.currentText()
+            current_date = QDate.currentDate().toString("yyyy-MM-dd")
+            upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
+            
+            if expiry_status == "Expired Products":
+                query += " AND p.expiry_date < ?"
+                params.append(current_date)
+            elif expiry_status == "Expiring Soon":
+                query += " AND p.expiry_date >= ? AND p.expiry_date <= ?"
+                params.extend([current_date, upcoming_date])
+            elif expiry_status == "Valid Products":
+                query += " AND p.expiry_date > ?"
+                params.append(upcoming_date)
             
             # Sort by date, newest first
             query += " ORDER BY e.date DESC, e.id DESC"
@@ -226,25 +290,66 @@ class LedgerTab(QWidget):
             # Fill table with data
             total_credit = 0
             total_debit = 0
+            current_date_qdate = QDate.currentDate()
             
             for row, entry in enumerate(entries):
-                entry_id, date, customer, product, quantity, unit_price, total, is_credit, notes = entry
+                entry_id, date, customer, product, batch_number, expiry_date, quantity, unit_price, total, is_credit, notes = entry
                 
                 # Add data to row
                 self.entries_table.setItem(row, 0, QTableWidgetItem(str(entry_id)))
                 self.entries_table.setItem(row, 1, QTableWidgetItem(date))
                 self.entries_table.setItem(row, 2, QTableWidgetItem(customer))
                 self.entries_table.setItem(row, 3, QTableWidgetItem(product))
-                self.entries_table.setItem(row, 4, QTableWidgetItem(str(quantity)))
-                self.entries_table.setItem(row, 5, QTableWidgetItem(f"${unit_price:.2f}"))
-                self.entries_table.setItem(row, 6, QTableWidgetItem(f"${total:.2f}"))
+                self.entries_table.setItem(row, 4, QTableWidgetItem(batch_number or ""))
+                
+                # Expiry date with color coding
+                expiry_item = QTableWidgetItem(expiry_date or "")
+                try:
+                    expiry_qdate = QDate.fromString(expiry_date, "yyyy-MM-dd")
+                    if expiry_qdate.isValid():
+                        if expiry_qdate < current_date_qdate:
+                            expiry_item.setBackground(QColor("#ffcccc"))  # Light red for expired
+                            expiry_item.setForeground(QColor("#cc0000"))
+                        elif expiry_qdate < current_date_qdate.addDays(30):
+                            expiry_item.setBackground(QColor("#fff3cd"))  # Light yellow for expiring soon
+                            expiry_item.setForeground(QColor("#856404"))
+                except:
+                    pass
+                self.entries_table.setItem(row, 5, expiry_item)
+                
+                self.entries_table.setItem(row, 6, QTableWidgetItem(str(quantity)))
+                self.entries_table.setItem(row, 7, QTableWidgetItem(f"Rs. {unit_price:.2f}"))
+                self.entries_table.setItem(row, 8, QTableWidgetItem(f"Rs. {total:.2f}"))
                 
                 # Entry type (Credit/Debit)
                 type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
                 type_item.setForeground(QColor("green" if is_credit else "red"))
-                self.entries_table.setItem(row, 7, type_item)
+                self.entries_table.setItem(row, 9, type_item)
                 
-                self.entries_table.setItem(row, 8, QTableWidgetItem(notes or ""))
+                self.entries_table.setItem(row, 10, QTableWidgetItem(notes or ""))
+                
+                # Status column showing expiry status
+                status_text = ""
+                try:
+                    expiry_qdate = QDate.fromString(expiry_date, "yyyy-MM-dd")
+                    if expiry_qdate.isValid():
+                        if expiry_qdate < current_date_qdate:
+                            status_text = "EXPIRED"
+                        elif expiry_qdate < current_date_qdate.addDays(30):
+                            status_text = "EXPIRING SOON"
+                        else:
+                            status_text = "VALID"
+                except:
+                    status_text = "UNKNOWN"
+                
+                status_item = QTableWidgetItem(status_text)
+                if status_text == "EXPIRED":
+                    status_item.setForeground(QColor("#cc0000"))
+                elif status_text == "EXPIRING SOON":
+                    status_item.setForeground(QColor("#856404"))
+                else:
+                    status_item.setForeground(QColor("#155724"))
+                self.entries_table.setItem(row, 11, status_item)
                 
                 # Update totals
                 if is_credit:
@@ -254,15 +359,15 @@ class LedgerTab(QWidget):
             
             # Update summary labels
             self.total_entries_label.setText(f"Total Entries: {len(entries)}")
-            self.total_credit_label.setText(f"Total Credit: ${total_credit:.2f}")
-            self.total_debit_label.setText(f"Total Debit: ${total_debit:.2f}")
+            self.total_credit_label.setText(f"Total Credit: Rs. {total_credit:.2f}")
+            self.total_debit_label.setText(f"Total Debit: Rs. {total_debit:.2f}")
             
             # Get current balance
             self.db.cursor.execute("SELECT MAX(balance) FROM transactions")
             result = self.db.cursor.fetchone()
             current_balance = result[0] if result[0] is not None else 0
             
-            self.balance_label.setText(f"Current Balance: ${current_balance:.2f}")
+            self.balance_label.setText(f"Current Balance: Rs. {current_balance:.2f}")
             
         except Exception as e:
             QMessageBox.critical(self, "Database Error", f"Failed to load entries: {str(e)}")
@@ -274,8 +379,11 @@ class LedgerTab(QWidget):
         self.from_date_edit.setDate(QDate.currentDate().addDays(-30))
         self.to_date_edit.setDate(QDate.currentDate())
         self.customer_filter.setCurrentIndex(0)  # "All Customers"
+        self.product_filter.setCurrentIndex(0)   # "All Products"
+        self.batch_filter.clear()
         self.search_text.clear()
         self.entry_type_filter.setCurrentIndex(0)  # "All Entries"
+        self.expiry_filter.setCurrentIndex(0)      # "All Products"
         self.loadEntries()
     
     def showContextMenu(self, position):
@@ -301,7 +409,7 @@ class LedgerTab(QWidget):
         delete_action = QAction("Delete Entry", self)
         delete_action.triggered.connect(lambda: self.deleteEntry(entry_id))
         
-                # Get customer ID for the selected entry
+        # Get customer ID for the selected entry
         try:
             self.db.connect()
             self.db.cursor.execute("SELECT customer_id FROM entries WHERE id = ?", (entry_id,))
@@ -331,10 +439,10 @@ class LedgerTab(QWidget):
         try:
             self.db.connect()
             
-            # Get entry details
+            # Get entry details with batch and expiry information
             query = '''
                 SELECT 
-                    e.id, e.date, c.name as customer, p.name as product,
+                    e.id, e.date, c.name as customer, p.name as product, p.batch_number, p.expiry_date,
                     e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
                     e.is_credit, e.notes, t.balance
                 FROM entries e
@@ -348,18 +456,35 @@ class LedgerTab(QWidget):
             entry = self.db.cursor.fetchone()
             
             if entry:
-                entry_id, date, customer, product, quantity, unit_price, total, is_credit, notes, balance = entry
+                entry_id, date, customer, product, batch_number, expiry_date, quantity, unit_price, total, is_credit, notes, balance = entry
+                
+                # Check expiry status
+                expiry_status = "UNKNOWN"
+                try:
+                    expiry_qdate = QDate.fromString(expiry_date, "yyyy-MM-dd")
+                    if expiry_qdate.isValid():
+                        current_date = QDate.currentDate()
+                        if expiry_qdate < current_date:
+                            expiry_status = "EXPIRED"
+                        elif expiry_qdate < current_date.addDays(30):
+                            expiry_status = "EXPIRING SOON"
+                        else:
+                            expiry_status = "VALID"
+                except:
+                    pass
                 
                 details = f"""
                 Entry ID: {entry_id}
                 Date: {date}
                 Customer: {customer}
                 Product: {product}
+                Batch Number: {batch_number or "N/A"}
+                Expiry Date: {expiry_date or "N/A"} ({expiry_status})
                 Quantity: {quantity}
-                Unit Price: ${unit_price:.2f}
-                Total Amount: ${total:.2f}
+                Unit Price: Rs. {unit_price:.2f}
+                Total Amount: Rs. {total:.2f}
                 Entry Type: {"Credit" if is_credit else "Debit"}
-                Balance After Transaction: ${balance:.2f}
+                Balance After Transaction: Rs. {balance:.2f}
                 Notes: {notes or "N/A"}
                 """
                 
@@ -377,11 +502,11 @@ class LedgerTab(QWidget):
         try:
             self.db.connect()
             
-            # Get entry details
+            # Get entry details with product batch info
             query = '''
                 SELECT 
                     e.id, e.date, e.customer_id, c.name as customer_name, 
-                    e.product_id, p.name as product_name,
+                    e.product_id, p.name as product_name, p.batch_number, p.expiry_date,
                     e.quantity, e.unit_price, e.is_credit, e.notes
                 FROM entries e
                 JOIN customers c ON e.customer_id = c.id
@@ -399,7 +524,7 @@ class LedgerTab(QWidget):
             # Create edit dialog
             dialog = QDialog(self)
             dialog.setWindowTitle(f"Edit Entry #{entry_id}")
-            dialog.setMinimumWidth(400)
+            dialog.setMinimumWidth(500)
             
             layout = QFormLayout()
             
@@ -414,47 +539,48 @@ class LedgerTab(QWidget):
             customer_label.setReadOnly(True)
             layout.addRow("Customer:", customer_label)
             
-            # Product (read-only)
-            product_label = QLineEdit(entry[5])
+            # Product info (read-only)
+            product_info = f"{entry[5]} (Batch: {entry[6]}, Expiry: {entry[7]})"
+            product_label = QLineEdit(product_info)
             product_label.setReadOnly(True)
-            layout.addRow("Product:", product_label)
+            layout.addRow("Product Details:", product_label)
             
             # Quantity
             quantity_spin = QSpinBox()
             quantity_spin.setMinimum(1)
             quantity_spin.setMaximum(1000)
-            quantity_spin.setValue(entry[6])
+            quantity_spin.setValue(entry[8])
             layout.addRow("Quantity:", quantity_spin)
             
             # Unit price
             unit_price_spin = QDoubleSpinBox()
             unit_price_spin.setMinimum(0.01)
             unit_price_spin.setMaximum(99999.99)
-            unit_price_spin.setValue(entry[7])
-            unit_price_spin.setPrefix("$")
+            unit_price_spin.setValue(entry[9])
+            unit_price_spin.setPrefix("Rs. ")
             layout.addRow("Unit Price:", unit_price_spin)
             
             # Total (calculated, read-only)
             total_field = QLineEdit()
             total_field.setReadOnly(True)
-            total_field.setText(f"${entry[6] * entry[7]:.2f}")
+            total_field.setText(f"Rs. {entry[8] * entry[9]:.2f}")
             layout.addRow("Total:", total_field)
             
             # Update total when quantity or price changes
             def update_total():
                 total = quantity_spin.value() * unit_price_spin.value()
-                total_field.setText(f"${total:.2f}")
+                total_field.setText(f"Rs. {total:.2f}")
             
             quantity_spin.valueChanged.connect(update_total)
             unit_price_spin.valueChanged.connect(update_total)
             
             # Entry type (credit/debit)
             is_credit = QCheckBox("Credit Entry")
-            is_credit.setChecked(entry[8])
+            is_credit.setChecked(entry[10])
             layout.addRow("Entry Type:", is_credit)
             
             # Notes
-            notes_edit = QLineEdit(entry[9] or "")
+            notes_edit = QLineEdit(entry[11] or "")
             layout.addRow("Notes:", notes_edit)
             
             # Buttons
@@ -509,7 +635,7 @@ class LedgerTab(QWidget):
                         # Update all following transactions' balances
                         if amount_diff != 0:
                             # If entry type changed, double the impact
-                            if is_credit_value != entry[8]:
+                            if is_credit_value != entry[10]:
                                 amount_diff *= 2
                             
                             # Adjust sign based on entry type
@@ -550,10 +676,10 @@ class LedgerTab(QWidget):
             
             customer_name = customer[0]
             
-            # Get all entries for this customer
+            # Get all entries for this customer with batch info
             query = """
                 SELECT 
-                    e.id, e.date, p.name as product,
+                    e.id, e.date, p.name as product, p.batch_number, p.expiry_date,
                     e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
                     e.is_credit, e.notes
                 FROM entries e
@@ -571,48 +697,50 @@ class LedgerTab(QWidget):
                 return
             
             # Calculate totals
-            total_credit = sum(e[5] for e in entries if e[6])  # sum of total where is_credit is True
-            total_debit = sum(e[5] for e in entries if not e[6])  # sum of total where is_credit is False
+            total_credit = sum(e[7] for e in entries if e[8])  # sum of total where is_credit is True
+            total_debit = sum(e[7] for e in entries if not e[8])  # sum of total where is_credit is False
             balance = total_credit - total_debit
             
             # Create a dialog to show history
             dialog = QDialog(self)
             dialog.setWindowTitle(f"Transaction History - {customer_name}")
-            dialog.setMinimumSize(700, 500)
+            dialog.setMinimumSize(900, 600)
             
             layout = QVBoxLayout()
             
             # Summary info
             summary = QLabel(f"Customer: {customer_name}\n"
-                            f"Total Credit: ${total_credit:.2f}\n"
-                            f"Total Debit: ${total_debit:.2f}\n"
-                            f"Balance: ${balance:.2f}")
+                            f"Total Credit: Rs. {total_credit:.2f}\n"
+                            f"Total Debit: Rs. {total_debit:.2f}\n"
+                            f"Balance: Rs. {balance:.2f}")
             layout.addWidget(summary)
             
             # Transactions table
             table = QTableWidget()
-            table.setColumnCount(7)
+            table.setColumnCount(9)
             table.setHorizontalHeaderLabels([
-                "Date", "Product", "Quantity", "Unit Price", 
+                "Date", "Product", "Batch", "Expiry", "Quantity", "Unit Price", 
                 "Total", "Type", "Notes"
             ])
             
             table.setRowCount(len(entries))
             
             for row, entry in enumerate(entries):
-                _, date, product, quantity, unit_price, total, is_credit, notes = entry
+                _, date, product, batch_number, expiry_date, quantity, unit_price, total, is_credit, notes = entry
                 
                 table.setItem(row, 0, QTableWidgetItem(date))
                 table.setItem(row, 1, QTableWidgetItem(product))
-                table.setItem(row, 2, QTableWidgetItem(str(quantity)))
-                table.setItem(row, 3, QTableWidgetItem(f"${unit_price:.2f}"))
-                table.setItem(row, 4, QTableWidgetItem(f"${total:.2f}"))
+                table.setItem(row, 2, QTableWidgetItem(batch_number or ""))
+                table.setItem(row, 3, QTableWidgetItem(expiry_date or ""))
+                table.setItem(row, 4, QTableWidgetItem(str(quantity)))
+                table.setItem(row, 5, QTableWidgetItem(f"Rs. {unit_price:.2f}"))
+                table.setItem(row, 6, QTableWidgetItem(f"Rs. {total:.2f}"))
                 
                 type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
                 type_item.setForeground(QColor("green" if is_credit else "red"))
-                table.setItem(row, 5, type_item)
+                table.setItem(row, 7, type_item)
                 
-                table.setItem(row, 6, QTableWidgetItem(notes or ""))
+                table.setItem(row, 8, QTableWidgetItem(notes or ""))
             
             table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
             layout.addWidget(table)
@@ -672,11 +800,11 @@ class LedgerTab(QWidget):
             QMessageBox.critical(self, "Export Error", f"Failed to export data: {str(e)}")
     
     def generateReport(self):
-        """Generate a CSV report of the current filtered entries"""
+        """Generate a report of the current filtered entries"""
         try:
             options = QFileDialog.Options()
             file_name, _ = QFileDialog.getSaveFileName(
-                self, "Save Report", "", "PDF Files (*.pdf);;Text Files (*.txt);;All Files (*)", 
+                self, "Save Report", "", "PDF Files (*.pdf);;Text Files (*.txt);;CSV Files (*.csv);;All Files (*)", 
                 options=options
             )
             
@@ -688,44 +816,54 @@ class LedgerTab(QWidget):
                 self.generatePDFReport(file_name)
             elif file_name.endswith('.txt'):
                 self.generateTextReport(file_name)
+            elif file_name.endswith('.csv'):
+                self.generateCSVReport(file_name)
             else:
-                # Default to text report if no extension
-                self.generateTextReport(file_name + '.txt')
-            
-            # Get all visible rows from the table
-            rows = []
-            headers = []
-            
-            # Get headers
-            for col in range(self.entries_table.columnCount()):
-                headers.append(self.entries_table.horizontalHeaderItem(col).text())
-            
-            rows.append(','.join(f'"{h}"' for h in headers))
-            
-            # Get data
-            for row in range(self.entries_table.rowCount()):
-                row_data = []
-                for col in range(self.entries_table.columnCount()):
-                    item = self.entries_table.item(row, col)
-                    if item:
-                        # Quote values to handle commas
-                        row_data.append(f'"{item.text()}"')
-                    else:
-                        row_data.append('""')
-                
-                rows.append(','.join(row_data))
-            
-            # Write to file
-            with open(file_name, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(rows))
-            
-            # QMessageBox.information(
-            #     self, "Report Generated", 
-            #     f"Report has been saved to:\n{file_name}"
-            # )
+                # Default to CSV report if no extension
+                self.generateCSVReport(file_name + '.csv')
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to generate report: {str(e)}")
+    
+    def generateCSVReport(self, file_name):
+        """Generate a CSV report with enhanced data"""
+        try:
+            with open(file_name, 'w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                
+                # Write header with additional metadata
+                writer.writerow(["Medical Rep Transaction Report"])
+                writer.writerow([f"Generated on: {QDate.currentDate().toString('yyyy-MM-dd')}"])
+                writer.writerow([f"Date Range: {self.from_date_edit.date().toString('yyyy-MM-dd')} to {self.to_date_edit.date().toString('yyyy-MM-dd')}"])
+                writer.writerow([])  # Empty row
+                
+                # Write summary
+                writer.writerow(["SUMMARY"])
+                writer.writerow(["Total Entries", self.entries_table.rowCount()])
+                writer.writerow(["Total Credit", self.total_credit_label.text().split('Rs. ')[1]])
+                writer.writerow(["Total Debit", self.total_debit_label.text().split('Rs. ')[1]])
+                writer.writerow(["Current Balance", self.balance_label.text().split('Rs. ')[1]])
+                writer.writerow([])  # Empty row
+                
+                # Write column headers
+                headers = []
+                for col in range(self.entries_table.columnCount()):
+                    headers.append(self.entries_table.horizontalHeaderItem(col).text())
+                writer.writerow(headers)
+                
+                # Write data rows
+                for row in range(self.entries_table.rowCount()):
+                    row_data = []
+                    for col in range(self.entries_table.columnCount()):
+                        item = self.entries_table.item(row, col)
+                        row_data.append(item.text() if item else "")
+                    writer.writerow(row_data)
+            
+            QMessageBox.information(self, "Report Generated", 
+                                f"CSV report saved successfully to:\n{file_name}")
+            
+        except Exception as e:
+            raise Exception(f"Error writing CSV report: {str(e)}")
             
     def generateTextReport(self, file_name):
         """Generate a simple text report"""
@@ -742,9 +880,9 @@ class LedgerTab(QWidget):
                 
                 # Write summary information
                 f.write(f"Total Entries: {self.entries_table.rowCount()}\n")
-                f.write(f"Total Credit: {self.total_credit_label.text().split('$')[1]}\n")
-                f.write(f"Total Debit: {self.total_debit_label.text().split('$')[1]}\n")
-                f.write(f"Current Balance: {self.balance_label.text().split('$')[1]}\n\n")
+                f.write(f"Total Credit: {self.total_credit_label.text().split('Rs. ')[1]}\n")
+                f.write(f"Total Debit: {self.total_debit_label.text().split('Rs. ')[1]}\n")
+                f.write(f"Current Balance: {self.balance_label.text().split('Rs. ')[1]}\n\n")
                 
                 # Write table header
                 headers = []
@@ -752,7 +890,7 @@ class LedgerTab(QWidget):
                     headers.append(self.entries_table.horizontalHeaderItem(col).text())
                 
                 # Calculate column widths
-                col_widths = [max(len(header), 15) for header in headers]
+                col_widths = [max(len(header), 12) for header in headers]
                 
                 # Write header row
                 header_row = "  ".join(h.ljust(w) for h, w in zip(headers, col_widths))
@@ -765,6 +903,9 @@ class LedgerTab(QWidget):
                     for col in range(self.entries_table.columnCount()):
                         item = self.entries_table.item(row, col)
                         text = item.text() if item else ""
+                        # Truncate long text to fit columns
+                        if len(text) > col_widths[col]:
+                            text = text[:col_widths[col]-3] + "..."
                         row_data.append(text.ljust(col_widths[col]))
                     f.write("  ".join(row_data) + "\n")
             
@@ -779,18 +920,18 @@ class LedgerTab(QWidget):
         try:
             # Check if reportlab is installed
             try:
-                from reportlab.lib.pagesizes import letter
+                from reportlab.lib.pagesizes import letter, landscape
                 from reportlab.lib import colors
                 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
                 from reportlab.lib.styles import getSampleStyleSheet
             except ImportError:
                 QMessageBox.warning(self, "Missing Library", 
                                 "ReportLab library is required for PDF reports.\n"
-                                "Generating text report instead.")
-                return self.generateTextReport(file_name.replace('.pdf', '.txt'))
+                                "Generating CSV report instead.")
+                return self.generateCSVReport(file_name.replace('.pdf', '.csv'))
             
-            # Create PDF document
-            doc = SimpleDocTemplate(file_name, pagesize=letter)
+            # Create PDF document with landscape orientation for more columns
+            doc = SimpleDocTemplate(file_name, pagesize=landscape(letter))
             elements = []
             
             # Add title
@@ -811,22 +952,33 @@ class LedgerTab(QWidget):
             elements.append(Paragraph(f"Current Balance: {self.balance_label.text()}", styles['Normal']))
             elements.append(Spacer(1, 24))
             
-            # Create table data
+            # Create table data (limit columns to fit page)
             data = []
             
-            # Add header row
+            # Add header row (first 9 columns to fit landscape page)
             headers = []
-            for col in range(min(7, self.entries_table.columnCount())):  # Limit to first 7 columns to fit page
+            max_cols = min(9, self.entries_table.columnCount())
+            for col in range(max_cols):
                 headers.append(self.entries_table.horizontalHeaderItem(col).text())
             data.append(headers)
             
             # Add data rows
-            for row in range(self.entries_table.rowCount()):
+            max_rows = min(30, self.entries_table.rowCount())  # Limit rows to fit page
+            for row in range(max_rows):
                 row_data = []
-                for col in range(min(7, self.entries_table.columnCount())):
+                for col in range(max_cols):
                     item = self.entries_table.item(row, col)
-                    row_data.append(item.text() if item else "")
+                    text = item.text() if item else ""
+                    # Truncate long text
+                    if len(text) > 15:
+                        text = text[:12] + "..."
+                    row_data.append(text)
                 data.append(row_data)
+            
+            # Add note if data was truncated
+            if self.entries_table.rowCount() > max_rows:
+                elements.append(Paragraph(f"Note: Showing first {max_rows} entries of {self.entries_table.rowCount()} total entries.", styles['Normal']))
+                elements.append(Spacer(1, 12))
             
             # Create table
             table = Table(data)
@@ -837,13 +989,13 @@ class LedgerTab(QWidget):
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                 ('BACKGROUND', (0, 1), (-1, -1), colors.white),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 1), (-1, -1), 10),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
             ])
             
             # Alternate row colors for readability

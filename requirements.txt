@@ -1,6 +1,8 @@
 PyQt5==5.15.9
-matplotlib==3.7.1
-pandas==2.0.1
+PyQtChart==5.15.6
 pytest==7.3.1
 sqlalchemy==2.0.15
-reportlab==4.0.4  # Optional, for PDF support
+reportlab==4.0.4
+cryptography==41.0.3
+pillow>=10.0.0
+xlsxwriter==3.1.9

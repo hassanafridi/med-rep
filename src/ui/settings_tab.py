@@ -1,10 +1,16 @@
+import datetime
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QLineEdit, QFileDialog, QGroupBox, QFormLayout, QComboBox,
     QMessageBox, QListWidget, QListWidgetItem, QDialog, QDialogButtonBox, 
-    QCheckBox, QTimeEdit, QSpinBox
+    QCheckBox, QTimeEdit, QSpinBox, QProgressDialog, QApplication, QLabel,
+    QProgressBar
 )
+from src.database.database_maintenance import DatabaseMaintenance
+from src.utils.auto_updater import AutoUpdater
+from src.utils.sync_manager import SyncManager, SyncStatus
 from PyQt5.QtCore import QDateTime, Qt, QTime
+from PyQt5.QtGui import QColor
 import os
 import sys
 import shutil
@@ -21,7 +27,12 @@ class RestoreDialog(QDialog):
         self.backup_files = backup_files
         self.selected_backup = None
         self.initUI()
-        
+        self.sync_manager = SyncManager(self.db.db_path)
+        self.sync_manager.sync_started.connect(self.onSyncStarted)
+        self.sync_manager.sync_completed.connect(self.onSyncCompleted)
+        self.sync_manager.sync_progress.connect(self.onSyncProgress)
+        self.sync_manager.sync_status_changed.connect(self.onSyncStatusChanged)
+
     def initUI(self):
         """Initialize the dialog UI"""
         self.setWindowTitle("Restore Backup")
@@ -80,9 +91,25 @@ class SettingsTab(QWidget):
         """Initialize the UI components"""
         main_layout = QVBoxLayout()
         
+        # Add update button in update group
+        update_group = QGroupBox("Updates")
+        update_layout = QVBoxLayout()
+        
+        self.update_btn = QPushButton("Check for Updates")
+        self.update_btn.clicked.connect(self.checkForUpdates)
+        update_layout.addWidget(self.update_btn)  # Use update_layout instead of layout
+        
+        update_group.setLayout(update_layout)
+        main_layout.addWidget(update_group)
+        
         # Database Settings
         db_group = QGroupBox("Database Settings")
         db_layout = QFormLayout()
+        
+        # Add maintenance button
+        self.maintenance_btn = QPushButton("Database Maintenance")
+        self.maintenance_btn.clicked.connect(self.showDatabaseMaintenance)
+        db_layout.addRow("Maintenance:", self.maintenance_btn)
         
         # DB path
         self.db_path_edit = QLineEdit()
@@ -161,7 +188,7 @@ class SettingsTab(QWidget):
         
         # Currency format
         self.currency_combo = QComboBox()
-        self.currency_combo.addItems(["$ (USD)", "€ (EUR)", "£ (GBP)", "¥ (JPY)"])
+        self.currency_combo.addItems(["Rs.  (PKR)", "$ (USD)"])
         app_layout.addRow("Currency Format:", self.currency_combo)
         
         # Log level
@@ -191,6 +218,10 @@ class SettingsTab(QWidget):
         cloud_info.setWordWrap(True)
         cloud_layout.addWidget(cloud_info)
         
+        # Sync status
+        self.sync_status_label = QLabel("Sync Status: Not configured")
+        cloud_layout.addWidget(self.sync_status_label)
+        
         # Setup cloud button
         self.setup_cloud_btn = QPushButton("Setup Cloud Sync")
         self.setup_cloud_btn.clicked.connect(self.setupCloudSync)
@@ -199,17 +230,221 @@ class SettingsTab(QWidget):
         cloud_group.setLayout(cloud_layout)
         main_layout.addWidget(cloud_group)
         
+        # Sync progress bar
+        self.sync_progress = QProgressBar()
+        self.sync_progress.setVisible(False)
+        cloud_layout.addWidget(self.sync_progress)
+
+        # Sync info
+        self.sync_info_label = QLabel("")
+        cloud_layout.addWidget(self.sync_info_label)
+
+        # Manual sync button
+        self.sync_now_btn = QPushButton("Sync Now")
+        self.sync_now_btn.setEnabled(False)
+        self.sync_now_btn.clicked.connect(self.syncNow)
+        cloud_layout.addWidget(self.sync_now_btn)
+        
         # About
         about_label = QLabel(
             "Medical Rep Transaction Software\n"
             "Version 1.0\n"
-            "© 2025 Your Company"
+            "© 2025 BSOLS Technologies\n"
         )
         about_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(about_label)
         
         self.setLayout(main_layout)
     
+    def setupCloudSync(self):
+        """Set up cloud sync"""
+        # Check if sync is already configured
+        if self.sync_manager.sync_enabled:
+            reply = QMessageBox.question(
+                self, "Cloud Sync",
+                f"Cloud sync is already configured to:\n{self.sync_manager.sync_dir}\n\nDo you want to reconfigure it?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply == QMessageBox.No:
+                return
+        
+        # Show folder selection dialog
+        sync_dir = QFileDialog.getExistingDirectory(
+            self, "Select Cloud Sync Folder",
+            self.sync_manager.sync_dir or os.path.expanduser("~"),
+            QFileDialog.ShowDirsOnly
+        )
+        
+        if sync_dir:
+            # Configure sync
+            self.sync_manager.set_sync_directory(sync_dir)
+            
+            # Update UI
+            self.updateSyncStatus()
+            
+            # Ask about auto-sync
+            reply = QMessageBox.question(
+                self, "Auto Sync",
+                "Do you want to enable automatic synchronization?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.Yes:
+                self.configureAutoSync()
+
+    def configureAutoSync(self):
+        """Configure auto sync settings"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Auto Sync Settings")
+        dialog.setMinimumWidth(300)
+        
+        layout = QFormLayout()
+        
+        # Enable checkbox
+        enable_checkbox = QCheckBox("Enable automatic synchronization")
+        enable_checkbox.setChecked(self.sync_manager.auto_sync_enabled)
+        layout.addRow(enable_checkbox)
+        
+        # Interval spinner
+        interval_spinner = QSpinBox()
+        interval_spinner.setMinimum(5)
+        interval_spinner.setMaximum(1440)  # 24 hours
+        interval_spinner.setValue(self.sync_manager.sync_interval)
+        interval_spinner.setSuffix(" minutes")
+        layout.addRow("Sync interval:", interval_spinner)
+        
+        # Buttons
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        layout.addRow(button_box)
+        
+        dialog.setLayout(layout)
+        
+        if dialog.exec_() == QDialog.Accepted:
+            # Save settings
+            self.sync_manager.set_auto_sync(
+                enable_checkbox.isChecked(),
+                interval_spinner.value()
+            )
+            
+            # Update UI
+            self.updateSyncStatus()
+
+    def syncNow(self):
+        """Manually trigger synchronization"""
+        if self.sync_manager.sync_enabled:
+            self.sync_manager.sync()
+
+    def onSyncStarted(self):
+        """Handle sync started signal"""
+        self.sync_progress.setVisible(True)
+        self.sync_progress.setValue(0)
+        self.sync_info_label.setText("Synchronization in progress...")
+        self.sync_now_btn.setEnabled(False)
+
+    def onSyncCompleted(self, success, message):
+        """Handle sync completed signal"""
+        self.sync_progress.setVisible(False)
+        self.sync_info_label.setText(message)
+        self.sync_now_btn.setEnabled(True)
+        self.updateSyncStatus()
+
+    def onSyncProgress(self, progress, message):
+        """Handle sync progress signal"""
+        self.sync_progress.setValue(progress)
+        self.sync_info_label.setText(message)
+
+    def onSyncStatusChanged(self, status):
+        """Handle sync status change signal"""
+        self.updateSyncStatus()
+
+    def updateSyncStatus(self):
+        """Update sync status display"""
+        if not self.sync_manager.sync_enabled:
+            self.sync_status_label.setText("Sync Status: Not configured")
+            self.sync_now_btn.setEnabled(False)
+            return
+        
+        status_text = "Unknown"
+        status_color = "black"
+        
+        if self.sync_manager.sync_status == SyncStatus.IDLE:
+            status_text = "Idle"
+            status_color = "black"
+        elif self.sync_manager.sync_status == SyncStatus.SYNCING:
+            status_text = "Syncing..."
+            status_color = "blue"
+        elif self.sync_manager.sync_status == SyncStatus.ERROR:
+            status_text = "Error"
+            status_color = "red"
+        elif self.sync_manager.sync_status == SyncStatus.SUCCESS:
+            status_text = "Synchronized"
+            status_color = "green"
+        
+        # Update sync info
+        sync_info = f"Sync Directory: {self.sync_manager.sync_dir}"
+        
+        if self.sync_manager.auto_sync_enabled:
+            sync_info += f"\nAuto Sync: Every {self.sync_manager.sync_interval} minutes"
+        else:
+            sync_info += "\nAuto Sync: Disabled"
+        
+        if self.sync_manager.last_sync_time:
+            try:
+                last_sync = datetime.datetime.fromisoformat(self.sync_manager.last_sync_time)
+                sync_info += f"\nLast Sync: {last_sync.strftime('%Y-%m-%d %H:%M:%S')}"
+            except:
+                sync_info += f"\nLast Sync: {self.sync_manager.last_sync_time}"
+        else:
+            sync_info += "\nLast Sync: Never"
+            
+        self.sync_status_label.setText(f"Sync Status: <span style='color: {status_color};'>{status_text}</span>")
+        self.sync_status_label.setTextFormat(Qt.RichText)
+        self.sync_info_label.setText(sync_info)
+        self.sync_now_btn.setEnabled(self.sync_manager.sync_enabled and self.sync_manager.sync_status != SyncStatus.SYNCING)
+        
+    def checkForUpdates(self):
+        """Check for application updates"""
+        app_version = "1.0.0"  # Hardcoded for this example
+        updater = AutoUpdater(app_version, "https://example.com/updates", self)
+        
+        # Show checking message
+        checking_dialog = QProgressDialog("Checking for updates...", None, 0, 0, self)
+        checking_dialog.setWindowTitle("Update Check")
+        checking_dialog.setWindowModality(Qt.WindowModal)
+        checking_dialog.show()
+        
+        # Process events to show dialog
+        QApplication.processEvents()
+        
+        # Check for updates
+        update_available, update_info = updater.check_for_updates()
+        
+        # Close checking dialog
+        checking_dialog.cancel()
+        
+        if update_available:
+            # Show update available message
+            reply = QMessageBox.question(
+                self, "Update Available",
+                f"A new version is available: {update_info['version']}\n\n"
+                f"Current version: {app_version}\n\n"
+                f"Changes:\n{update_info.get('changes', 'No change information available.')}\n\n"
+                "Do you want to download and install this update?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.Yes:
+                # Download update
+                updater.download_update(update_info)
+        else:
+            QMessageBox.information(
+                self, "No Updates Available",
+                f"You are using the latest version ({app_version})."
+            )
+        
     def browseDbPath(self):
         """Browse for new database path"""
         options = QFileDialog.Options()
@@ -231,6 +466,103 @@ class SettingsTab(QWidget):
         
         if backup_dir:
             self.backup_path_edit.setText(backup_dir)
+    
+    def showDatabaseMaintenance(self):
+        """Show database maintenance dialog"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Database Maintenance")
+        dialog.setMinimumWidth(500)
+        
+        layout = QVBoxLayout()
+        
+        # Create database maintenance instance
+        db_maintenance = DatabaseMaintenance(self.db.db_path)
+        
+        # Get database info
+        db_info = db_maintenance.get_database_info()
+        
+        # Info group
+        info_group = QGroupBox("Database Information")
+        info_layout = QFormLayout()
+        
+        if db_info:
+            info_layout.addRow("Database Size:", QLabel(f"{db_info['file_size']:.2f} MB"))
+            info_layout.addRow("Last Modified:", QLabel(db_info['last_modified']))
+            info_layout.addRow("Total Records:", QLabel(str(db_info['total_rows'])))
+            
+            table_info = ""
+            for table in db_info['tables']:
+                table_info += f"{table['name']}: {table['rows']} rows\n"
+            
+            table_label = QLabel(table_info)
+            table_label.setWordWrap(True)
+            info_layout.addRow("Tables:", table_label)
+        else:
+            info_layout.addRow("Status:", QLabel("Failed to retrieve database information"))
+        
+        info_group.setLayout(info_layout)
+        layout.addWidget(info_group)
+        
+        # Actions group
+        actions_group = QGroupBox("Maintenance Actions")
+        actions_layout = QVBoxLayout()
+        
+        # Integrity check button
+        integrity_btn = QPushButton("Check Database Integrity")
+        integrity_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.check_integrity, "Integrity Check"))
+        
+        # Vacuum button
+        vacuum_btn = QPushButton("Vacuum Database")
+        vacuum_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.vacuum_database, "Vacuum"))
+        
+        # Optimize button
+        optimize_btn = QPushButton("Optimize Database")
+        optimize_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.optimize_database, "Optimization"))
+        
+        # Repair button
+        repair_btn = QPushButton("Repair Database")
+        repair_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.repair_database, "Repair"))
+        
+        actions_layout.addWidget(integrity_btn)
+        actions_layout.addWidget(vacuum_btn)
+        actions_layout.addWidget(optimize_btn)
+        actions_layout.addWidget(repair_btn)
+        
+        actions_group.setLayout(actions_layout)
+        layout.addWidget(actions_group)
+        
+        # Close button
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def runMaintenance(self, maintenance_func, action_name):
+        """Run a maintenance function with progress dialog"""
+        # Create progress dialog
+        progress = QProgressDialog(f"{action_name} in progress...", "Cancel", 0, 0, self)
+        progress.setWindowTitle(f"Database {action_name}")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        progress.show()
+        
+        # Process events to show dialog
+        QApplication.processEvents()
+        
+        # Run maintenance function
+        success, message = maintenance_func()
+        
+        # Close progress dialog
+        progress.cancel()
+        
+        # Show result
+        if success:
+            QMessageBox.information(self, f"{action_name} Completed", message)
+        else:
+            QMessageBox.critical(self, f"{action_name} Failed", message)
     
     def loadBackupsList(self):
         """Load list of backups from backup directory"""

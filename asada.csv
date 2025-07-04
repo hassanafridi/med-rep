@@ -1,4 +1,7 @@
 ID,Date,Customer,Product,Quantity,Unit Price,Total,Type,Notes
+28,2025-05-10,Umar,PainAway,36,$19.75,$711.00,Debit,
+27,2025-05-10,Umar,HealthBoost,29,$137.00,$3973.00,Credit,
+26,2025-05-10,John Doe,MediCure,1,$25.50,$25.50,Debit,
 25,2025-05-10,John Doe,MediCure,6,$20.50,$123.00,Credit,aaaaa
 24,2025-05-10,Jane Smith,PainAway,19,$18.75,$356.25,Credit,
 22,2025-05-10,Jane Smith,PainAway,1,$12.75,$12.75,Debit,
