@@ -16,6 +16,7 @@ from src.ui.graphs_tab import GraphsTab
 from src.ui.reports_tab import ReportsTab
 from src.ui.settings_tab import SettingsTab
 from src.ui.manage_data_tab import ManageDataTab
+from src.database.mongo_db import MongoDB
 from src.database.db import Database
 from src.config import Config
 from src.user_auth import UserAuth
@@ -45,11 +46,28 @@ class MainWindow(QMainWindow):
         logging.getLogger().setLevel(log_level)
                 
         # Initialize database
-        self.db = Database(self.config.get('db_path'))
-        self.init_database()
+        if self.config.get('db_type') == 'mongo':
+            self.db = MongoDB(
+                connection_string=self.config.get('mongo_uri'),
+                database_name=self.config.get('mongo_dbname', 'medrep')
+            )
+            if not self.db.connect():
+                QMessageBox.critical(self, "Database Error",
+                    "Cannot connect to MongoDB Atlas\n"
+                    "Please check your mongo_uri in data/config.json")
+                sys.exit(1)
+        else:
+            # legacy SQLite
+            self.db = Database(self.config.get('db_path'))
+            self.init_database()
         
         # Initialize user authentication
-        self.auth_manager = UserAuth(self.db.db_path)
+        if self.config.get('db_type') == 'mongo':
+            # pass the MongoDB instance itself
+            self.auth_manager = UserAuth(self.db)
+        else:
+            # pass the sqlite file path
+            self.auth_manager = UserAuth(self.db.db_path)
         self.current_user = None
         
         # Show login dialog

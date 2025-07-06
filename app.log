@@ -3035,3 +3035,75 @@
 2025-07-06 22:10:22,708 - database.db - INFO - Connected to database: data/medtran.db
 2025-07-06 22:10:22,712 - database.db - INFO - Database connection closed
 2025-07-06 22:10:22,712 - database.db - INFO - Database connection closed
+2025-07-06 23:34:52,488 - root - INFO - Configuration loaded from data\config.json
+2025-07-06 23:34:52,489 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-07-06 23:34:52,490 - src.database.db - INFO - Database initialized successfully
+2025-07-06 23:34:52,490 - src.database.db - INFO - Database connection closed
+2025-07-06 23:34:52,490 - src.database.db - INFO - Connected to database: data\medtran.db
+2025-07-06 23:34:52,490 - src.database.db - INFO - Database connection closed
+2025-07-06 23:34:55,664 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,664 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,666 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,667 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,670 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,671 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,675 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,679 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,681 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,683 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,684 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,685 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,688 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,689 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,744 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,745 - src.database.db - INFO - Database connection closed
+2025-07-06 23:34:55,757 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,758 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,758 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,759 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,759 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,761 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,771 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,771 - database.db - INFO - Database connection closed
+2025-07-06 23:34:55,772 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:34:55,772 - database.db - INFO - Database connection closed
+2025-07-06 23:34:58,851 - root - INFO - Configuration saved to data\config.json
+2025-07-06 23:34:58,851 - root - INFO - Configuration saved to data\config.json
+2025-07-06 23:47:12,234 - root - INFO - Configuration loaded from data\config.json
+2025-07-06 23:47:12,915 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-06 23:49:08,007 - root - INFO - Configuration loaded from data\config.json
+2025-07-06 23:49:09,442 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-06 23:49:13,544 - root - ERROR - Mongo auth error: 'salt'
+2025-07-06 23:49:17,791 - root - ERROR - Mongo auth error: 'salt'
+2025-07-06 23:49:35,070 - root - ERROR - Mongo auth error: 'salt'
+2025-07-06 23:50:48,671 - root - INFO - Configuration loaded from data\config.json
+2025-07-06 23:50:49,368 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-06 23:50:54,260 - root - ERROR - Mongo auth error: 'salt'
+2025-07-06 23:52:56,751 - root - INFO - Configuration loaded from data\config.json
+2025-07-06 23:52:57,437 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-06 23:53:00,433 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,434 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,435 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,436 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,439 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,440 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,444 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,448 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,450 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,453 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,454 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,455 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,458 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,458 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,518 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,519 - src.database.db - INFO - Database connection closed
+2025-07-06 23:53:00,532 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,533 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,533 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,534 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,534 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,536 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,547 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,548 - database.db - INFO - Database connection closed
+2025-07-06 23:53:00,548 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-06 23:53:00,549 - database.db - INFO - Database connection closed

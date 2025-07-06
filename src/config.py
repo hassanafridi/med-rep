@@ -15,11 +15,17 @@ class Config:
         # Default configuration
         self.default_config = {
             'db_path': os.path.join('data', 'medtran.db'),
+            # choose 'sqlite' or 'mongo'
+            'db_type': 'mongo',
+            
             'backup_path': os.path.join('data', 'backups'),
             'currency_format': 'Rs.  (PKR)',
             'log_level': 'INFO',
             'window_width': 1000,
             'window_height': 700
+            # if you switch to mongo at runtime, you can override these in data/config.json:
+            # 'mongo_uri': '<your Atlas URI here>',
+            # 'mongo_dbname': 'medrep'
         }
         
         # Current configuration (start with defaults)

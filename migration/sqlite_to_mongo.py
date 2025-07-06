@@ -5,6 +5,7 @@ import sys
 import os
 from datetime import datetime, timezone
 import logging
+from pymongo.errors import DuplicateKeyError
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -64,8 +65,12 @@ class SQLiteToMongoMigrator:
                     "legacy_id": customer["id"]  # Keep original ID for reference
                 }
                 
-                result = self.mongo_db.db.customers.insert_one(customer_doc)
-                logger.debug(f"Migrated customer: {customer['name']} -> {result.inserted_id}")
+                try:
+                    result = self.mongo_db.db.customers.insert_one(customer_doc)
+                    logger.debug(f"Migrated customer: {customer['name']} -> {result.inserted_id}")
+                except DuplicateKeyError:
+                    logger.warning(f"Skipping duplicate customer id={customer['id']} name={customer['name']}")
+                    continue
             
             logger.info(f"Successfully migrated {len(customers)} customers")
             return True
@@ -94,8 +99,12 @@ class SQLiteToMongoMigrator:
                     "legacy_id": product["id"]  # Keep original ID for reference
                 }
                 
-                result = self.mongo_db.db.products.insert_one(product_doc)
-                logger.debug(f"Migrated product: {product['name']} -> {result.inserted_id}")
+                try:
+                    result = self.mongo_db.db.products.insert_one(product_doc)
+                    logger.debug(f"Migrated product: {product['name']} -> {result.inserted_id}")
+                except DuplicateKeyError:
+                    logger.warning(f"Skipping duplicate product id={product['id']} name={product['name']}")
+                    continue
             
             logger.info(f"Successfully migrated {len(products)} products")
             return True
@@ -138,8 +147,12 @@ class SQLiteToMongoMigrator:
                     "legacy_id": entry["id"]  # Keep original ID for reference
                 }
                 
-                result = self.mongo_db.db.entries.insert_one(entry_doc)
-                logger.debug(f"Migrated entry: {entry['id']} -> {result.inserted_id}")
+                try:
+                    result = self.mongo_db.db.entries.insert_one(entry_doc)
+                    logger.debug(f"Migrated entry: {entry['id']} -> {result.inserted_id}")
+                except DuplicateKeyError:
+                    logger.warning(f"Skipping duplicate entry id={entry['id']}")
+                    continue
             
             logger.info(f"Successfully migrated entries")
             return True
@@ -176,8 +189,12 @@ class SQLiteToMongoMigrator:
                     "legacy_id": transaction["id"]  # Keep original ID for reference
                 }
                 
-                result = self.mongo_db.db.transactions.insert_one(transaction_doc)
-                logger.debug(f"Migrated transaction: {transaction['id']} -> {result.inserted_id}")
+                try:
+                    result = self.mongo_db.db.transactions.insert_one(transaction_doc)
+                    logger.debug(f"Migrated transaction: {transaction['id']} -> {result.inserted_id}")
+                except DuplicateKeyError:
+                    logger.warning(f"Skipping duplicate transaction id={transaction['id']}")
+                    continue
             
             logger.info(f"Successfully migrated transactions")
             return True
@@ -206,14 +223,20 @@ class SQLiteToMongoMigrator:
                 user_doc = {
                     "username": user["username"],
                     "password_hash": user["password_hash"],
+                    "salt": user["salt"],          # ← carry the salt across
                     "role": user["role"] or "user",
                     "created_at": self._parse_timestamp(user["created_at"]),
                     "last_login": self._parse_timestamp(user["last_login"]) if user["last_login"] else None,
                     "legacy_id": user["id"]  # Keep original ID for reference
                 }
                 
-                result = self.mongo_db.db.users.insert_one(user_doc)
-                logger.debug(f"Migrated user: {user['username']} -> {result.inserted_id}")
+                # upsert will create the doc if missing, or update the existing one
+                self.mongo_db.db.users.update_one(
+                    {"username": user["username"]},
+                    {"$set": user_doc},
+                    upsert=True
+                )
+                logger.debug(f"Upserted user: {user['username']}")
             
             logger.info(f"Successfully migrated users")
             return True
@@ -288,9 +311,9 @@ class SQLiteToMongoMigrator:
                 mongo_count = mongo_counts.get(table, 0)
                 
                 if sqlite_count == mongo_count:
-                    logger.info(f"✓ {table}: {sqlite_count} records migrated successfully")
+                    logger.info(f"[OK] {table}: {sqlite_count} records migrated successfully")
                 else:
-                    logger.error(f"✗ {table}: SQLite has {sqlite_count} records, MongoDB has {mongo_count}")
+                    logger.error(f"[MISMATCH] {table}: SQLite={sqlite_count}, MongoDB={mongo_count}")
                     success = False
             
             if success:
