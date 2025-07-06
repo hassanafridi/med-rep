@@ -1,1051 +1,433 @@
-from PyQt5.QtWidgets import (
-    QWidget, 
-    QVBoxLayout, 
-    QHBoxLayout, 
-    QTableWidget, 
-    QTableWidgetItem,
-    QPushButton, 
-    QLineEdit, 
-    QLabel, 
-    QDateEdit, 
-    QComboBox, 
-    QMenu, 
-    QAction, 
-    QMessageBox, 
-    QHeaderView, 
-    QGroupBox, 
-    QFormLayout, 
-    QFileDialog,
-    QDialog, 
-    QDialogButtonBox, 
-    QCheckBox, 
-    QSpinBox,
-    QDoubleSpinBox,
-)
-from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QColor
-import sys
+"""
+Enhanced Ledger Tab with Invoice Download functionality
+Allows downloading/regenerating invoices for any entry
+"""
+
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+                             QPushButton, QTableWidget, QTableWidgetItem,
+                             QMessageBox, QHeaderView, QFileDialog,
+                             QComboBox, QLineEdit, QDateEdit, QGroupBox,
+                             QFormLayout, QCheckBox)
+from PyQt5.QtCore import Qt, QDate, pyqtSignal
+from PyQt5.QtGui import QFont, QIcon
+from datetime import datetime
+import json
 import os
-import csv
+import re
 
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+# Import the auto invoice generator
+from src.utils.auto_invoice_generator import AutoInvoiceGenerator
 
-# Make sure we can import from parent directory
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database.db import Database
+# Import database module
+from src.database.db import Database
+
 
 class LedgerTab(QWidget):
+    """
+    Enhanced Ledger tab with invoice download functionality
+    """
+    
     def __init__(self):
         super().__init__()
         self.db = Database()
+        self.invoice_generator = AutoInvoiceGenerator()
         self.initUI()
-        
+        self.loadEntries()
+    
     def initUI(self):
-        """Initialize the UI components"""
+        """Initialize the UI"""
         main_layout = QVBoxLayout()
         
-        # Create search/filter section
-        filter_group = QGroupBox("Search & Filter")
+        # Title
+        title = QLabel("Ledger")
+        title.setFont(QFont("Arial", 16, QFont.Bold))
+        main_layout.addWidget(title)
+        
+        # Filter section
+        filter_group = QGroupBox("Filters")
         filter_layout = QFormLayout()
         
-        # Date range filters
-        date_range_layout = QHBoxLayout()
-        
+        # Date range
+        date_layout = QHBoxLayout()
         self.from_date_edit = QDateEdit()
-        self.from_date_edit.setDate(QDate.currentDate().addDays(-30))  # Default to last 30 days
         self.from_date_edit.setCalendarPopup(True)
-        
+        self.from_date_edit.setDate(QDate.currentDate().addMonths(-1))
         self.to_date_edit = QDateEdit()
-        self.to_date_edit.setDate(QDate.currentDate())
         self.to_date_edit.setCalendarPopup(True)
-        
-        date_range_layout.addWidget(QLabel("From:"))
-        date_range_layout.addWidget(self.from_date_edit)
-        date_range_layout.addWidget(QLabel("To:"))
-        date_range_layout.addWidget(self.to_date_edit)
-        
-        filter_layout.addRow("Date Range:", date_range_layout)
+        self.to_date_edit.setDate(QDate.currentDate())
+        date_layout.addWidget(QLabel("From:"))
+        date_layout.addWidget(self.from_date_edit)
+        date_layout.addWidget(QLabel("To:"))
+        date_layout.addWidget(self.to_date_edit)
+        filter_layout.addRow("Date Range:", date_layout)
         
         # Customer filter
         self.customer_filter = QComboBox()
-        self.customer_filter.addItem("All Customers", None)
+        self.customer_filter.addItem("All Customers")
+        self.loadCustomers()
         filter_layout.addRow("Customer:", self.customer_filter)
         
-        # Product filter (by name)
-        self.product_filter = QComboBox()
-        self.product_filter.addItem("All Products", None)
-        filter_layout.addRow("Product:", self.product_filter)
-        
-        # Batch number filter
-        self.batch_filter = QLineEdit()
-        self.batch_filter.setPlaceholderText("Search by batch number...")
-        filter_layout.addRow("Batch Number:", self.batch_filter)
-        
-        # Search by note text
-        self.search_text = QLineEdit()
-        self.search_text.setPlaceholderText("Search by notes...")
-        filter_layout.addRow("Search Notes:", self.search_text)
+        # Search notes
+        self.search_edit = QLineEdit()
+        self.search_edit.setPlaceholderText("Search in notes...")
+        filter_layout.addRow("Search:", self.search_edit)
         
         # Entry type filter
-        self.entry_type_filter = QComboBox()
-        self.entry_type_filter.addItems(["All Entries", "Credit Only", "Debit Only"])
-        filter_layout.addRow("Entry Type:", self.entry_type_filter)
+        type_layout = QHBoxLayout()
+        self.all_type_check = QCheckBox("All")
+        self.all_type_check.setChecked(True)
+        self.credit_check = QCheckBox("Credit")
+        self.debit_check = QCheckBox("Debit")
+        type_layout.addWidget(self.all_type_check)
+        type_layout.addWidget(self.credit_check)
+        type_layout.addWidget(self.debit_check)
+        filter_layout.addRow("Type:", type_layout)
         
-        # Expiry status filter
-        self.expiry_filter = QComboBox()
-        self.expiry_filter.addItems(["All Products", "Expired Products", "Expiring Soon", "Valid Products"])
-        filter_layout.addRow("Expiry Status:", self.expiry_filter)
+        # Apply filters button
+        self.apply_filters_btn = QPushButton("Apply Filters")
+        self.apply_filters_btn.clicked.connect(self.loadEntries)
+        filter_layout.addRow("", self.apply_filters_btn)
         
-        # Apply filter button
-        button_layout = QHBoxLayout()
-        
-        self.apply_filter_btn = QPushButton("Apply Filters")
-        self.apply_filter_btn.clicked.connect(self.loadEntries)
-        
-        self.clear_filter_btn = QPushButton("Clear Filters")
-        self.clear_filter_btn.clicked.connect(self.clearFilters)
-        
-        button_layout.addWidget(self.apply_filter_btn)
-        button_layout.addWidget(self.clear_filter_btn)
-        
-        filter_layout.addRow("", button_layout)
         filter_group.setLayout(filter_layout)
         main_layout.addWidget(filter_group)
         
-        # Create table for entries with additional columns
+        # Entries table
         self.entries_table = QTableWidget()
-        self.entries_table.setColumnCount(12)
+        self.entries_table.setColumnCount(10)  # Added column for invoice button
         self.entries_table.setHorizontalHeaderLabels([
-            "ID", "Date", "Customer", "Product", "Batch Number", "Expiry Date", 
-            "Quantity", "Unit Price", "Total", "Type", "Notes", "Status"
+            'Date', 'Customer', 'Product', 'Quantity', 'Unit Price', 
+            'Amount', 'Type', 'Balance', 'Notes', 'Invoice'
         ])
         
-        # Add Generate Report button (if not already defined)
-        self.report_btn = QPushButton("Generate Report")
-        self.report_btn.clicked.connect(self.generateReport)
-
-        # Add it to your layout (you might need to adjust this to match your existing layout)
-        button_layout.addWidget(self.report_btn)  # or add it to summary_layout if that's where it belongs
+        # Adjust column widths
+        header = self.entries_table.horizontalHeader()
+        header.setSectionResizeMode(1, QHeaderView.Stretch)  # Customer
+        header.setSectionResizeMode(2, QHeaderView.Stretch)  # Product
+        header.setSectionResizeMode(8, QHeaderView.Stretch)  # Notes
         
-        # Set column widths
-        self.entries_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.entries_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)  # ID column
-        self.entries_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)  # Batch column
-        self.entries_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)  # Expiry column
-        
-        # Enable context menu
-        self.entries_table.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.entries_table.customContextMenuRequested.connect(self.showContextMenu)
-        
+        self.entries_table.setSelectionBehavior(QTableWidget.SelectRows)
         main_layout.addWidget(self.entries_table)
         
         # Summary section
         summary_layout = QHBoxLayout()
-        self.total_entries_label = QLabel("Total Entries: 0")
-        self.total_credit_label = QLabel("Total Credit: Rs0.00")
-        self.total_debit_label = QLabel("Total Debit: Rs0.00")
-        self.balance_label = QLabel("Current Balance: Rs0.00")
+        self.total_credit_label = QLabel("Total Credit: Rs 0.00")
+        self.total_credit_label.setStyleSheet("color: green; font-weight: bold;")
+        self.total_debit_label = QLabel("Total Debit: Rs 0.00")
+        self.total_debit_label.setStyleSheet("color: red; font-weight: bold;")
+        self.balance_label = QLabel("Balance: Rs 0.00")
+        self.balance_label.setStyleSheet("color: blue; font-weight: bold; font-size: 14px;")
         
-        summary_layout.addWidget(self.total_entries_label)
         summary_layout.addWidget(self.total_credit_label)
         summary_layout.addWidget(self.total_debit_label)
+        summary_layout.addStretch()
         summary_layout.addWidget(self.balance_label)
         
         main_layout.addLayout(summary_layout)
         
-        # Set main layout
+        # Export buttons
+        export_layout = QHBoxLayout()
+        self.export_csv_btn = QPushButton("Export to CSV")
+        self.export_csv_btn.clicked.connect(self.exportToCSV)
+        self.refresh_btn = QPushButton("Refresh")
+        self.refresh_btn.clicked.connect(self.loadEntries)
+        
+        export_layout.addWidget(self.export_csv_btn)
+        export_layout.addWidget(self.refresh_btn)
+        export_layout.addStretch()
+        
+        main_layout.addLayout(export_layout)
+        
         self.setLayout(main_layout)
         
-        # Load data
-        self.loadCustomers()
-        self.loadProducts()
-        self.loadEntries()
-        
-        # Add Export button
-        self.export_btn = QPushButton("Export to CSV")
-        self.export_btn.clicked.connect(self.exportToCSV)
-        summary_layout.addWidget(self.export_btn)
+        # Connect type checkboxes
+        self.all_type_check.toggled.connect(self.onAllTypeToggled)
+        self.credit_check.toggled.connect(self.onTypeToggled)
+        self.debit_check.toggled.connect(self.onTypeToggled)
     
     def loadCustomers(self):
-        """Load customers for filter dropdown"""
+        """Load customers for filter"""
         try:
             self.db.connect()
-            
-            # Get all customers
-            self.db.cursor.execute('SELECT id, name FROM customers ORDER BY name')
+            self.db.cursor.execute('SELECT name FROM customers ORDER BY name')
             customers = self.db.cursor.fetchall()
             
-            # Add customers to filter dropdown
-            for customer_id, name in customers:
-                self.customer_filter.addItem(name, customer_id)
+            for customer in customers:
+                self.customer_filter.addItem(customer[0])
                 
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load customers: {str(e)}")
-        finally:
-            self.db.close()
-    
-    def loadProducts(self):
-        """Load products for filter dropdown (by name, not individual batches)"""
-        try:
-            self.db.connect()
-            
-            # Get distinct product names
-            self.db.cursor.execute('SELECT DISTINCT name FROM products ORDER BY name')
-            products = self.db.cursor.fetchall()
-            
-            # Add products to filter dropdown
-            for (name,) in products:
-                self.product_filter.addItem(name, name)
-                
-        except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load products: {str(e)}")
+            print(f"Error loading customers: {e}")
         finally:
             self.db.close()
     
     def loadEntries(self):
-        """Load entries based on current filters"""
+        """Load entries based on filters"""
         try:
             self.db.connect()
             
             # Build query based on filters
             query = '''
-                SELECT 
-                    e.id, e.date, c.name as customer, p.name as product, p.batch_number, p.expiry_date,
-                    e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
-                    e.is_credit, e.notes
+                SELECT e.id, e.date, c.name, p.name, e.quantity, e.unit_price,
+                       t.amount, e.is_credit, t.balance, e.notes,
+                       p.batch_number, p.expiry_date
                 FROM entries e
-                JOIN customers c ON e.customer_id = c.id
-                JOIN products p ON e.product_id = p.id
+                LEFT JOIN customers c ON e.customer_id = c.id
+                LEFT JOIN products p ON e.product_id = p.id
+                LEFT JOIN transactions t ON t.entry_id = e.id
                 WHERE 1=1
             '''
-            
             params = []
             
-            # Date range filter
+            # Date filter
             from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
             to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
             query += " AND e.date BETWEEN ? AND ?"
             params.extend([from_date, to_date])
             
             # Customer filter
-            selected_customer_id = self.customer_filter.currentData()
-            if selected_customer_id is not None:
-                query += " AND e.customer_id = ?"
-                params.append(selected_customer_id)
+            if self.customer_filter.currentIndex() > 0:
+                query += " AND c.name = ?"
+                params.append(self.customer_filter.currentText())
             
-            # Product filter (by name)
-            selected_product_name = self.product_filter.currentData()
-            if selected_product_name is not None:
-                query += " AND p.name = ?"
-                params.append(selected_product_name)
-            
-            # Batch number filter
-            batch_text = self.batch_filter.text().strip()
-            if batch_text:
-                query += " AND p.batch_number LIKE ?"
-                params.append(f"%{batch_text}%")
-            
-            # Note text search
-            search_text = self.search_text.text().strip()
-            if search_text:
+            # Search filter
+            if self.search_edit.text():
                 query += " AND e.notes LIKE ?"
-                params.append(f"%{search_text}%")
+                params.append(f"%{self.search_edit.text()}%")
             
-            # Entry type filter
-            entry_type = self.entry_type_filter.currentText()
-            if entry_type == "Credit Only":
-                query += " AND e.is_credit = 1"
-            elif entry_type == "Debit Only":
-                query += " AND e.is_credit = 0"
+            # Type filter
+            if not self.all_type_check.isChecked():
+                if self.credit_check.isChecked() and not self.debit_check.isChecked():
+                    query += " AND e.is_credit = 1"
+                elif self.debit_check.isChecked() and not self.credit_check.isChecked():
+                    query += " AND e.is_credit = 0"
             
-            # Expiry status filter
-            expiry_status = self.expiry_filter.currentText()
-            current_date = QDate.currentDate().toString("yyyy-MM-dd")
-            upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
-            
-            if expiry_status == "Expired Products":
-                query += " AND p.expiry_date < ?"
-                params.append(current_date)
-            elif expiry_status == "Expiring Soon":
-                query += " AND p.expiry_date >= ? AND p.expiry_date <= ?"
-                params.extend([current_date, upcoming_date])
-            elif expiry_status == "Valid Products":
-                query += " AND p.expiry_date > ?"
-                params.append(upcoming_date)
-            
-            # Sort by date, newest first
             query += " ORDER BY e.date DESC, e.id DESC"
             
-            # Execute query
             self.db.cursor.execute(query, params)
             entries = self.db.cursor.fetchall()
             
-            # Clear and set row count
+            # Clear table
             self.entries_table.setRowCount(0)
-            self.entries_table.setRowCount(len(entries))
             
-            # Fill table with data
+            # Variables for summary
             total_credit = 0
             total_debit = 0
-            current_date_qdate = QDate.currentDate()
             
-            for row, entry in enumerate(entries):
-                entry_id, date, customer, product, batch_number, expiry_date, quantity, unit_price, total, is_credit, notes = entry
+            # Populate table
+            for entry in entries:
+                row_position = self.entries_table.rowCount()
+                self.entries_table.insertRow(row_position)
                 
-                # Add data to row
-                self.entries_table.setItem(row, 0, QTableWidgetItem(str(entry_id)))
-                self.entries_table.setItem(row, 1, QTableWidgetItem(date))
-                self.entries_table.setItem(row, 2, QTableWidgetItem(customer))
-                self.entries_table.setItem(row, 3, QTableWidgetItem(product))
-                self.entries_table.setItem(row, 4, QTableWidgetItem(batch_number or ""))
+                entry_id, date, customer, product, quantity, unit_price, amount, is_credit, balance, notes, batch, expiry = entry
                 
-                # Expiry date with color coding
-                expiry_item = QTableWidgetItem(expiry_date or "")
-                try:
-                    expiry_qdate = QDate.fromString(expiry_date, "yyyy-MM-dd")
-                    if expiry_qdate.isValid():
-                        if expiry_qdate < current_date_qdate:
-                            expiry_item.setBackground(QColor("#ffcccc"))  # Light red for expired
-                            expiry_item.setForeground(QColor("#cc0000"))
-                        elif expiry_qdate < current_date_qdate.addDays(30):
-                            expiry_item.setBackground(QColor("#fff3cd"))  # Light yellow for expiring soon
-                            expiry_item.setForeground(QColor("#856404"))
-                except:
-                    pass
-                self.entries_table.setItem(row, 5, expiry_item)
+                # Add data to columns
+                self.entries_table.setItem(row_position, 0, QTableWidgetItem(date))
+                self.entries_table.setItem(row_position, 1, QTableWidgetItem(customer or ""))
+                self.entries_table.setItem(row_position, 2, QTableWidgetItem(product or ""))
+                self.entries_table.setItem(row_position, 3, QTableWidgetItem(str(quantity)))
+                self.entries_table.setItem(row_position, 4, QTableWidgetItem(f"{unit_price:.2f}"))
+                self.entries_table.setItem(row_position, 5, QTableWidgetItem(f"{amount:.2f}"))
                 
-                self.entries_table.setItem(row, 6, QTableWidgetItem(str(quantity)))
-                self.entries_table.setItem(row, 7, QTableWidgetItem(f"Rs. {unit_price:.2f}"))
-                self.entries_table.setItem(row, 8, QTableWidgetItem(f"Rs. {total:.2f}"))
+                # Type
+                type_item = QTableWidgetItem("CREDIT" if is_credit else "DEBIT")
+                type_item.setForeground(Qt.green if is_credit else Qt.red)
+                self.entries_table.setItem(row_position, 6, type_item)
                 
-                # Entry type (Credit/Debit)
-                type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
-                type_item.setForeground(QColor("green" if is_credit else "red"))
-                self.entries_table.setItem(row, 9, type_item)
+                self.entries_table.setItem(row_position, 7, QTableWidgetItem(f"{balance:.2f}"))
+                self.entries_table.setItem(row_position, 8, QTableWidgetItem(notes or ""))
                 
-                self.entries_table.setItem(row, 10, QTableWidgetItem(notes or ""))
+                # Add download invoice button
+                invoice_btn = QPushButton("Download Invoice")
+                invoice_btn.setToolTip("Download or regenerate invoice for this entry")
+                invoice_btn.clicked.connect(lambda checked, eid=entry_id, row=row_position: 
+                                         self.downloadInvoice(eid, row))
                 
-                # Status column showing expiry status
-                status_text = ""
-                try:
-                    expiry_qdate = QDate.fromString(expiry_date, "yyyy-MM-dd")
-                    if expiry_qdate.isValid():
-                        if expiry_qdate < current_date_qdate:
-                            status_text = "EXPIRED"
-                        elif expiry_qdate < current_date_qdate.addDays(30):
-                            status_text = "EXPIRING SOON"
-                        else:
-                            status_text = "VALID"
-                except:
-                    status_text = "UNKNOWN"
-                
-                status_item = QTableWidgetItem(status_text)
-                if status_text == "EXPIRED":
-                    status_item.setForeground(QColor("#cc0000"))
-                elif status_text == "EXPIRING SOON":
-                    status_item.setForeground(QColor("#856404"))
+                # Check if invoice already exists
+                if notes and "Invoice: INV-" in notes:
+                    invoice_btn.setText("📄 Invoice")
+                    invoice_btn.setStyleSheet("background-color: #90EE90;")  # Light green
                 else:
-                    status_item.setForeground(QColor("#155724"))
-                self.entries_table.setItem(row, 11, status_item)
+                    invoice_btn.setText("Generate Invoice")
+                    invoice_btn.setStyleSheet("background-color: #FFE4B5;")  # Light orange
+                
+                self.entries_table.setCellWidget(row_position, 9, invoice_btn)
                 
                 # Update totals
                 if is_credit:
-                    total_credit += total
+                    total_credit += amount
                 else:
-                    total_debit += total
+                    total_debit += amount
             
-            # Update summary labels
-            self.total_entries_label.setText(f"Total Entries: {len(entries)}")
-            self.total_credit_label.setText(f"Total Credit: Rs. {total_credit:.2f}")
-            self.total_debit_label.setText(f"Total Debit: Rs. {total_debit:.2f}")
+            # Update summary
+            self.total_credit_label.setText(f"Total Credit: Rs {total_credit:.2f}")
+            self.total_debit_label.setText(f"Total Debit: Rs {total_debit:.2f}")
             
-            # Get current balance
-            self.db.cursor.execute("SELECT MAX(balance) FROM transactions")
-            result = self.db.cursor.fetchone()
-            current_balance = result[0] if result[0] is not None else 0
-            
-            self.balance_label.setText(f"Current Balance: Rs. {current_balance:.2f}")
+            # Get current balance (last balance in the filtered results)
+            if entries:
+                current_balance = entries[0][8]  # Most recent entry's balance
+                self.balance_label.setText(f"Balance: Rs {current_balance:.2f}")
+            else:
+                self.balance_label.setText("Balance: Rs 0.00")
             
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load entries: {str(e)}")
+            QMessageBox.critical(self, "Error", f"Failed to load entries: {str(e)}")
         finally:
             self.db.close()
     
-    def clearFilters(self):
-        """Reset all filters to default values"""
-        self.from_date_edit.setDate(QDate.currentDate().addDays(-30))
-        self.to_date_edit.setDate(QDate.currentDate())
-        self.customer_filter.setCurrentIndex(0)  # "All Customers"
-        self.product_filter.setCurrentIndex(0)   # "All Products"
-        self.batch_filter.clear()
-        self.search_text.clear()
-        self.entry_type_filter.setCurrentIndex(0)  # "All Entries"
-        self.expiry_filter.setCurrentIndex(0)      # "All Products"
-        self.loadEntries()
-    
-    def showContextMenu(self, position):
-        """Show context menu for table items"""
-        # Get the selected row
-        selected_rows = self.entries_table.selectionModel().selectedRows()
-        if not selected_rows:
-            return
-        
-        # Get entry ID from the first column
-        row = selected_rows[0].row()
-        entry_id = int(self.entries_table.item(row, 0).text())
-        
-        # Create context menu
-        context_menu = QMenu(self)
-        
-        view_action = QAction("View Details", self)
-        view_action.triggered.connect(lambda: self.viewEntryDetails(entry_id))
-        
-        edit_action = QAction("Edit Entry", self)
-        edit_action.triggered.connect(lambda: self.editEntry(entry_id))
-        
-        delete_action = QAction("Delete Entry", self)
-        delete_action.triggered.connect(lambda: self.deleteEntry(entry_id))
-        
-        # Get customer ID for the selected entry
-        try:
-            self.db.connect()
-            self.db.cursor.execute("SELECT customer_id FROM entries WHERE id = ?", (entry_id,))
-            result = self.db.cursor.fetchone()
-            if result:
-                customer_id = result[0]
-                
-                # Add customer history action
-                customer_action = QAction("View Customer History", self)
-                customer_action.triggered.connect(lambda: self.viewCustomerHistory(customer_id))
-                context_menu.addAction(customer_action)
-                
-        except Exception as e:
-            print(f"Error getting customer ID: {e}")
-        finally:
-            self.db.close()
-        
-        context_menu.addAction(view_action)
-        context_menu.addAction(edit_action)
-        context_menu.addAction(delete_action)
-        
-        # Show context menu at cursor position
-        context_menu.exec_(self.entries_table.viewport().mapToGlobal(position))
-    
-    def viewEntryDetails(self, entry_id):
-        """Show details for the selected entry"""
+    def downloadInvoice(self, entry_id, row):
+        """Download or regenerate invoice for an entry"""
         try:
             self.db.connect()
             
-            # Get entry details with batch and expiry information
-            query = '''
-                SELECT 
-                    e.id, e.date, c.name as customer, p.name as product, p.batch_number, p.expiry_date,
-                    e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
-                    e.is_credit, e.notes, t.balance
+            # Get entry details
+            self.db.cursor.execute('''
+                SELECT e.*, c.name as customer_name, c.address, 
+                       p.name as product_name, p.batch_number, p.expiry_date,
+                       t.amount, t.balance
                 FROM entries e
-                JOIN customers c ON e.customer_id = c.id
-                JOIN products p ON e.product_id = p.id
-                JOIN transactions t ON e.id = t.entry_id
+                LEFT JOIN customers c ON e.customer_id = c.id
+                LEFT JOIN products p ON e.product_id = p.id
+                LEFT JOIN transactions t ON t.entry_id = e.id
                 WHERE e.id = ?
-            '''
+            ''', (entry_id,))
             
-            self.db.cursor.execute(query, (entry_id,))
             entry = self.db.cursor.fetchone()
+            if not entry:
+                QMessageBox.warning(self, "Error", "Entry not found!")
+                return
             
-            if entry:
-                entry_id, date, customer, product, batch_number, expiry_date, quantity, unit_price, total, is_credit, notes, balance = entry
-                
-                # Check expiry status
-                expiry_status = "UNKNOWN"
+            # Check if entry has multiple products (stored in notes as JSON)
+            notes = entry[7]  # Assuming notes is at index 7
+            items = []
+            
+            if notes and "Products: " in notes:
+                # Extract JSON from notes
                 try:
-                    expiry_qdate = QDate.fromString(expiry_date, "yyyy-MM-dd")
-                    if expiry_qdate.isValid():
-                        current_date = QDate.currentDate()
-                        if expiry_qdate < current_date:
-                            expiry_status = "EXPIRED"
-                        elif expiry_qdate < current_date.addDays(30):
-                            expiry_status = "EXPIRING SOON"
-                        else:
-                            expiry_status = "VALID"
+                    json_match = re.search(r'Products: (\[.*\])', notes)
+                    if json_match:
+                        products_json = json_match.group(1)
+                        items = json.loads(products_json)
                 except:
                     pass
+            
+            # If no items found in JSON, create single item from entry
+            if not items:
+                items = [{
+                    'product_name': entry[15],  # product_name from query
+                    'batch_number': entry[16],
+                    'expiry_date': entry[17],
+                    'quantity': entry[4],
+                    'unit_price': entry[5],
+                    'discount': 0,  # Default if not stored
+                    'amount': entry[18]  # amount from transactions
+                }]
+            
+            # Prepare entry data for invoice
+            entry_data = {
+                'entry_id': entry_id,
+                'date': entry[1],
+                'customer_id': entry[2],
+                'customer_name': entry[13],  # customer_name from query
+                'items': items,
+                'total_amount': entry[18],  # amount from transactions
+                'is_credit': entry[6],
+                'notes': notes,
+                'balance': entry[19],  # balance from transactions
+                'transport_name': 'N/A',  # Default, update if stored elsewhere
+                'delivery_date': entry[1],  # Use entry date as default
+                'delivery_location': entry[14] or ''  # customer address
+            }
+            
+            # Generate invoice
+            try:
+                invoice_path = self.invoice_generator.generate_invoice_from_entry(
+                    entry_data, self.db.conn
+                )
                 
-                details = f"""
-                Entry ID: {entry_id}
-                Date: {date}
-                Customer: {customer}
-                Product: {product}
-                Batch Number: {batch_number or "N/A"}
-                Expiry Date: {expiry_date or "N/A"} ({expiry_status})
-                Quantity: {quantity}
-                Unit Price: Rs. {unit_price:.2f}
-                Total Amount: Rs. {total:.2f}
-                Entry Type: {"Credit" if is_credit else "Debit"}
-                Balance After Transaction: Rs. {balance:.2f}
-                Notes: {notes or "N/A"}
-                """
+                # Update button appearance
+                button = self.entries_table.cellWidget(row, 9)
+                if button:
+                    button.setText("📄 Invoice")
+                    button.setStyleSheet("background-color: #90EE90;")
                 
-                QMessageBox.information(self, "Entry Details", details)
-            else:
-                QMessageBox.warning(self, "Entry Not Found", f"Entry with ID {entry_id} not found.")
+                # Ask if user wants to open the invoice
+                reply = QMessageBox.question(
+                    self, "Invoice Generated",
+                    f"Invoice generated successfully!\n\n{os.path.basename(invoice_path)}\n\nDo you want to open it?",
+                    QMessageBox.Yes | QMessageBox.No
+                )
                 
+                if reply == QMessageBox.Yes:
+                    self.openInvoice(invoice_path)
+                    
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to generate invoice: {str(e)}")
+            
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load entry details: {str(e)}")
+            QMessageBox.critical(self, "Error", f"Failed to process invoice: {str(e)}")
         finally:
             self.db.close()
     
-    def editEntry(self, entry_id):
-        """Edit the selected entry"""
-        try:
-            self.db.connect()
-            
-            # Get entry details with product batch info
-            query = '''
-                SELECT 
-                    e.id, e.date, e.customer_id, c.name as customer_name, 
-                    e.product_id, p.name as product_name, p.batch_number, p.expiry_date,
-                    e.quantity, e.unit_price, e.is_credit, e.notes
-                FROM entries e
-                JOIN customers c ON e.customer_id = c.id
-                JOIN products p ON e.product_id = p.id
-                WHERE e.id = ?
-            '''
-            
-            self.db.cursor.execute(query, (entry_id,))
-            entry = self.db.cursor.fetchone()
-            
-            if not entry:
-                QMessageBox.warning(self, "Entry Not Found", f"Entry with ID {entry_id} not found.")
-                return
-            
-            # Create edit dialog
-            dialog = QDialog(self)
-            dialog.setWindowTitle(f"Edit Entry #{entry_id}")
-            dialog.setMinimumWidth(500)
-            
-            layout = QFormLayout()
-            
-            # Date field
-            date_edit = QDateEdit()
-            date_edit.setDate(QDate.fromString(entry[1], "yyyy-MM-dd"))
-            date_edit.setCalendarPopup(True)
-            layout.addRow("Date:", date_edit)
-            
-            # Customer (read-only)
-            customer_label = QLineEdit(entry[3])
-            customer_label.setReadOnly(True)
-            layout.addRow("Customer:", customer_label)
-            
-            # Product info (read-only)
-            product_info = f"{entry[5]} (Batch: {entry[6]}, Expiry: {entry[7]})"
-            product_label = QLineEdit(product_info)
-            product_label.setReadOnly(True)
-            layout.addRow("Product Details:", product_label)
-            
-            # Quantity
-            quantity_spin = QSpinBox()
-            quantity_spin.setMinimum(1)
-            quantity_spin.setMaximum(1000)
-            quantity_spin.setValue(entry[8])
-            layout.addRow("Quantity:", quantity_spin)
-            
-            # Unit price
-            unit_price_spin = QDoubleSpinBox()
-            unit_price_spin.setMinimum(0.01)
-            unit_price_spin.setMaximum(99999.99)
-            unit_price_spin.setValue(entry[9])
-            unit_price_spin.setPrefix("Rs. ")
-            layout.addRow("Unit Price:", unit_price_spin)
-            
-            # Total (calculated, read-only)
-            total_field = QLineEdit()
-            total_field.setReadOnly(True)
-            total_field.setText(f"Rs. {entry[8] * entry[9]:.2f}")
-            layout.addRow("Total:", total_field)
-            
-            # Update total when quantity or price changes
-            def update_total():
-                total = quantity_spin.value() * unit_price_spin.value()
-                total_field.setText(f"Rs. {total:.2f}")
-            
-            quantity_spin.valueChanged.connect(update_total)
-            unit_price_spin.valueChanged.connect(update_total)
-            
-            # Entry type (credit/debit)
-            is_credit = QCheckBox("Credit Entry")
-            is_credit.setChecked(entry[10])
-            layout.addRow("Entry Type:", is_credit)
-            
-            # Notes
-            notes_edit = QLineEdit(entry[11] or "")
-            layout.addRow("Notes:", notes_edit)
-            
-            # Buttons
-            button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-            button_box.accepted.connect(dialog.accept)
-            button_box.rejected.connect(dialog.reject)
-            layout.addRow(button_box)
-            
-            dialog.setLayout(layout)
-            
-            # Execute dialog
-            if dialog.exec_() == QDialog.Accepted:
-                # Update entry in database
-                date = date_edit.date().toString("yyyy-MM-dd")
-                quantity = quantity_spin.value()
-                unit_price = unit_price_spin.value()
-                is_credit_value = is_credit.isChecked()
-                notes = notes_edit.text()
-                
-                # Start transaction
-                self.db.conn.execute("BEGIN")
-                
-                try:
-                    # Update entry
-                    self.db.cursor.execute(
-                        "UPDATE entries SET date=?, quantity=?, unit_price=?, is_credit=?, notes=? WHERE id=?",
-                        (date, quantity, unit_price, is_credit_value, notes, entry_id)
-                    )
-                    
-                    # Calculate new total amount
-                    total_amount = quantity * unit_price
-                    
-                    # Get current balance before this transaction
-                    self.db.cursor.execute(
-                        "SELECT id, amount FROM transactions WHERE entry_id=?",
-                        (entry_id,)
-                    )
-                    trans_result = self.db.cursor.fetchone()
-                    
-                    if trans_result:
-                        trans_id, old_amount = trans_result
-                        
-                        # Calculate amount difference
-                        amount_diff = total_amount - old_amount
-                        
-                        # Update transactions table
-                        self.db.cursor.execute(
-                            "UPDATE transactions SET amount=? WHERE id=?",
-                            (total_amount, trans_id)
-                        )
-                        
-                        # Update all following transactions' balances
-                        if amount_diff != 0:
-                            # If entry type changed, double the impact
-                            if is_credit_value != entry[10]:
-                                amount_diff *= 2
-                            
-                            # Adjust sign based on entry type
-                            balance_adj = amount_diff if is_credit_value else -amount_diff
-                            
-                            self.db.cursor.execute(
-                                "UPDATE transactions SET balance = balance + ? WHERE id > ?",
-                                (balance_adj, trans_id)
-                            )
-                    
-                    self.db.conn.commit()
-                    QMessageBox.information(self, "Success", f"Entry #{entry_id} updated successfully.")
-                    
-                    # Refresh entries
-                    self.loadEntries()
-                    
-                except Exception as e:
-                    self.db.conn.rollback()
-                    QMessageBox.critical(self, "Update Error", f"Failed to update entry: {str(e)}")
-                
-        except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load entry details: {str(e)}")
-        finally:
-            self.db.close()
+    def openInvoice(self, invoice_path):
+        """Open the invoice PDF"""
+        import subprocess
+        import sys
         
-    def viewCustomerHistory(self, customer_id):
-        """Show transaction history for a specific customer"""
         try:
-            self.db.connect()
-            
-            # Get customer name
-            self.db.cursor.execute("SELECT name FROM customers WHERE id = ?", (customer_id,))
-            customer = self.db.cursor.fetchone()
-            
-            if not customer:
-                QMessageBox.warning(self, "Customer Not Found", f"Customer with ID {customer_id} not found.")
-                return
-            
-            customer_name = customer[0]
-            
-            # Get all entries for this customer with batch info
-            query = """
-                SELECT 
-                    e.id, e.date, p.name as product, p.batch_number, p.expiry_date,
-                    e.quantity, e.unit_price, (e.quantity * e.unit_price) as total,
-                    e.is_credit, e.notes
-                FROM entries e
-                JOIN products p ON e.product_id = p.id
-                WHERE e.customer_id = ?
-                ORDER BY e.date DESC, e.id DESC
-            """
-            
-            self.db.cursor.execute(query, (customer_id,))
-            entries = self.db.cursor.fetchall()
-            
-            if not entries:
-                QMessageBox.information(self, "No Transactions", 
-                                        f"No transactions found for customer: {customer_name}")
-                return
-            
-            # Calculate totals
-            total_credit = sum(e[7] for e in entries if e[8])  # sum of total where is_credit is True
-            total_debit = sum(e[7] for e in entries if not e[8])  # sum of total where is_credit is False
-            balance = total_credit - total_debit
-            
-            # Create a dialog to show history
-            dialog = QDialog(self)
-            dialog.setWindowTitle(f"Transaction History - {customer_name}")
-            dialog.setMinimumSize(900, 600)
-            
-            layout = QVBoxLayout()
-            
-            # Summary info
-            summary = QLabel(f"Customer: {customer_name}\n"
-                            f"Total Credit: Rs. {total_credit:.2f}\n"
-                            f"Total Debit: Rs. {total_debit:.2f}\n"
-                            f"Balance: Rs. {balance:.2f}")
-            layout.addWidget(summary)
-            
-            # Transactions table
-            table = QTableWidget()
-            table.setColumnCount(9)
-            table.setHorizontalHeaderLabels([
-                "Date", "Product", "Batch", "Expiry", "Quantity", "Unit Price", 
-                "Total", "Type", "Notes"
-            ])
-            
-            table.setRowCount(len(entries))
-            
-            for row, entry in enumerate(entries):
-                _, date, product, batch_number, expiry_date, quantity, unit_price, total, is_credit, notes = entry
-                
-                table.setItem(row, 0, QTableWidgetItem(date))
-                table.setItem(row, 1, QTableWidgetItem(product))
-                table.setItem(row, 2, QTableWidgetItem(batch_number or ""))
-                table.setItem(row, 3, QTableWidgetItem(expiry_date or ""))
-                table.setItem(row, 4, QTableWidgetItem(str(quantity)))
-                table.setItem(row, 5, QTableWidgetItem(f"Rs. {unit_price:.2f}"))
-                table.setItem(row, 6, QTableWidgetItem(f"Rs. {total:.2f}"))
-                
-                type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
-                type_item.setForeground(QColor("green" if is_credit else "red"))
-                table.setItem(row, 7, type_item)
-                
-                table.setItem(row, 8, QTableWidgetItem(notes or ""))
-            
-            table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-            layout.addWidget(table)
-            
-            # Close button
-            close_btn = QPushButton("Close")
-            close_btn.clicked.connect(dialog.accept)
-            layout.addWidget(close_btn)
-            
-            dialog.setLayout(layout)
-            dialog.exec_()
-            
+            if sys.platform == "win32":
+                os.startfile(invoice_path)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", invoice_path])
+            else:
+                subprocess.call(["xdg-open", invoice_path])
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load customer history: {str(e)}")
-        finally:
-            self.db.close()
+            QMessageBox.warning(self, "Error", f"Could not open invoice: {str(e)}")
+    
+    def onAllTypeToggled(self, checked):
+        """Handle all type checkbox toggle"""
+        if checked:
+            self.credit_check.setChecked(False)
+            self.debit_check.setChecked(False)
+    
+    def onTypeToggled(self):
+        """Handle individual type checkbox toggle"""
+        if self.credit_check.isChecked() or self.debit_check.isChecked():
+            self.all_type_check.setChecked(False)
     
     def exportToCSV(self):
-        """Export current ledger view to CSV file"""
-        try:
-            # Get save file location
-            options = QFileDialog.Options()
-            file_name, _ = QFileDialog.getSaveFileName(
-                self, "Export to CSV", "", "CSV Files (*.csv);;All Files (*)", options=options
-            )
-            
-            if not file_name:
-                return
-            
-            # Add .csv extension if not present
-            if not file_name.endswith('.csv'):
-                file_name += '.csv'
-            
-            # Open the file for writing
-            with open(file_name, 'w', newline='') as file:
-                import csv
-                writer = csv.writer(file)
-                
-                # Write header row
-                headers = []
-                for col in range(self.entries_table.columnCount()):
-                    headers.append(self.entries_table.horizontalHeaderItem(col).text())
-                writer.writerow(headers)
-                
-                # Write data rows
-                for row in range(self.entries_table.rowCount()):
-                    row_data = []
-                    for col in range(self.entries_table.columnCount()):
-                        item = self.entries_table.item(row, col)
-                        row_data.append(item.text() if item else "")
-                    writer.writerow(row_data)
-            
-            QMessageBox.information(self, "Export Successful", 
-                                f"Data exported successfully to:\n{file_name}")
-            
-        except Exception as e:
-            QMessageBox.critical(self, "Export Error", f"Failed to export data: {str(e)}")
-    
-    def generateReport(self):
-        """Generate a report of the current filtered entries"""
-        try:
-            options = QFileDialog.Options()
-            file_name, _ = QFileDialog.getSaveFileName(
-                self, "Save Report", "", "PDF Files (*.pdf);;Text Files (*.txt);;CSV Files (*.csv);;All Files (*)", 
-                options=options
-            )
-            
-            if not file_name:
-                return
-            
-            # Add appropriate extension if not present
-            if file_name.endswith('.pdf'):
-                self.generatePDFReport(file_name)
-            elif file_name.endswith('.txt'):
-                self.generateTextReport(file_name)
-            elif file_name.endswith('.csv'):
-                self.generateCSVReport(file_name)
-            else:
-                # Default to CSV report if no extension
-                self.generateCSVReport(file_name + '.csv')
-            
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to generate report: {str(e)}")
-    
-    def generateCSVReport(self, file_name):
-        """Generate a CSV report with enhanced data"""
-        try:
-            with open(file_name, 'w', newline='', encoding='utf-8') as file:
-                writer = csv.writer(file)
-                
-                # Write header with additional metadata
-                writer.writerow(["Medical Rep Transaction Report"])
-                writer.writerow([f"Generated on: {QDate.currentDate().toString('yyyy-MM-dd')}"])
-                writer.writerow([f"Date Range: {self.from_date_edit.date().toString('yyyy-MM-dd')} to {self.to_date_edit.date().toString('yyyy-MM-dd')}"])
-                writer.writerow([])  # Empty row
-                
-                # Write summary
-                writer.writerow(["SUMMARY"])
-                writer.writerow(["Total Entries", self.entries_table.rowCount()])
-                writer.writerow(["Total Credit", self.total_credit_label.text().split('Rs. ')[1]])
-                writer.writerow(["Total Debit", self.total_debit_label.text().split('Rs. ')[1]])
-                writer.writerow(["Current Balance", self.balance_label.text().split('Rs. ')[1]])
-                writer.writerow([])  # Empty row
-                
-                # Write column headers
-                headers = []
-                for col in range(self.entries_table.columnCount()):
-                    headers.append(self.entries_table.horizontalHeaderItem(col).text())
-                writer.writerow(headers)
-                
-                # Write data rows
-                for row in range(self.entries_table.rowCount()):
-                    row_data = []
-                    for col in range(self.entries_table.columnCount()):
-                        item = self.entries_table.item(row, col)
-                        row_data.append(item.text() if item else "")
-                    writer.writerow(row_data)
-            
-            QMessageBox.information(self, "Report Generated", 
-                                f"CSV report saved successfully to:\n{file_name}")
-            
-        except Exception as e:
-            raise Exception(f"Error writing CSV report: {str(e)}")
-            
-    def generateTextReport(self, file_name):
-        """Generate a simple text report"""
-        try:
-            with open(file_name, 'w') as f:
-                # Write header
-                f.write("Medical Rep Transaction Report\n")
-                f.write("=" * 80 + "\n\n")
-                
-                # Write date range
-                from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
-                to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
-                f.write(f"Date Range: {from_date} to {to_date}\n\n")
-                
-                # Write summary information
-                f.write(f"Total Entries: {self.entries_table.rowCount()}\n")
-                f.write(f"Total Credit: {self.total_credit_label.text().split('Rs. ')[1]}\n")
-                f.write(f"Total Debit: {self.total_debit_label.text().split('Rs. ')[1]}\n")
-                f.write(f"Current Balance: {self.balance_label.text().split('Rs. ')[1]}\n\n")
-                
-                # Write table header
-                headers = []
-                for col in range(self.entries_table.columnCount()):
-                    headers.append(self.entries_table.horizontalHeaderItem(col).text())
-                
-                # Calculate column widths
-                col_widths = [max(len(header), 12) for header in headers]
-                
-                # Write header row
-                header_row = "  ".join(h.ljust(w) for h, w in zip(headers, col_widths))
-                f.write(header_row + "\n")
-                f.write("-" * len(header_row) + "\n")
-                
-                # Write data rows
-                for row in range(self.entries_table.rowCount()):
-                    row_data = []
-                    for col in range(self.entries_table.columnCount()):
-                        item = self.entries_table.item(row, col)
-                        text = item.text() if item else ""
-                        # Truncate long text to fit columns
-                        if len(text) > col_widths[col]:
-                            text = text[:col_widths[col]-3] + "..."
-                        row_data.append(text.ljust(col_widths[col]))
-                    f.write("  ".join(row_data) + "\n")
-            
-            QMessageBox.information(self, "Report Generated", 
-                                f"Report saved successfully to:\n{file_name}")
-                                
-        except Exception as e:
-            raise Exception(f"Error writing text report: {str(e)}")
-
-    def generatePDFReport(self, file_name):
-        """Generate a PDF report (requires reportlab)"""
-        try:
-            # Check if reportlab is installed
-            try:
-                from reportlab.lib.pagesizes import letter, landscape
-                from reportlab.lib import colors
-                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-                from reportlab.lib.styles import getSampleStyleSheet
-            except ImportError:
-                QMessageBox.warning(self, "Missing Library", 
-                                "ReportLab library is required for PDF reports.\n"
-                                "Generating CSV report instead.")
-                return self.generateCSVReport(file_name.replace('.pdf', '.csv'))
-            
-            # Create PDF document with landscape orientation for more columns
-            doc = SimpleDocTemplate(file_name, pagesize=landscape(letter))
-            elements = []
-            
-            # Add title
-            styles = getSampleStyleSheet()
-            elements.append(Paragraph("Medical Rep Transaction Report", styles['Title']))
-            elements.append(Spacer(1, 12))
-            
-            # Add date range
-            from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
-            to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
-            elements.append(Paragraph(f"Date Range: {from_date} to {to_date}", styles['Normal']))
-            elements.append(Spacer(1, 12))
-            
-            # Add summary information
-            elements.append(Paragraph(f"Total Entries: {self.entries_table.rowCount()}", styles['Normal']))
-            elements.append(Paragraph(f"Total Credit: {self.total_credit_label.text()}", styles['Normal']))
-            elements.append(Paragraph(f"Total Debit: {self.total_debit_label.text()}", styles['Normal']))
-            elements.append(Paragraph(f"Current Balance: {self.balance_label.text()}", styles['Normal']))
-            elements.append(Spacer(1, 24))
-            
-            # Create table data (limit columns to fit page)
-            data = []
-            
-            # Add header row (first 9 columns to fit landscape page)
-            headers = []
-            max_cols = min(9, self.entries_table.columnCount())
-            for col in range(max_cols):
-                headers.append(self.entries_table.horizontalHeaderItem(col).text())
-            data.append(headers)
-            
-            # Add data rows
-            max_rows = min(30, self.entries_table.rowCount())  # Limit rows to fit page
-            for row in range(max_rows):
-                row_data = []
-                for col in range(max_cols):
-                    item = self.entries_table.item(row, col)
-                    text = item.text() if item else ""
-                    # Truncate long text
-                    if len(text) > 15:
-                        text = text[:12] + "..."
-                    row_data.append(text)
-                data.append(row_data)
-            
-            # Add note if data was truncated
-            if self.entries_table.rowCount() > max_rows:
-                elements.append(Paragraph(f"Note: Showing first {max_rows} entries of {self.entries_table.rowCount()} total entries.", styles['Normal']))
-                elements.append(Spacer(1, 12))
-            
-            # Create table
-            table = Table(data)
-            
-            # Add table style
-            style = TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ])
-            
-            # Alternate row colors for readability
-            for row in range(1, len(data)):
-                if row % 2 == 0:
-                    style.add('BACKGROUND', (0, row), (-1, row), colors.lightgrey)
-            
-            table.setStyle(style)
-            elements.append(table)
-            
-            # Build PDF
-            doc.build(elements)
-            
-            QMessageBox.information(self, "Report Generated", 
-                                f"PDF report saved successfully to:\n{file_name}")
-                                
-        except Exception as e:
-            raise Exception(f"Error generating PDF report: {str(e)}")
-
-    def deleteEntry(self, entry_id):
-        """Delete the selected entry"""
-        reply = QMessageBox.question(
-            self, "Confirm Deletion",
-            f"Are you sure you want to delete entry #{entry_id}?\nThis action cannot be undone.",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        """Export current view to CSV"""
+        if self.entries_table.rowCount() == 0:
+            QMessageBox.warning(self, "No Data", "No entries to export!")
+            return
+        
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export to CSV", f"ledger_export_{datetime.now().strftime('%Y%m%d')}.csv",
+            "CSV Files (*.csv)"
         )
         
-        if reply == QMessageBox.Yes:
+        if file_path:
             try:
-                self.db.connect()
+                import csv
                 
-                # Start transaction
-                self.db.conn.execute("BEGIN")
+                with open(file_path, 'w', newline='', encoding='utf-8') as file:
+                    writer = csv.writer(file)
+                    
+                    # Write headers (excluding invoice column)
+                    headers = []
+                    for col in range(self.entries_table.columnCount() - 1):
+                        headers.append(self.entries_table.horizontalHeaderItem(col).text())
+                    writer.writerow(headers)
+                    
+                    # Write data
+                    for row in range(self.entries_table.rowCount()):
+                        row_data = []
+                        for col in range(self.entries_table.columnCount() - 1):
+                            item = self.entries_table.item(row, col)
+                            row_data.append(item.text() if item else "")
+                        writer.writerow(row_data)
                 
-                # First, delete from transactions table
-                self.db.cursor.execute("DELETE FROM transactions WHERE entry_id = ?", (entry_id,))
-                
-                # Then, delete from entries table
-                self.db.cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
-                
-                # Commit changes
-                self.db.conn.commit()
-                
-                QMessageBox.information(self, "Success", f"Entry #{entry_id} deleted successfully.")
-                
-                # Reload entries
-                self.loadEntries()
+                QMessageBox.information(self, "Export Successful", 
+                                      f"Data exported to:\n{file_path}")
                 
             except Exception as e:
-                self.db.conn.rollback()
-                QMessageBox.critical(self, "Database Error", f"Failed to delete entry: {str(e)}")
-            finally:
-                self.db.close()
+                QMessageBox.critical(self, "Export Error", 
+                                   f"Failed to export data: {str(e)}")
