@@ -14,3 +14,4 @@ dnspython==2.4.2  # Required for MongoDB connection strings with SRV records
 
 # SQLAlchemy (keep for potential future use or compatibility)
 sqlalchemy==2.0.15
+num2words>=0.5.10

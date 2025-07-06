@@ -225,9 +225,15 @@ class MainWindow(QMainWindow):
                                 f"Failed to initialize database: {str(e)}\n"
                                 "Please check the application log for details.")
     
+    # In your main.py or main_window.py
     def create_new_entry_tab(self):
-        """Create and add the New Entry tab"""
         new_entry_tab = NewEntryTab()
+        
+        # Optional: Handle invoice generation
+        def on_invoice_generated(invoice_path):
+            self.statusBar().showMessage(f"Invoice saved: {invoice_path}", 5000)
+        
+        new_entry_tab.entry_saved.connect(on_invoice_generated)
         self.tabs.addTab(new_entry_tab, "New Entry")
     
     def create_ledger_tab(self):
