@@ -3107,3 +3107,142 @@
 2025-07-06 23:53:00,548 - database.db - INFO - Database connection closed
 2025-07-06 23:53:00,548 - database.db - INFO - Connected to database: data/medtran.db
 2025-07-06 23:53:00,549 - database.db - INFO - Database connection closed
+2025-07-07 00:14:39,627 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:14:41,372 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:15:30,715 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:15:31,416 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:15:34,712 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,713 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,714 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,715 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,718 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,719 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,724 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,728 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,730 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,732 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,733 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,734 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,737 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,738 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,802 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,806 - src.database.db - INFO - Database connection closed
+2025-07-07 00:15:34,807 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,808 - src.database.db - INFO - Database connection closed
+2025-07-07 00:15:34,811 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,821 - src.database.db - INFO - Database connection closed
+2025-07-07 00:15:34,831 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,832 - database.db - INFO - Database connection closed
+2025-07-07 00:15:34,832 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:34,833 - database.db - INFO - Database connection closed
+2025-07-07 00:15:39,032 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:39,036 - src.database.db - INFO - Database connection closed
+2025-07-07 00:15:44,591 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:44,596 - src.database.db - INFO - Database connection closed
+2025-07-07 00:15:47,307 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:15:47,311 - src.database.db - INFO - Database connection closed
+2025-07-07 00:17:46,995 - root - INFO - Configuration saved to data\config.json
+2025-07-07 00:17:46,996 - root - INFO - Configuration saved to data\config.json
+2025-07-07 00:20:52,636 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:20:52,638 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:20:52,638 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-07 00:20:54,053 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:20:54,657 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:20:55,681 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-07 00:20:55,681 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-07 00:20:59,883 - root - INFO - User admin logged in successfully
+2025-07-07 00:20:59,903 - root - ERROR - Application startup error: DashboardTab.__init__() takes from 1 to 2 positional arguments but 3 were given
+2025-07-07 00:22:25,719 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:22:25,720 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:22:25,720 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-07 00:22:27,260 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:22:27,879 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:22:28,875 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-07 00:22:28,875 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-07 00:22:35,513 - root - INFO - User admin logged in successfully
+2025-07-07 00:22:35,534 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,535 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,536 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,537 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,541 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,541 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,546 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,550 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,552 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,554 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,555 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,556 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,559 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,560 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,626 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,630 - src.database.db - INFO - Database connection closed
+2025-07-07 00:22:35,631 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,631 - src.database.db - INFO - Database connection closed
+2025-07-07 00:22:35,635 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,642 - src.database.db - INFO - Database connection closed
+2025-07-07 00:22:35,652 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,653 - database.db - INFO - Database connection closed
+2025-07-07 00:22:35,653 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:22:35,654 - database.db - INFO - Database connection closed
+2025-07-07 00:22:45,371 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:23:03,055 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-07 00:24:09,902 - root - INFO - Configuration saved to data\config.json
+2025-07-07 00:24:09,902 - root - INFO - Configuration saved to data\config.json
+2025-07-07 00:24:09,902 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-07 00:24:09,902 - root - INFO - MongoDB connection closed
+2025-07-07 00:24:13,144 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:24:13,145 - root - INFO - Configuration loaded from data\config.json
+2025-07-07 00:24:13,145 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-07 00:24:14,707 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:24:15,343 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-07 00:24:16,383 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-07 00:24:16,383 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-07 00:24:21,121 - root - INFO - User admin logged in successfully
+2025-07-07 00:24:21,139 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,140 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,141 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,142 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,145 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,146 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,150 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,154 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,156 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,158 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,160 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,161 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,163 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,164 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,229 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,232 - src.database.db - INFO - Database connection closed
+2025-07-07 00:24:21,233 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,233 - src.database.db - INFO - Database connection closed
+2025-07-07 00:24:21,237 - src.database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,244 - src.database.db - INFO - Database connection closed
+2025-07-07 00:24:21,253 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,254 - database.db - INFO - Database connection closed
+2025-07-07 00:24:21,254 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-07 00:24:21,256 - database.db - INFO - Database connection closed
+2025-07-07 00:24:23,384 - src.database.mongo_db - ERROR - MongoDB connection error: 'MongoDB' object is not iterable
+2025-07-07 00:24:23,384 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT E.ID, E.DATE, C.NAME, P.NAME, E.QUANTITY, E.UNIT_PRICE,
+                       T.AMOUNT, E.IS_CREDIT, T.BALANCE, E.NOTES,
+                       P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                LEFT JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                LEFT JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                LEFT JOIN TRANSACTIONS T ON T.ENTRY_ID = E.ID
+                WHERE 1=1
+             AND E.DATE BETWEEN ? AND ? ORDER BY E.DATE DESC, E.ID DESC
+2025-07-07 00:24:34,476 - src.database.mongo_db - ERROR - MongoDB connection error: 'MongoDB' object is not iterable
+2025-07-07 00:24:34,476 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT E.ID, E.DATE, C.NAME, P.NAME, E.QUANTITY, E.UNIT_PRICE,
+                       T.AMOUNT, E.IS_CREDIT, T.BALANCE, E.NOTES,
+                       P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                LEFT JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                LEFT JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                LEFT JOIN TRANSACTIONS T ON T.ENTRY_ID = E.ID
+                WHERE 1=1
+             AND E.DATE BETWEEN ? AND ? ORDER BY E.DATE DESC, E.ID DESC
+2025-07-07 00:24:43,657 - root - INFO - Configuration saved to data\config.json
+2025-07-07 00:24:43,658 - root - INFO - Configuration saved to data\config.json
+2025-07-07 00:24:43,714 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-07 00:24:43,714 - root - INFO - MongoDB connection closed
