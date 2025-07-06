@@ -1,16 +1,17 @@
+"""
+Main Application Integration for Enhanced MedRep
+Updates to integrate the new features into your existing application
+"""
+
+# In your main.py or main_window.py
+
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QStatusBar, QMessageBox, QApplication, QHBoxLayout
+from PyQt5.QtCore import pyqtSignal
 import sys
 import os
-import logging
-from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QTabWidget, QMessageBox, QDialog,
-    QAction, QVBoxLayout, QLabel, QPushButton, QMenuBar
-)
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize, Qt
 
-# Add src directory to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-from src.ui.new_entry_tab import NewEntryTab
+# Import the enhanced tabs
+from src.ui.new_entry_tab import NewEntryTab, InvoiceQuickViewDialog
 from src.ui.ledger_tab import LedgerTab
 from src.ui.graphs_tab import GraphsTab
 from src.ui.reports_tab import ReportsTab
@@ -27,19 +28,28 @@ from src.ui.help_system import HelpBrowser
 from src.database.audit_trail import AuditTrail
 from src.ui.dashboard_tab import DashboardTab
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    filename='app.log'
-)
+# Import other existing tabs
+from src.ui.dashboard_tab import DashboardTab
+from src.ui.graphs_tab import GraphsTab
+from src.ui.manage_data_tab import ManageDataTab
+from src.ui.settings_tab import SettingsTab
+
 
 class MainWindow(QMainWindow):
+    """
+    Enhanced Main Window with invoice integration
+    """
+    
     def __init__(self):
         super().__init__()
+        self.current_user = {'user_id': 1, 'username': 'admin'}  # Example
+        self.config = {'db_path': 'data/medtran.db'}  # Your config object with default db path
+        self.initUI()
         
-        # Load configuration
-        self.config = Config()
+    def initUI(self):
+        """Initialize the main window UI"""
+        self.setWindowTitle("MedRep - Medical Representative Transaction Manager")
+        self.setGeometry(100, 100, 1200, 800)
         
         # Set logging level from config
         log_level = getattr(logging, self.config.get('log_level', 'INFO'))
@@ -130,165 +140,271 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.setCentralWidget(self.tabs)
         
-        # Create tab content
+        # Create status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        
+        # Create all tabs
         self.create_dashboard_tab()
         self.create_new_entry_tab()
         self.create_ledger_tab()
         self.create_graphs_tab()
-        self.create_reports_tab()
         self.create_manage_data_tab()
         self.create_settings_tab()
         
-    def showInvoiceGenerator(self):
-        """Show the invoice generator dialog"""
-        invoice_generator = InvoiceGenerator(self.current_user)
-        invoice_generator.show()
-
-    def showAdvancedCharts(self):
-        """Show the advanced charts window"""
-        charts_window = QMainWindow(self)
-        charts_window.setWindowTitle("Advanced Charts")
-        charts_window.setMinimumSize(900, 600)
-        
-        charts_tab = AdvancedChartsTab()
-        charts_window.setCentralWidget(charts_tab)
-        
-        charts_window.show()
-
-    def showHelp(self):
-        """Show the help browser"""
-        self.help_browser = HelpBrowser()
-        self.help_browser.show()
-
-    def showAbout(self):
-        """Show the About dialog"""
-        about_dialog = QDialog(self)
-        about_dialog.setWindowTitle("About Medical Rep Transaction Software")
-        about_dialog.setMinimumWidth(400)
-        
-        layout = QVBoxLayout()
-        
-        # App title
-        title_label = QLabel("Medical Rep Transaction Software")
-        title_label.setStyleSheet("font-size: 18px; font-weight: bold;")
-        title_label.setAlignment(Qt.AlignCenter)
-        
-        # Version
-        version_label = QLabel("Version 1.0.0")
-        version_label.setAlignment(Qt.AlignCenter)
-        
-        # Description
-        description = QLabel(
-            "A comprehensive solution for medical representatives to manage "
-            "their sales, customers, and financial transactions."
-        )
-        description.setWordWrap(True)
-        description.setAlignment(Qt.AlignCenter)
-        
-        # Copyright
-        copyright_label = QLabel("© 2025 Your Company")
-        copyright_label.setAlignment(Qt.AlignCenter)
-        
-        # Close button
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(about_dialog.accept)
-        
-        layout.addWidget(title_label)
-        layout.addWidget(version_label)
-        layout.addSpacing(10)
-        layout.addWidget(description)
-        layout.addSpacing(10)
-        layout.addWidget(copyright_label)
-        layout.addSpacing(20)
-        layout.addWidget(close_btn)
-        
-        about_dialog.setLayout(layout)
-        about_dialog.exec_()
-        
-    def login(self):
-        """Show login dialog and authenticate user"""
-        dialog = LoginDialog(self.auth_manager)
-        result = dialog.exec_()
-        
-        if result == QDialog.Accepted:
-            self.current_user = dialog.user_info
-            return True
-        
-        return False
+        # Show welcome message
+        self.status_bar.showMessage("Welcome to MedRep - Enhanced with Auto Invoice Generation", 5000)
     
-    def create_reports_tab(self):
-        """Create and add the Reports tab"""
-        reports_tab = ReportsTab()
-        self.tabs.addTab(reports_tab, "Reports")
-        
-    def init_database(self):
-        """Initialize the database and add sample data if needed"""
-        try:
-            # Use database path from config
-            db_path = self.config.get('db_path')
-            db = Database(db_path)
-            db.init_db()
-            
-            # Check if we need to add sample data
-            db.connect()
-            db.cursor.execute("SELECT COUNT(*) FROM customers")
-            count = db.cursor.fetchone()[0]
-            db.close()
-            
-            if count == 0:
-                db.insert_sample_data()
-                
-        except Exception as e:
-            QMessageBox.critical(self, "Database Error", 
-                                f"Failed to initialize database: {str(e)}\n"
-                                "Please check the application log for details.")
+    def create_dashboard_tab(self):
+        """Create the dashboard tab"""
+        dashboard_tab = DashboardTab(self.current_user)
+        self.tabs.addTab(dashboard_tab, "Dashboard")
     
-    # In your main.py or main_window.py
     def create_new_entry_tab(self):
-        new_entry_tab = NewEntryTab()
+        """Create the enhanced new entry tab with invoice generation"""
+        self.new_entry_tab = NewEntryTab()
         
-        # Optional: Handle invoice generation
-        def on_invoice_generated(invoice_path):
-            self.statusBar().showMessage(f"Invoice saved: {invoice_path}", 5000)
+        # Connect invoice generation signal
+        self.new_entry_tab.entry_saved.connect(self.on_invoice_generated)
         
-        new_entry_tab.entry_saved.connect(on_invoice_generated)
-        self.tabs.addTab(new_entry_tab, "New Entry")
+        self.tabs.addTab(self.new_entry_tab, "New Entry")
     
     def create_ledger_tab(self):
-        """Create and add the Ledger tab"""
-        ledger_tab = LedgerTab()
-        self.tabs.addTab(ledger_tab, "Ledger")
+        """Create the enhanced ledger tab with invoice download"""
+        self.ledger_tab = LedgerTab()
+        self.tabs.addTab(self.ledger_tab, "Ledger")
+        
+        # Connect tab change to refresh ledger when selected
+        self.tabs.currentChanged.connect(self.on_tab_changed)
     
     def create_graphs_tab(self):
-        """Create and add the Graphs tab"""
+        """Create the graphs tab"""
         graphs_tab = GraphsTab()
         self.tabs.addTab(graphs_tab, "Graphs")
-        
+    
     def create_manage_data_tab(self):
-        """Create and add the Manage Data tab"""
+        """Create the manage data tab"""
         manage_data_tab = ManageDataTab()
         self.tabs.addTab(manage_data_tab, "Manage Data")
     
     def create_settings_tab(self):
-        """Create and add the Settings tab"""
+        """Create the settings tab"""
         settings_tab = SettingsTab(self.config)
         self.tabs.addTab(settings_tab, "Settings")
     
-    def closeEvent(self, event):
-        """Handle window close event"""
-        # Save window size to config
-        self.config.set('window_width', self.width())
-        self.config.set('window_height', self.height())
+    def on_invoice_generated(self, invoice_path):
+        """Handle invoice generation event"""
+        # Show status message
+        self.status_bar.showMessage(f"✓ Invoice saved: {os.path.basename(invoice_path)}", 5000)
         
-        event.accept()
+        # Show quick view dialog
+        dialog = InvoiceQuickViewDialog(invoice_path, self)
+        dialog.exec_()
         
-    def create_dashboard_tab(self):
-        """Create and add the Dashboard tab"""
-        dashboard_tab = DashboardTab(self.current_user)
-        self.tabs.addTab(dashboard_tab, "Dashboard")
+        # Refresh ledger if it's currently visible
+        if self.tabs.currentWidget() == self.ledger_tab:
+            self.ledger_tab.loadEntries()
+    
+    def on_tab_changed(self, index):
+        """Handle tab change event"""
+        # Refresh ledger when switching to it
+        if self.tabs.widget(index) == self.ledger_tab:
+            self.ledger_tab.loadEntries()
+            self.status_bar.showMessage("Ledger refreshed", 2000)
 
+
+# Startup check for invoice folder
+def ensure_invoice_folder():
+    """Ensure the invoice folder exists"""
+    invoice_folder = "invoices"
+    if not os.path.exists(invoice_folder):
+        os.makedirs(invoice_folder)
+        print(f"Created invoice folder: {invoice_folder}")
+
+
+# Settings additions for invoice configuration
+class InvoiceSettings:
+    """
+    Invoice-related settings that can be added to your settings tab
+    """
+    
+    @staticmethod
+    def get_invoice_settings_widget():
+        """Create a widget for invoice settings"""
+        from PyQt5.QtWidgets import QGroupBox, QFormLayout, QLineEdit, QPushButton, QCheckBox
+        
+        group = QGroupBox("Invoice Settings")
+        layout = QFormLayout()
+        
+        # Company settings
+        company_name = QLineEdit("Tru-Pharma")
+        company_email = QLineEdit("trupharmaceuticalfsd@gmail.com")
+        layout.addRow("Company Name:", company_name)
+        layout.addRow("Company Email:", company_email)
+        
+        # Invoice options
+        auto_generate = QCheckBox("Auto-generate invoices by default")
+        auto_generate.setChecked(True)
+        layout.addRow("", auto_generate)
+        
+        # Invoice folder
+        invoice_folder = QLineEdit("invoices")
+        browse_btn = QPushButton("Browse...")
+        folder_layout = QHBoxLayout()
+        folder_layout.addWidget(invoice_folder)
+        folder_layout.addWidget(browse_btn)
+        layout.addRow("Invoice Folder:", folder_layout)
+        
+        # Logo settings
+        logo_path = QLineEdit("")
+        logo_btn = QPushButton("Select Logo...")
+        logo_layout = QHBoxLayout()
+        logo_layout.addWidget(logo_path)
+        logo_layout.addWidget(logo_btn)
+        layout.addRow("Company Logo:", logo_layout)
+        
+        group.setLayout(layout)
+        return group
+
+
+# Database migration for existing installations
+def migrate_database_for_invoices(db_path):
+    """
+    Add invoice-related columns to existing database
+    """
+    import sqlite3
+    
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Check if columns exist before adding
+        cursor.execute("PRAGMA table_info(entries)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        # Add new columns if they don't exist
+        if 'transport_name' not in columns:
+            cursor.execute("ALTER TABLE entries ADD COLUMN transport_name TEXT")
+            print("Added transport_name column")
+            
+        if 'delivery_date' not in columns:
+            cursor.execute("ALTER TABLE entries ADD COLUMN delivery_date TEXT")
+            print("Added delivery_date column")
+            
+        if 'delivery_location' not in columns:
+            cursor.execute("ALTER TABLE entries ADD COLUMN delivery_location TEXT")
+            print("Added delivery_location column")
+        
+        # Create invoices table if it doesn't exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS invoices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entry_id INTEGER,
+                invoice_number TEXT UNIQUE,
+                invoice_path TEXT,
+                generated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (entry_id) REFERENCES entries(id)
+            )
+        ''')
+        print("Invoices table ready")
+        
+        conn.commit()
+        conn.close()
+        print("Database migration completed successfully")
+        
+    except Exception as e:
+        print(f"Migration error: {e}")
+
+
+# Utility functions for invoice management
+class InvoiceManager:
+    """
+    Utility class for invoice management operations
+    """
+    
+    @staticmethod
+    def find_invoice_by_number(invoice_number):
+        """Find invoice file by invoice number"""
+        invoice_folder = "invoices"
+        for filename in os.listdir(invoice_folder):
+            if invoice_number in filename and filename.endswith('.pdf'):
+                return os.path.join(invoice_folder, filename)
+        return None
+    
+    @staticmethod
+    def get_invoice_statistics(db_connection):
+        """Get invoice generation statistics"""
+        try:
+            cursor = db_connection.cursor()
+            
+            # Total invoices
+            cursor.execute("SELECT COUNT(*) FROM entries WHERE notes LIKE '%Invoice: INV-%'")
+            total_invoices = cursor.fetchone()[0]
+            
+            # This month's invoices
+            cursor.execute("""
+                SELECT COUNT(*) FROM entries 
+                WHERE notes LIKE '%Invoice: INV-%' 
+                AND date >= date('now', 'start of month')
+            """)
+            month_invoices = cursor.fetchone()[0]
+            
+            # Today's invoices
+            cursor.execute("""
+                SELECT COUNT(*) FROM entries 
+                WHERE notes LIKE '%Invoice: INV-%' 
+                AND date = date('now')
+            """)
+            today_invoices = cursor.fetchone()[0]
+            
+            return {
+                'total': total_invoices,
+                'this_month': month_invoices,
+                'today': today_invoices
+            }
+            
+        except Exception as e:
+            print(f"Error getting invoice statistics: {e}")
+            return {'total': 0, 'this_month': 0, 'today': 0}
+    
+    @staticmethod
+    def cleanup_old_invoices(days_to_keep=90):
+        """Clean up old invoice files"""
+        import time
+        
+        invoice_folder = "invoices"
+        current_time = time.time()
+        deleted_count = 0
+        
+        for filename in os.listdir(invoice_folder):
+            if filename.endswith('.pdf'):
+                file_path = os.path.join(invoice_folder, filename)
+                file_age_days = (current_time - os.path.getmtime(file_path)) / 86400
+                
+                if file_age_days > days_to_keep:
+                    try:
+                        os.remove(file_path)
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"Error deleting {filename}: {e}")
+        
+        return deleted_count
+
+
+# Main execution
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    
+    # Ensure invoice folder exists
+    ensure_invoice_folder()
+    
+    # Optional: Run database migration
+    db_path = "data/medtran.db"
+    if os.path.exists(db_path):
+        migrate_database_for_invoices(db_path)
+    
+    # Create and show main window
     window = MainWindow()
     window.show()
+    
     sys.exit(app.exec_())

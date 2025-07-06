@@ -76,35 +76,54 @@ class AutoInvoiceGenerator:
             except:
                 pass
         
-        # Calculate amount after discount if applicable
-        quantity = entry_data.get('quantity', 1)
-        unit_price = entry_data.get('unit_price', 0)
-        discount = entry_data.get('discount', 0)  # Add discount field if you have it
+        # Handle multiple items or single item
+        items = []
+        if 'items' in entry_data and isinstance(entry_data['items'], list):
+            # Multiple products
+            for item in entry_data['items']:
+                items.append({
+                    'name': item.get('product_name', 'Medical Supplies'),
+                    'quantity': item.get('quantity', 1),
+                    'rate': item.get('unit_price', 0),
+                    'discount': item.get('discount', 0),
+                    'amount': item.get('amount', 0)
+                })
+        else:
+            # Single product (backward compatibility)
+            quantity = entry_data.get('quantity', 1)
+            unit_price = entry_data.get('unit_price', 0)
+            discount = entry_data.get('discount', 0)
+            
+            amount = quantity * unit_price
+            if discount > 0:
+                amount = amount * (1 - discount / 100)
+            
+            items.append({
+                'name': entry_data.get('product_name', 'Medical Supplies'),
+                'quantity': quantity,
+                'rate': unit_price,
+                'discount': discount,
+                'amount': amount
+            })
         
-        amount = quantity * unit_price
-        if discount > 0:
-            amount = amount * (1 - discount / 100)
+        # Calculate totals
+        subtotal = sum(item['amount'] for item in items)
+        total = subtotal
         
         # Prepare invoice data
         invoice_data = {
             'customer_name': entry_data.get('customer_name', 'Cash Customer'),
             'customer_address': customer_address,
             'transport_name': entry_data.get('transport_name', 'N/A'),
-            'delivery_date': entry_data.get('date', datetime.now().strftime('%d-%m-%y')),
+            'delivery_date': entry_data.get('delivery_date', entry_data.get('date', datetime.now().strftime('%d-%m-%y'))),
             'delivery_location': entry_data.get('delivery_location', customer_address),
             'invoice_number': invoice_number,
             'invoice_date': datetime.now().strftime('%d-%m-%y'),
-            'items': [{
-                'name': entry_data.get('product_name', 'Medical Supplies'),
-                'quantity': quantity,
-                'rate': unit_price,
-                'discount': discount,
-                'amount': amount
-            }],
-            'subtotal': amount,
-            'total': amount,
+            'items': items,
+            'subtotal': subtotal,
+            'total': total,
             'received': 0.00,
-            'balance': amount,
+            'balance': total,
             'terms': None  # Will use default
         }
         
