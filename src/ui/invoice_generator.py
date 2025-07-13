@@ -127,15 +127,21 @@ class InvoiceGenerator(QWidget):
         header_layout.addRow("Customer:", self.customer_combo)
         
         # Your company info
-        self.company_name = QLineEdit("Your Company Name")
+        self.company_name = QLineEdit("Tru_pharma")
         self.company_name.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        header_layout.addRow("Your Company:", self.company_name)
+        header_layout.addRow("Company Name:", self.company_name)
         
+        # Company contact
+        self.company_contact = QLineEdit("0333-99-11-514")
+        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        header_layout.addRow("Company Contact:", self.company_contact)
+        
+        # Company address
         self.company_address = QTextEdit()
         self.company_address.setMaximumHeight(80)
-        self.company_address.setText("123 Business St\nAnytown, USA 12345\nPhone: (555) 123-4567\nEmail: info@yourcompany.com")
+        self.company_address.setText("Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514\nEmail: info@trupharma.com")
         self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        header_layout.addRow("Your Address:", self.company_address)
+        header_layout.addRow("Company Address:", self.company_address)
         
         # Logo selection
         logo_layout = QHBoxLayout()
@@ -503,7 +509,7 @@ class InvoiceGenerator(QWidget):
             self.updateTotals()
 
     def addFromTransactions(self):
-        """Add items from transactions in the database using MongoDB"""
+        """Add items from transactions in the database using MongoDB and get invoice number from notes"""
         dialog = QDialog(self)
         dialog.setWindowTitle("Add from Transactions")
         dialog.setMinimumSize(800, 500)
@@ -550,9 +556,9 @@ class InvoiceGenerator(QWidget):
         
         # Transactions table
         transactions_table = QTableWidget()
-        transactions_table.setColumnCount(7)
+        transactions_table.setColumnCount(8)
         transactions_table.setHorizontalHeaderLabels([
-            "ID", "Date", "Product", "Quantity", "Unit Price", "Total", "Select"
+            "ID", "Date", "Product", "Quantity", "Unit Price", "Total", "Invoice No", "Select"
         ])
         transactions_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         transactions_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -588,6 +594,20 @@ class InvoiceGenerator(QWidget):
         
         # Store selected items
         selected_items = []
+        
+        # Function to extract invoice number from notes
+        def extract_invoice_number(notes):
+            try:
+                import re
+                # Look for pattern like "Invoice: INV-20241201-123"
+                pattern = r"Invoice:\s*(INV-\d{8}-\d{3})"
+                match = re.search(pattern, notes)
+                if match:
+                    return match.group(1)
+                return "No Invoice"
+            except Exception as e:
+                print(f"Error extracting invoice number: {e}")
+                return "No Invoice"
         
         # Function to load transactions using MongoDB
         def load_transactions():
@@ -630,13 +650,17 @@ class InvoiceGenerator(QWidget):
                         product_id = str(entry.get('product_id', ''))
                         product_info = product_lookup.get(product_id, {})
                         
+                        # Extract invoice number from notes
+                        invoice_number = extract_invoice_number(entry.get('notes', ''))
+                        
                         filtered_transactions.append({
                             'id': entry.get('id', ''),
                             'date': entry_date,
                             'product_name': product_info.get('name', 'Unknown Product'),
                             'quantity': entry.get('quantity', 0),
                             'unit_price': entry.get('unit_price', 0),
-                            'total': float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                            'total': float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0)),
+                            'invoice_number': invoice_number
                         })
                 
                 # Sort by date (newest first)
@@ -652,12 +676,13 @@ class InvoiceGenerator(QWidget):
                     transactions_table.setItem(row, 3, QTableWidgetItem(str(transaction['quantity'])))
                     transactions_table.setItem(row, 4, QTableWidgetItem(f"${transaction['unit_price']:.2f}"))
                     transactions_table.setItem(row, 5, QTableWidgetItem(f"${transaction['total']:.2f}"))
+                    transactions_table.setItem(row, 6, QTableWidgetItem(transaction['invoice_number']))
                     
                     # Add checkbox for selection
                     check_box = QTableWidgetItem()
                     check_box.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
                     check_box.setCheckState(Qt.Unchecked)
-                    transactions_table.setItem(row, 6, check_box)
+                    transactions_table.setItem(row, 7, check_box)
                 
                 if not filtered_transactions:
                     QMessageBox.information(dialog, "No Data", "No transactions found for the selected criteria.")
@@ -673,11 +698,18 @@ class InvoiceGenerator(QWidget):
         
         if dialog.exec_() == QDialog.Accepted:
             # Get selected items
+            selected_invoice_number = None
             for row in range(transactions_table.rowCount()):
-                if transactions_table.item(row, 6) and transactions_table.item(row, 6).checkState() == Qt.Checked:
+                if transactions_table.item(row, 7) and transactions_table.item(row, 7).checkState() == Qt.Checked:
                     product = transactions_table.item(row, 2).text()
                     quantity = int(float(transactions_table.item(row, 3).text()))
                     unit_price = float(transactions_table.item(row, 4).text().replace('$', ''))
+                    invoice_number = transactions_table.item(row, 6).text()
+                    
+                    # Set invoice number from the first selected item
+                    if selected_invoice_number is None and invoice_number != "No Invoice":
+                        selected_invoice_number = invoice_number
+                        self.invoice_number.setText(invoice_number)
                     
                     item = {
                         'product': product,
@@ -694,56 +726,7 @@ class InvoiceGenerator(QWidget):
                 self.addItemToTable(item)
             
             self.updateTotals()
-    
-    def addItemToTable(self, item):
-        """Add an item to the invoice items table"""
-        row = self.items_table.rowCount()
-        self.items_table.insertRow(row)
-        
-        self.items_table.setItem(row, 0, QTableWidgetItem(item['product']))
-        self.items_table.setItem(row, 1, QTableWidgetItem(item['description']))
-        self.items_table.setItem(row, 2, QTableWidgetItem(str(item['quantity'])))
-        self.items_table.setItem(row, 3, QTableWidgetItem(f"${item['unit_price']:.2f}"))
-        self.items_table.setItem(row, 4, QTableWidgetItem(f"${item['total']:.2f}"))
-        
-        # Add remove button
-        remove_btn = QPushButton("Remove")
-        remove_btn.clicked.connect(lambda: self.removeItem(row))
-        self.items_table.setCellWidget(row, 5, remove_btn)
-        
-        # Store item data
-        self.invoice_items.append(item)
-    
-    def removeItem(self, row):
-        """Remove an item from the invoice"""
-        self.items_table.removeRow(row)
-        self.invoice_items.pop(row)
-        self.updateTotals()
-    
-    def clearItems(self):
-        """Clear all invoice items"""
-        reply = QMessageBox.question(
-            self, "Confirm Clear",
-            "Are you sure you want to clear all invoice items?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-        )
-        
-        if reply == QMessageBox.Yes:
-            self.items_table.setRowCount(0)
-            self.invoice_items = []
-            self.updateTotals()
-    
-    def updateTotals(self):
-        """Update the invoice totals"""
-        subtotal = sum(item['total'] for item in self.invoice_items)
-        tax_rate = self.tax_rate.value() / 100
-        tax_amount = subtotal * tax_rate
-        total = subtotal + tax_amount
-        
-        self.subtotal_label.setText(f"${subtotal:.2f}")
-        self.tax_amount_label.setText(f"${tax_amount:.2f}")
-        self.total_label.setText(f"${total:.2f}")
-    
+
     def generateInvoiceHtml(self):
         """Generate HTML for the invoice that matches the pharmaceutical format"""
         # Get customer info
@@ -758,44 +741,8 @@ class InvoiceGenerator(QWidget):
         tax_amount = subtotal * tax_rate
         total = subtotal + tax_amount
         
-        # Convert amount to words (simple implementation)
-        def amount_to_words(amount):
-            ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-            teens = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
-            tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
-            
-            try:
-                amount = int(amount)
-                if amount == 0:
-                    return "zero rupees"
-                
-                result = ""
-                if amount >= 1000:
-                    thousands = amount // 1000
-                    if thousands > 0:
-                        result += f"{ones[thousands]} thousand "
-                        amount %= 1000
-                
-                if amount >= 100:
-                    hundreds = amount // 100
-                    if hundreds > 0:
-                        result += f"{ones[hundreds]} hundred "
-                        amount %= 100
-                
-                if amount >= 20:
-                    ten_digit = amount // 10
-                    ones_digit = amount % 10
-                    result += f"{tens[ten_digit]} "
-                    if ones_digit > 0:
-                        result += f"{ones[ones_digit]} "
-                elif amount >= 10:
-                    result += f"{teens[amount - 10]} "
-                elif amount > 0:
-                    result += f"{ones[amount]} "
-                
-                return f"{result.strip()} rupees"
-            except:
-                return "amount not specified"
+        # Convert amount to words from total
+        amount_in_words = self.amount_to_words(total)
         
         # Logo handling
         logo_html = ""
@@ -842,269 +789,435 @@ class InvoiceGenerator(QWidget):
         delivery_date = self.due_date.date().toString("dd-MM-yy")
         delivery_location = customer_address.split('\n')[0] if customer_address else "Customer Location"
         
+        # Get current date for invoice
+        current_date = QDate.currentDate().toString("dd-MM-yy")
+        invoice_number = self.invoice_number.text()
+        
+        # Get company info
+        company_contact = self.company_contact.text()
+        company_address = self.company_address.toPlainText().replace('\n', '<br>')
+        
         # Generate professional pharmaceutical invoice HTML
         html = f"""
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Bill/Cash Memo</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 10px;
-            font-size: 12px;
-        }
-        .invoice-container {
-            border: 2px solid #000;
-            padding: 0;
-            max-width: 210mm;
-            margin: 0 auto;
-        }
-        .header {
-            background-color: #8A2BE2;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .company-header {
-            background-color: #8A2BE2;
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .company-logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .company-contact {
-            text-align: right;
-            font-size: 11px;
-        }
-        .bill-details {
-            display: flex;
-            border-bottom: 2px solid #000;
-        }
-        .bill-to {
-            flex: 1;
-            padding: 15px;
-            border-right: 1px solid #000;
-        }
-        .transport-details {
-            flex: 1;
-            padding: 15px;
-            border-right: 1px solid #000;
-        }
-        .invoice-details {
-            flex: 1;
-            padding: 15px;
-        }
-        .items-header {
-            background-color: #8A2BE2;
-            color: white;
-            padding: 8px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0;
-        }
-        .items-table th {
-            background-color: #8A2BE2;
-            color: white;
-            padding: 8px;
-            border: 1px solid #666;
-            text-align: center;
-            font-size: 11px;
-        }
-        .items-table td {
-            padding: 8px;
-            border: 1px solid #666;
-            font-size: 11px;
-        }
-        .totals-section {
-            display: flex;
-            border-top: 1px solid #000;
-        }
-        .amounts-section {
-            flex: 1;
-            padding: 15px;
-        }
-        .amounts-header {
-            background-color: #8A2BE2;
-            color: white;
-            padding: 5px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .amount-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px solid #ccc;
-        }
-        .amount-words {
-            background-color: #8A2BE2;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .terms-section {
-            display: flex;
-            border-top: 1px solid #000;
-        }
-        .terms {
-            flex: 2;
-            padding: 15px;
-            font-size: 10px;
-            border-right: 1px solid #000;
-        }
-        .signature-section {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-        }
-        .bold { font-weight: bold; }
-        .right-align { text-align: right; }
+      body {{
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 10px;
+        font-size: 12px;
+      }}
+      .invoice-container {{
+        border: 2px solid #000;
+        padding: 0;
+        max-width: 210mm;
+        margin: 0 auto;
+      }}
+      .header {{
+        background-color: white;
+        color: black;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+      }}
+      .company-header {{
+        background-color: #ffffff;
+        color: rgb(0, 0, 0);
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }}
+      .company-logo {{
+        font-size: 20px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+      }}
+      .company-contact {{
+        text-align: right;
+        font-size: 10px;
+      }}
+
+      .bill-headers {{
+        display: flex;
+        border: 1px solid #000;
+        background-color: #f4f0ff;
+      }}
+
+      .bill-details {{
+        display: flex;
+        border: 1px solid #000;
+        border-top: none;
+        background-color: #f4f0ff;
+      }}
+
+      .bill-to,
+      .transport-details,
+      .invoice-details {{
+        flex: 1;
+        padding: 10px;
+        border-right: 1px solid #000;
+        background-color: #fff;
+      }}
+
+      .section-header {{
+        background-color: rgb(132 125 230);
+        color: white;
+        padding: 4px 8px;
+        font-weight: bold;
+        font-size: 11px;
+        width: 100%;
+        border-right: 1px solid #000;
+      }}
+
+      .detail-row {{
+        font-size: 11px;
+        margin-top: 4px;
+      }}
+
+      .bold {{
+        font-weight: bold;
+      }}
+
+      .items-table {{
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+      }}
+      .items-table th {{
+        background-color: rgb(132 125 230);
+        color: white;
+        padding: 6px;
+        border: 1px solid #000;
+        text-align: center;
+        font-size: 11px;
+        font-weight: bold;
+      }}
+      .items-table td {{
+        padding: 6px;
+        border: 1px solid #000;
+        font-size: 11px;
+        text-align: center;
+      }}
+      .items-table td:nth-child(2) {{
+        text-align: left;
+      }}
+      .amounts-section {{
+        width: 270px;
+        margin-left: auto;
+        border-left: 1px solid #000;
+      }}
+      .amounts-header {{
+        background-color: rgb(132 125 230);
+        color: white;
+        padding: 6px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+      }}
+      .amount-row {{
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 10px;
+        border-bottom: 1px solid #000;
+        font-size: 11px;
+      }}
+      .amount-words {{
+        background-color: #f8f8f8;
+        color: rgb(0, 0, 0);
+        padding: 8px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+        width: 506px;
+        border-right: #000 solid 1px;
+      }}
+      .amount-word-header {{
+        background-color: rgb(132 125 230);
+        color: white;
+        width: 100%;
+        border: #000 solid 1px;
+        padding: 3px 13px 3px 3px;
+        margin-top: -9px;
+        margin-left: -9px;
+      }}
+      .terms-section {{
+        display: flex;
+        border-top: 1px solid #000;
+      }}
+      .term-section-header {{
+        background-color: rgb(132 125 230);
+        color: white;
+        padding: 5px 10px 5px 13px;
+        font-weight: bold;
+        font-size: 11px;
+        width: 100%;
+        margin-top: -9px;
+        margin-left: -12px;
+      }}
+      .terms {{
+        flex: 2;
+        padding: 9px 11px 11px 12px;
+        font-size: 9px;
+        border-right: 1px solid #000;
+      }}
+      .signature-section {{
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+        font-size: 10px;
+      }}
+      .bold {{
+        font-weight: bold;
+      }}
+      .right-align {{
+        text-align: right;
+      }}
+      .detail-row {{
+        margin-bottom: 3px;
+        font-size: 10px;
+      }}
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">Bill/Cash Memo</div>
     <div class="invoice-container">
-        <!-- Header -->
-        <div class="header">Bill/Cash Memo</div>
-        
-        <!-- Company Header -->
-        <div class="company-header">
-            <div class="company-logo">
-                {logo_html}
-                {self.company_name.text()}
-            </div>
-            <div class="company-contact">
-                {customer_contact}<br>
-                {self.company_address.toPlainText().replace(chr(10), '<br>')}
-            </div>
+      <!-- Company Header -->
+      <div class="company-header">
+        <div class="company-logo">{logo_html}</div>
+        <div class="company-contact">
+          {company_contact}<br />
+          {company_address}
         </div>
-        
-        <!-- Bill Details Section -->
-        <div class="bill-details">
-            <div class="bill-to">
-                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Bill To</div>
-                <div class="bold">{customer_name}</div>
-                <div style="margin-top: 10px;">{customer_address.replace(chr(10), '<br>')}</div>
-            </div>
-            
-            <div class="transport-details">
-                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Transportation Details</div>
-                <div><span class="bold">Transport Name:</span> {transport_name}</div>
-                <div><span class="bold">Delivery Date:</span> {delivery_date}</div>
-                <div><span class="bold">Delivery location:</span> {delivery_location}</div>
-            </div>
-            
-            <div class="invoice-details">
-                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Invoice Details</div>
-                <div><span class="bold">Invoice No.:</span> {self.invoice_number.text()}</div>
-                <div><span class="bold">Date:</span> {self.invoice_date.date().toString("dd-MM-yy")}</div>
-            </div>
+      </div>
+
+      <div class="bill-headers">
+        <div class="section-header">Bill To</div>
+        <div class="section-header">Transportation Details</div>
+        <div class="section-header">Invoice Details</div>
+      </div>
+
+      <!-- Bill Details Section -->
+      <div class="bill-details">
+        <div class="bill-to">
+          <div class="bold">{customer_name}</div>
+          <div style="margin-top: 5px; font-size: 10px">{customer_address}</div>
         </div>
-        
-        <!-- Items Section -->
-        <div class="items-header">
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th style="width: 5%;">#</th>
-                        <th style="width: 25%;">Item name</th>
-                        <th style="width: 10%;">No.</th>
-                        <th style="width: 10%;">MRP</th>
-                        <th style="width: 10%;">Quantity</th>
-                        <th style="width: 10%;">Rate</th>
-                        <th style="width: 10%;">Discount</th>
-                        <th style="width: 15%;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items_html}
-                    <tr>
-                        <td colspan="7" style="text-align: right; padding: 8px; border: 1px solid #666; font-weight: bold;">Total</td>
-                        <td style="text-align: right; padding: 8px; border: 1px solid #666; font-weight: bold;">{subtotal:.0f}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <div class="transport-details">
+          <div class="detail-row">
+            <span class="bold">Transport Name:</span> {transport_name}
+          </div>
+          <div class="detail-row">
+            <span class="bold">Delivery Date:</span> {delivery_date}
+          </div>
+          <div class="detail-row">
+            <span class="bold">Delivery location:</span> {delivery_location}
+          </div>
         </div>
-        
-        <!-- Totals Section -->
-        <div class="totals-section">
-            <div class="amounts-section">
-                <div class="amounts-header">Amounts</div>
-                <div class="amount-row">
-                    <span>Sub Total</span>
-                    <span>{subtotal:.0f}</span>
-                </div>
-                <div class="amount-row">
-                    <span>Total</span>
-                    <span>{total:.0f}</span>
-                </div>
-                <div class="amount-row">
-                    <span>Received</span>
-                    <span>0.00</span>
-                </div>
-                <div class="amount-row bold">
-                    <span>Balance</span>
-                    <span>{total:.0f}</span>
-                </div>
-            </div>
+
+        <div class="invoice-details">
+          <div class="detail-row">
+            <span class="bold">Invoice No.:</span> {invoice_number}
+          </div>
+          <div class="detail-row">
+            <span class="bold">Date:</span> {current_date}
+          </div>
         </div>
-        
-        <!-- Amount in Words -->
-        <div class="amount-words">
-            <div class="bold" style="margin-bottom: 5px;">Invoice Amount In Words</div>
-            <div>{amount_to_words(total)}</div>
+      </div>
+
+      <!-- Items Section -->
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th style="width: 5%">#</th>
+            <th style="width: 25%">Item name</th>
+            <th style="width: 12%">No.</th>
+            <th style="width: 12%">MRP</th>
+            <th style="width: 12%">Quantity</th>
+            <th style="width: 12%">Rate</th>
+            <th style="width: 12%">Discount</th>
+            <th style="width: 12%">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items_html}
+          <tr>
+            <td colspan="7" style="text-align: right; font-weight: bold">
+              Total
+            </td>
+            <td style="text-align: right; font-weight: bold">{subtotal:.0f}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Amounts Section -->
+      <div class="amounts-section">
+        <div class="amounts-header">Amounts</div>
+        <div class="amount-row">
+          <span>Sub Total</span>
+          <span>{subtotal:.0f}</span>
         </div>
-        
-        <!-- Terms and Signature -->
-        <div class="terms-section">
-            <div class="terms">
-                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Terms and Conditions</div>
-                <div style="text-align: justify;">
-                    {self.notes.toPlainText().replace(chr(10), '<br>')}
-                    <br><br>
-                    Form 2-A, as specified under Rules 19 and 30, pertains to the warranty 
-                    provided under Section 23(1)(1) of the Drug Act 1976. This document, 
-                    issued by {self.company_name.text()}, serves as an assurance of the quality and 
-                    effectiveness of products. The warranty ensures that the drugs 
-                    manufactured by {self.company_name.text()} comply with the prescribed standards and 
-                    meet the necessary regulatory requirements. By utilizing Form 2-A, 
-                    {self.company_name.text()} demonstrates its commitment to delivering safe and reliable 
-                    pharmaceuticals to consumers. This form acts as a legal document, 
-                    emphasizing {self.company_name.text()}'s responsibility and accountability in 
-                    maintaining the highest standards in drug manufacturing and 
-                    distribution.
-                </div>
-            </div>
-            
-            <div class="signature-section">
-                <div style="margin-bottom: 20px;">For : {self.company_name.text()}</div>
-                <div style="margin-top: 80px; border-top: 1px solid #000; padding-top: 10px;">
-                    <div class="bold">Authorized Signatory</div>
-                </div>
-            </div>
+        <div class="amount-row">
+          <span>Total</span>
+          <span>{total:.0f}</span>
         </div>
+        <div class="amount-row">
+          <span>Received</span>
+          <span>0.00</span>
+        </div>
+        <div class="amount-row bold">
+          <span>Balance</span>
+          <span>{total:.0f}</span>
+        </div>
+      </div>
+
+      <!-- Amount in Words -->
+      <div class="amount-words">
+        <div class="bold amount-word-header" style="margin-bottom: 3px">
+          Invoice Amount In Words
+        </div>
+        <div>{amount_in_words}</div>
+      </div>
+
+      <!-- Terms and Signature -->
+      <div class="terms-section">
+        <div class="terms">
+          <div class="term-section-header" style="margin-bottom: 8px">
+            Terms and Conditions
+          </div>
+          <div style="text-align: justify; line-height: 1.3">
+            {self.notes.toPlainText()}
+            <br><br>
+            Form 2-A, as specified under Rules 19 and 30, pertains to the
+            warranty provided under Section 23(1)(1) of the Drug Act 1976. This
+            document, issued by Tru_pharma, serves as an assurance of the
+            quality and effectiveness of products. The warranty ensures that the
+            drugs manufactured by Tru_pharma comply with the prescribed
+            standards and meet the necessary regulatory requirements. By
+            utilizing Form 2-A, Tru_pharma demonstrates its commitment to
+            delivering safe and reliable pharmaceuticals to consumers. This form
+            acts as a legal document, emphasizing Tru_pharma's
+            responsibility and accountability in maintaining the highest
+            standards in drug manufacturing and distribution.
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <div style="margin-bottom: 15px">For : Tru_pharma</div>
+          <div
+            style="
+              margin-top: 60px;
+              border-top: 1px solid #000;
+              padding-top: 8px;
+            "
+          >
+            <div class="bold">Authorized Signatory</div>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>
         """
         
         return html
     
+    def amount_to_words(self, amount):
+        """Convert amount to words"""
+        ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+        teens = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+        tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+        
+        try:
+            amount = int(amount)
+            if amount == 0:
+                return "zero rupees"
+            
+            result = ""
+            if amount >= 1000:
+                thousands = amount // 1000
+                if thousands > 0:
+                    result += f"{ones[thousands]} thousand "
+                    amount %= 1000
+            
+            if amount >= 100:
+                hundreds = amount // 100
+                if hundreds > 0:
+                    result += f"{ones[hundreds]} hundred "
+                    amount %= 100
+            
+            if amount >= 20:
+                ten_digit = amount // 10
+                ones_digit = amount % 10
+                result += f"{tens[ten_digit]} "
+                if ones_digit > 0:
+                    result += f"{ones[ones_digit]} "
+            elif amount >= 10:
+                result += f"{teens[amount - 10]} "
+            elif amount > 0:
+                result += f"{ones[amount]} "
+            
+            return f"{result.strip()} rupees"
+        except:
+            return "amount not specified"
+
+    def prepareInvoiceData(self):
+        """Prepare invoice data for PDF generation"""
+        # Get customer info
+        customer_name = self.customer_combo.currentText()
+        customer_info = self.customer_data.get(customer_name, {})
+        customer_address = customer_info.get('address', '')
+        customer_contact = customer_info.get('contact', '')
+        
+        # Calculate totals
+        subtotal = sum(item['total'] for item in self.invoice_items)
+        tax_rate = self.tax_rate.value() / 100
+        tax_amount = subtotal * tax_rate
+        total = subtotal + tax_amount
+        
+        # Prepare items data
+        items_data = []
+        for item in self.invoice_items:
+            items_data.append({
+                'product_name': item['product'],
+                'batch_number': item.get('batch_number', 'N/A'),
+                'product_id': item.get('product_id', 'N/A'),
+                'quantity': item['quantity'],
+                'unit_price': item['unit_price'],
+                'discount': 0,  # Can be made configurable
+                'amount': item['total']
+            })
+        
+        return {
+            'company_name': self.company_name.text(),
+            'company_logo': self.company_logo,
+            'customer_info': {
+                'name': customer_name,
+                'address': customer_address,
+                'contact': customer_contact
+            },
+            'transport_info': {
+                'transport_name': 'Standard Delivery',
+                'delivery_date': self.due_date.date().toString("dd-MM-yy"),
+                'delivery_location': customer_address.split('\n')[0] if customer_address else 'Customer Location'
+            },
+            'invoice_details': {
+                'invoice_number': self.invoice_number.text(),
+                'invoice_date': QDate.currentDate().toString("dd-MM-yy")  # Use current date
+            },
+            'items': items_data,
+            'terms': self.notes.toPlainText(),
+            'total_amount': total
+        }
+
     def previewInvoice(self):
         """Preview the invoice"""
         if not self.invoice_items:
@@ -1159,55 +1272,6 @@ class InvoiceGenerator(QWidget):
                     f"Failed to save PDF: {str(e)}"
                 )
     
-    def prepareInvoiceData(self):
-        """Prepare invoice data for PDF generation"""
-        # Get customer info
-        customer_name = self.customer_combo.currentText()
-        customer_info = self.customer_data.get(customer_name, {})
-        customer_address = customer_info.get('address', '')
-        customer_contact = customer_info.get('contact', '')
-        
-        # Calculate totals
-        subtotal = sum(item['total'] for item in self.invoice_items)
-        tax_rate = self.tax_rate.value() / 100
-        tax_amount = subtotal * tax_rate
-        total = subtotal + tax_amount
-        
-        # Prepare items data
-        items_data = []
-        for item in self.invoice_items:
-            items_data.append({
-                'product_name': item['product'],
-                'batch_number': item.get('batch_number', 'N/A'),
-                'product_id': item.get('product_id', 'N/A'),
-                'quantity': item['quantity'],
-                'unit_price': item['unit_price'],
-                'discount': 0,  # Can be made configurable
-                'amount': item['total']
-            })
-        
-        return {
-            'company_name': self.company_name.text(),
-            'company_logo': self.company_logo,
-            'customer_info': {
-                'name': customer_name,
-                'address': customer_address,
-                'contact': customer_contact
-            },
-            'transport_info': {
-                'transport_name': 'Standard Delivery',
-                'delivery_date': self.due_date.date().toString("dd-MM-yy"),
-                'delivery_location': customer_address.split('\n')[0] if customer_address else 'Customer Location'
-            },
-            'invoice_details': {
-                'invoice_number': self.invoice_number.text(),
-                'invoice_date': self.invoice_date.date().toString("dd-MM-yy")
-            },
-            'items': items_data,
-            'terms': self.notes.toPlainText(),
-            'total_amount': total
-        }
-
     def printInvoice(self):
         """Print the invoice using reportlab PDF"""
         if not self.invoice_items:
