@@ -12,7 +12,7 @@ import os
 
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database.db import Database
+from database.mongo_adapter import MongoAdapter
 
 class KPICard(QFrame):
     """Card widget to display a KPI metric"""
@@ -24,7 +24,7 @@ class KPICard(QFrame):
             QFrame {{
                 border-left: 4px solid {color};
                 background-color: white;
-                # border-radius: 0px;
+                border-radius: 0px;
                 padding: 15px;
             }}
         """)
@@ -139,7 +139,7 @@ class DashboardTab(QWidget):
     
     def __init__(self, current_user=None):
         super().__init__()
-        self.db = Database()
+        self.db = MongoAdapter()
         self.current_user = current_user
         self.initUI()
         
@@ -377,13 +377,11 @@ class DashboardTab(QWidget):
     def getProductAlerts(self):
         """Get alerts for expired and expiring products"""
         try:
-            self.db.connect()
-            
             current_date = QDate.currentDate().toString("yyyy-MM-dd")
             upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
             
             # Get expired products with sales data
-            self.db.cursor.execute('''
+            expired_products = self.db.execute('''
                 SELECT DISTINCT p.name, p.batch_number, p.expiry_date,
                        SUM(e.quantity * e.unit_price) as total_sales
                 FROM products p
@@ -393,10 +391,9 @@ class DashboardTab(QWidget):
                 HAVING total_sales > 0
                 ORDER BY p.expiry_date
             ''', (current_date,))
-            expired_products = self.db.cursor.fetchall()
             
             # Get expiring products with sales data
-            self.db.cursor.execute('''
+            expiring_products = self.db.execute('''
                 SELECT DISTINCT p.name, p.batch_number, p.expiry_date,
                        SUM(e.quantity * e.unit_price) as total_sales
                 FROM products p
@@ -406,17 +403,26 @@ class DashboardTab(QWidget):
                 HAVING total_sales > 0
                 ORDER BY p.expiry_date
             ''', (current_date, upcoming_date))
-            expiring_products = self.db.cursor.fetchall()
+            
+            # Handle MongoDB adapter results - ensure we have lists
+            if not isinstance(expired_products, list):
+                expired_products = []
+            if not isinstance(expiring_products, list):
+                expiring_products = []
             
             # Format alerts
             expired_alerts = []
-            for name, batch, expiry, sales in expired_products:
-                expired_alerts.append(f"{name} (Batch: {batch}) - Expired: {expiry}")
+            for result in expired_products:
+                if len(result) >= 4:
+                    name, batch, expiry, sales = result[:4]
+                    expired_alerts.append(f"{name} (Batch: {batch}) - Expired: {expiry}")
             
             expiring_alerts = []
-            for name, batch, expiry, sales in expiring_products:
-                days_until = QDate.currentDate().daysTo(QDate.fromString(expiry, "yyyy-MM-dd"))
-                expiring_alerts.append(f"{name} (Batch: {batch}) - Expires in {days_until} days")
+            for result in expiring_products:
+                if len(result) >= 4:
+                    name, batch, expiry, sales = result[:4]
+                    days_until = QDate.currentDate().daysTo(QDate.fromString(expiry, "yyyy-MM-dd"))
+                    expiring_alerts.append(f"{name} (Batch: {batch}) - Expires in {days_until} days")
             
             return {
                 'expired': expired_alerts,
@@ -426,29 +432,30 @@ class DashboardTab(QWidget):
         except Exception as e:
             print(f"Error getting product alerts: {e}")
             return {'expired': [], 'expiring': []}
-        finally:
-            self.db.close()
     
     def getBatchMetrics(self):
         """Get batch-related metrics"""
         try:
-            self.db.connect()
-            
             # Get active batches (products with sales)
-            self.db.cursor.execute('''
+            result = self.db.execute('''
                 SELECT COUNT(DISTINCT p.id) as active_batches,
                        COUNT(DISTINCT p.name) as unique_products
                 FROM products p
                 JOIN entries e ON p.id = e.product_id
                 WHERE e.is_credit = 1
             ''')
-            result = self.db.cursor.fetchone()
-            active_batches = result[0] if result else 0
-            unique_products = result[1] if result else 0
+            
+            active_batches = 0
+            unique_products = 0
+            if result and len(result) > 0 and len(result[0]) >= 2:
+                active_batches = result[0][0] or 0
+                unique_products = result[0][1] or 0
             
             # Get total products in inventory
-            self.db.cursor.execute('SELECT COUNT(*) FROM products')
-            total_products = self.db.cursor.fetchone()[0]
+            total_products_result = self.db.execute('SELECT COUNT(*) FROM products')
+            total_products = 0
+            if total_products_result and len(total_products_result) > 0:
+                total_products = total_products_result[0][0] or 0
             
             return {
                 'active_batches': active_batches,
@@ -463,14 +470,10 @@ class DashboardTab(QWidget):
                 'unique_products': 0,
                 'total_products': 0
             }
-        finally:
-            self.db.close()
         
     def loadKPIMetrics(self):
         """Load KPI metrics from database"""
         try:
-            self.db.connect()
-            
             # Get current month and last month dates
             today = QDate.currentDate()
             current_month_start = QDate(today.year(), today.month(), 1).toString("yyyy-MM-dd")
@@ -480,22 +483,24 @@ class DashboardTab(QWidget):
             last_month_end = QDate(today.year(), today.month(), 1).addDays(-1).toString("yyyy-MM-dd")
             
             # Get total sales (credits) for current month
-            self.db.cursor.execute('''
+            result = self.db.execute('''
                 SELECT SUM(quantity * unit_price) 
                 FROM entries 
                 WHERE is_credit = 1 AND date >= ?
             ''', (current_month_start,))
-            result = self.db.cursor.fetchone()
-            current_sales = result[0] if result and result[0] is not None else 0
+            current_sales = 0
+            if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                current_sales = result[0][0]
             
             # Get total sales for last month
-            self.db.cursor.execute('''
+            result = self.db.execute('''
                 SELECT SUM(quantity * unit_price) 
                 FROM entries 
                 WHERE is_credit = 1 AND date >= ? AND date <= ?
             ''', (last_month_start, last_month_end))
-            result = self.db.cursor.fetchone()
-            last_month_sales = result[0] if result and result[0] is not None else 0
+            last_month_sales = 0
+            if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                last_month_sales = result[0][0]
             
             # Calculate sales change percentage
             sales_change = 0
@@ -503,22 +508,24 @@ class DashboardTab(QWidget):
                 sales_change = ((current_sales - last_month_sales) / last_month_sales) * 100
             
             # Get transaction count for current month
-            self.db.cursor.execute('''
+            result = self.db.execute('''
                 SELECT COUNT(*) 
                 FROM entries 
                 WHERE date >= ?
             ''', (current_month_start,))
-            result = self.db.cursor.fetchone()
-            current_count = result[0] if result and result[0] is not None else 0
+            current_count = 0
+            if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                current_count = result[0][0]
             
             # Get transaction count for last month
-            self.db.cursor.execute('''
+            result = self.db.execute('''
                 SELECT COUNT(*) 
                 FROM entries 
                 WHERE date >= ? AND date <= ?
             ''', (last_month_start, last_month_end))
-            result = self.db.cursor.fetchone()
-            last_month_count = result[0] if result and result[0] is not None else 0
+            last_month_count = 0
+            if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                last_month_count = result[0][0]
             
             # Calculate transaction change percentage
             transaction_change = 0
@@ -541,9 +548,10 @@ class DashboardTab(QWidget):
                 average_change = ((average_sale - last_month_average) / last_month_average) * 100
             
             # Get current balance
-            self.db.cursor.execute('SELECT MAX(balance) FROM transactions')
-            result = self.db.cursor.fetchone()
-            current_balance = result[0] if result and result[0] is not None else 0
+            result = self.db.execute('SELECT MAX(balance) FROM transactions')
+            current_balance = 0
+            if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                current_balance = result[0][0]
             
             return {
                 'total_sales': current_sales,
@@ -566,8 +574,6 @@ class DashboardTab(QWidget):
                 'average_change': 0,
                 'current_balance': 0
             }
-        finally:
-            self.db.close()
     
     def createSalesChart(self):
         """Create monthly sales chart"""
@@ -576,8 +582,6 @@ class DashboardTab(QWidget):
         chart.setAnimationOptions(QChart.SeriesAnimations)
         
         try:
-            self.db.connect()
-            
             # Get data for the last 6 months
             today = QDate.currentDate()
             
@@ -597,23 +601,25 @@ class DashboardTab(QWidget):
                                month_date.daysInMonth()).toString("yyyy-MM-dd")
                 
                 # Get credits for this month
-                self.db.cursor.execute('''
+                result = self.db.execute('''
                     SELECT SUM(quantity * unit_price) 
                     FROM entries 
                     WHERE is_credit = 1 AND date >= ? AND date <= ?
                 ''', (month_start, month_end))
-                result = self.db.cursor.fetchone()
-                month_credits = result[0] if result and result[0] is not None else 0
+                month_credits = 0
+                if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                    month_credits = result[0][0]
                 credits.append(month_credits)
                 
                 # Get debits for this month
-                self.db.cursor.execute('''
+                result = self.db.execute('''
                     SELECT SUM(quantity * unit_price) 
                     FROM entries 
                     WHERE is_credit = 0 AND date >= ? AND date <= ?
                 ''', (month_start, month_end))
-                result = self.db.cursor.fetchone()
-                month_debits = result[0] if result and result[0] is not None else 0
+                month_debits = 0
+                if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                    month_debits = result[0][0]
                 debits.append(month_debits)
             
             # Only create chart if we have data
@@ -656,8 +662,6 @@ class DashboardTab(QWidget):
         except Exception as e:
             print(f"Error creating sales chart: {e}")
             chart.setTitle("Monthly Sales - Error Loading Data")
-        finally:
-            self.db.close()
         
         return chart
     
@@ -668,10 +672,8 @@ class DashboardTab(QWidget):
         chart.setAnimationOptions(QChart.SeriesAnimations)
         
         try:
-            self.db.connect()
-            
             # Get product sales data grouped by product name (combines all batches)
-            self.db.cursor.execute('''
+            products = self.db.execute('''
                 SELECT p.name, SUM(e.quantity * e.unit_price) as total,
                        COUNT(DISTINCT p.batch_number) as batch_count
                 FROM entries e
@@ -681,19 +683,19 @@ class DashboardTab(QWidget):
                 ORDER BY total DESC
                 LIMIT 5
             ''')
-            products = self.db.cursor.fetchall()
             
-            if products:
+            if products and len(products) > 0:
                 series = QPieSeries()
                 
                 # Get total sales for percentage calculation
-                self.db.cursor.execute('''
+                result = self.db.execute('''
                     SELECT SUM(e.quantity * e.unit_price) as total
                     FROM entries e
                     WHERE e.is_credit = 1
                 ''')
-                result = self.db.cursor.fetchone()
-                total_sales = result[0] if result and result[0] is not None else 0
+                total_sales = 0
+                if result and len(result) > 0 and result[0] and result[0][0] is not None:
+                    total_sales = result[0][0]
                 
                 if total_sales > 0:
                     for product, total, batch_count in products:
@@ -732,8 +734,6 @@ class DashboardTab(QWidget):
         except Exception as e:
             print(f"Error creating product chart: {e}")
             chart.setTitle("Product Distribution - Error Loading Data")
-        finally:
-            self.db.close()
         
         return chart
     
@@ -744,13 +744,11 @@ class DashboardTab(QWidget):
         chart.setAnimationOptions(QChart.SeriesAnimations)
         
         try:
-            self.db.connect()
-            
             current_date = QDate.currentDate().toString("yyyy-MM-dd")
             upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
             
             # Get products with sales, categorized by expiry status
-            self.db.cursor.execute('''
+            expiry_data = self.db.execute('''
                 SELECT 
                     CASE 
                         WHEN p.expiry_date < ? THEN 'Expired'
@@ -765,9 +763,7 @@ class DashboardTab(QWidget):
                 GROUP BY status
             ''', (current_date, upcoming_date))
             
-            expiry_data = self.db.cursor.fetchall()
-            
-            if expiry_data:
+            if expiry_data and len(expiry_data) > 0:
                 # Create pie chart for expiry status
                 series = QPieSeries()
                 
@@ -797,18 +793,14 @@ class DashboardTab(QWidget):
         except Exception as e:
             print(f"Error creating expiry chart: {e}")
             chart.setTitle("Product Expiry Status - Error Loading Data")
-        finally:
-            self.db.close()
         
         return chart
     
     def getRecentTransactions(self):
         """Get recent transactions with batch and expiry information"""
         try:
-            self.db.connect()
-            
             # Get recent transactions with batch and expiry data
-            self.db.cursor.execute('''
+            result = self.db.execute('''
                 SELECT e.date, c.name, p.name, e.is_credit, 
                        (e.quantity * e.unit_price) as total,
                        e.quantity, p.batch_number, p.expiry_date
@@ -819,10 +811,8 @@ class DashboardTab(QWidget):
                 LIMIT 5
             ''')
             
-            return self.db.cursor.fetchall()
+            return result if result else []
             
         except Exception as e:
             print(f"Error getting recent transactions: {e}")
             return []
-        finally:
-            self.db.close()

@@ -6,12 +6,12 @@ from datetime import datetime
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.database.db import Database
+from src.database.mongo_adapter import MongoAdapter
 
 class TestDatabase(unittest.TestCase):
     def setUp(self):
         """Set up test database"""
-        self.db = Database(db_path=':memory:')  # Use in-memory database for testing
+        self.db = MongoAdapter  
         self.db.init_db()
         self.db.connect()
     

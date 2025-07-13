@@ -14,16 +14,22 @@ class UserAuth:
         db_source: either
           - a string path to your SQLite file
           - a MongoDB instance (your MongoDB class)
+          - a MongoAdapter instance
         """
         # Detect mode
-        self.use_sqlite = isinstance(db_source, str)
-
-        if self.use_sqlite:
+        if isinstance(db_source, str):
             # SQLITE MODE
+            self.use_sqlite = True
             self.db_path = db_source
             self._init_sqlite()
+        elif hasattr(db_source, 'mongo_db'):
+            # MONGO ADAPTER MODE
+            self.use_sqlite = False
+            self.mongo_db = db_source.mongo_db
+            self._init_mongo()
         else:
-            # MONGO MODE
+            # DIRECT MONGO MODE  
+            self.use_sqlite = False
             self.mongo_db = db_source
             self._init_mongo()
 

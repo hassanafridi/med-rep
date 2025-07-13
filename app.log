@@ -3246,3 +3246,973 @@
 2025-07-07 00:24:43,658 - root - INFO - Configuration saved to data\config.json
 2025-07-07 00:24:43,714 - src.database.mongo_db - INFO - MongoDB connection closed
 2025-07-07 00:24:43,714 - root - INFO - MongoDB connection closed
+2025-07-13 05:13:45,369 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:13:45,371 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:13:45,371 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:13:46,685 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:47,317 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:48,285 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:13:48,285 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:13:52,993 - root - INFO - User admin logged in successfully
+2025-07-13 05:13:53,017 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,020 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,022 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,023 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,027 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,028 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,033 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,042 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,043 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,045 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,047 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,048 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,050 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:53,051 - database.db - INFO - Database connection closed
+2025-07-13 05:13:53,698 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:54,649 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:13:55,237 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:55,856 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:55,856 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT ID, NAME FROM CUSTOMERS ORDER BY NAME
+2025-07-13 05:13:55,856 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT ID, NAME, BATCH_NUMBER, EXPIRY_DATE, UNIT_PRICE 
+                FROM PRODUCTS 
+                ORDER BY NAME
+2025-07-13 05:13:55,909 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:13:56,506 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:57,455 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:13:58,041 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:58,649 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:58,649 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT NAME FROM CUSTOMERS ORDER BY NAME
+2025-07-13 05:13:58,702 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:13:59,304 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:13:59,304 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT E.ID, E.DATE, C.NAME, P.NAME, E.QUANTITY, E.UNIT_PRICE,
+                       T.AMOUNT, E.IS_CREDIT, T.BALANCE, E.NOTES,
+                       P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                LEFT JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                LEFT JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                LEFT JOIN TRANSACTIONS T ON T.ENTRY_ID = E.ID
+                WHERE 1=1
+             AND E.DATE BETWEEN ? AND ? ORDER BY E.DATE DESC, E.ID DESC
+2025-07-13 05:13:59,357 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:13:59,368 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:59,369 - database.db - INFO - Database connection closed
+2025-07-13 05:13:59,369 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:13:59,371 - database.db - INFO - Database connection closed
+2025-07-13 05:13:59,372 - root - ERROR - Application startup error: 'MongoAdapter' object has no attribute 'db_path'
+2025-07-13 05:18:27,537 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:18:27,538 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:18:27,538 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:18:28,871 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:18:29,500 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:18:30,486 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:18:30,486 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:18:36,146 - root - INFO - User admin logged in successfully
+2025-07-13 05:18:36,166 - root - ERROR - Application startup error: argument of type 'MongoDB' is not iterable
+2025-07-13 05:24:52,605 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:24:52,606 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:24:52,606 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:24:53,920 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:24:54,560 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:24:55,530 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:24:55,530 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:24:58,875 - root - INFO - User admin logged in successfully
+2025-07-13 05:24:58,896 - database.mongo_adapter - WARNING - Unsupported query: SELECT DISTINCT P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE,
+                       SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL_SALES
+                FROM PRODUCTS P
+                LEFT JOIN ENTRIES E ON P.ID = E.PRODUCT_ID AND E.IS_CREDIT = 1
+                WHERE P.EXPIRY_DATE < ?
+                GROUP BY P.ID, P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE
+                HAVING TOTAL_SALES > 0
+                ORDER BY P.EXPIRY_DATE
+2025-07-13 05:24:58,896 - database.mongo_adapter - WARNING - Unsupported query: SELECT DISTINCT P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE,
+                       SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL_SALES
+                FROM PRODUCTS P
+                LEFT JOIN ENTRIES E ON P.ID = E.PRODUCT_ID AND E.IS_CREDIT = 1
+                WHERE P.EXPIRY_DATE >= ? AND P.EXPIRY_DATE <= ?
+                GROUP BY P.ID, P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE
+                HAVING TOTAL_SALES > 0
+                ORDER BY P.EXPIRY_DATE
+2025-07-13 05:24:58,897 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                FROM ENTRIES 
+                WHERE IS_CREDIT = 1 AND DATE >= ?
+2025-07-13 05:24:58,897 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                FROM ENTRIES 
+                WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,897 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(*) 
+                FROM ENTRIES 
+                WHERE DATE >= ?
+2025-07-13 05:24:58,897 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(*) 
+                FROM ENTRIES 
+                WHERE DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,897 - database.mongo_adapter - WARNING - Unsupported query: SELECT MAX(BALANCE) FROM TRANSACTIONS
+2025-07-13 05:24:58,900 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(DISTINCT P.ID) AS ACTIVE_BATCHES,
+                       COUNT(DISTINCT P.NAME) AS UNIQUE_PRODUCTS
+                FROM PRODUCTS P
+                JOIN ENTRIES E ON P.ID = E.PRODUCT_ID
+                WHERE E.IS_CREDIT = 1
+2025-07-13 05:24:58,900 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(*) FROM PRODUCTS
+2025-07-13 05:24:58,904 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,904 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,905 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:24:58,907 - database.mongo_adapter - WARNING - Unsupported query: SELECT P.NAME, SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL,
+                       COUNT(DISTINCT P.BATCH_NUMBER) AS BATCH_COUNT
+                FROM ENTRIES E
+                JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                WHERE E.IS_CREDIT = 1
+                GROUP BY P.NAME
+                ORDER BY TOTAL DESC
+                LIMIT 5
+2025-07-13 05:24:58,908 - database.mongo_adapter - WARNING - Unsupported query: SELECT 
+                    CASE 
+                        WHEN P.EXPIRY_DATE < ? THEN 'EXPIRED'
+                        WHEN P.EXPIRY_DATE <= ? THEN 'EXPIRING SOON'
+                        ELSE 'VALID'
+                    END AS STATUS,
+                    COUNT(DISTINCT P.ID) AS PRODUCT_COUNT,
+                    SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL_SALES
+                FROM PRODUCTS P
+                JOIN ENTRIES E ON P.ID = E.PRODUCT_ID
+                WHERE E.IS_CREDIT = 1
+                GROUP BY STATUS
+2025-07-13 05:24:58,911 - database.mongo_adapter - WARNING - Unsupported query: SELECT E.DATE, C.NAME, P.NAME, E.IS_CREDIT, 
+                       (E.QUANTITY * E.UNIT_PRICE) AS TOTAL,
+                       E.QUANTITY, P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                ORDER BY E.ID DESC
+                LIMIT 5
+2025-07-13 05:24:59,580 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:00,580 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:25:01,195 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:01,806 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:01,807 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT ID, NAME FROM CUSTOMERS ORDER BY NAME
+2025-07-13 05:25:01,807 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT ID, NAME, BATCH_NUMBER, EXPIRY_DATE, UNIT_PRICE 
+                FROM PRODUCTS 
+                ORDER BY NAME
+2025-07-13 05:25:01,858 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:25:02,440 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:03,429 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:25:04,023 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:04,642 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:04,643 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT NAME FROM CUSTOMERS ORDER BY NAME
+2025-07-13 05:25:04,696 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:25:05,315 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:25:05,315 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT E.ID, E.DATE, C.NAME, P.NAME, E.QUANTITY, E.UNIT_PRICE,
+                       T.AMOUNT, E.IS_CREDIT, T.BALANCE, E.NOTES,
+                       P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                LEFT JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                LEFT JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                LEFT JOIN TRANSACTIONS T ON T.ENTRY_ID = E.ID
+                WHERE 1=1
+             AND E.DATE BETWEEN ? AND ? ORDER BY E.DATE DESC, E.ID DESC
+2025-07-13 05:25:05,368 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:25:05,380 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:25:05,381 - database.db - INFO - Database connection closed
+2025-07-13 05:25:05,381 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:25:05,382 - database.db - INFO - Database connection closed
+2025-07-13 05:25:05,383 - root - ERROR - Application startup error: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'mongodb:'
+2025-07-13 05:27:16,838 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:27:16,840 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:27:16,840 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:27:18,217 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:18,843 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:19,793 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:27:19,793 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:27:23,950 - root - INFO - User admin logged in successfully
+2025-07-13 05:27:23,971 - database.mongo_adapter - WARNING - Unsupported query: SELECT DISTINCT P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE,
+                       SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL_SALES
+                FROM PRODUCTS P
+                LEFT JOIN ENTRIES E ON P.ID = E.PRODUCT_ID AND E.IS_CREDIT = 1
+                WHERE P.EXPIRY_DATE < ?
+                GROUP BY P.ID, P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE
+                HAVING TOTAL_SALES > 0
+                ORDER BY P.EXPIRY_DATE
+2025-07-13 05:27:23,971 - database.mongo_adapter - WARNING - Unsupported query: SELECT DISTINCT P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE,
+                       SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL_SALES
+                FROM PRODUCTS P
+                LEFT JOIN ENTRIES E ON P.ID = E.PRODUCT_ID AND E.IS_CREDIT = 1
+                WHERE P.EXPIRY_DATE >= ? AND P.EXPIRY_DATE <= ?
+                GROUP BY P.ID, P.NAME, P.BATCH_NUMBER, P.EXPIRY_DATE
+                HAVING TOTAL_SALES > 0
+                ORDER BY P.EXPIRY_DATE
+2025-07-13 05:27:23,971 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                FROM ENTRIES 
+                WHERE IS_CREDIT = 1 AND DATE >= ?
+2025-07-13 05:27:23,972 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                FROM ENTRIES 
+                WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,972 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(*) 
+                FROM ENTRIES 
+                WHERE DATE >= ?
+2025-07-13 05:27:23,972 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(*) 
+                FROM ENTRIES 
+                WHERE DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,972 - database.mongo_adapter - WARNING - Unsupported query: SELECT MAX(BALANCE) FROM TRANSACTIONS
+2025-07-13 05:27:23,974 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(DISTINCT P.ID) AS ACTIVE_BATCHES,
+                       COUNT(DISTINCT P.NAME) AS UNIQUE_PRODUCTS
+                FROM PRODUCTS P
+                JOIN ENTRIES E ON P.ID = E.PRODUCT_ID
+                WHERE E.IS_CREDIT = 1
+2025-07-13 05:27:23,975 - database.mongo_adapter - WARNING - Unsupported query: SELECT COUNT(*) FROM PRODUCTS
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,980 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,981 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,981 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,981 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,981 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 1 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,981 - database.mongo_adapter - WARNING - Unsupported query: SELECT SUM(QUANTITY * UNIT_PRICE) 
+                    FROM ENTRIES 
+                    WHERE IS_CREDIT = 0 AND DATE >= ? AND DATE <= ?
+2025-07-13 05:27:23,983 - database.mongo_adapter - WARNING - Unsupported query: SELECT P.NAME, SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL,
+                       COUNT(DISTINCT P.BATCH_NUMBER) AS BATCH_COUNT
+                FROM ENTRIES E
+                JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                WHERE E.IS_CREDIT = 1
+                GROUP BY P.NAME
+                ORDER BY TOTAL DESC
+                LIMIT 5
+2025-07-13 05:27:23,984 - database.mongo_adapter - WARNING - Unsupported query: SELECT 
+                    CASE 
+                        WHEN P.EXPIRY_DATE < ? THEN 'EXPIRED'
+                        WHEN P.EXPIRY_DATE <= ? THEN 'EXPIRING SOON'
+                        ELSE 'VALID'
+                    END AS STATUS,
+                    COUNT(DISTINCT P.ID) AS PRODUCT_COUNT,
+                    SUM(E.QUANTITY * E.UNIT_PRICE) AS TOTAL_SALES
+                FROM PRODUCTS P
+                JOIN ENTRIES E ON P.ID = E.PRODUCT_ID
+                WHERE E.IS_CREDIT = 1
+                GROUP BY STATUS
+2025-07-13 05:27:23,986 - database.mongo_adapter - WARNING - Unsupported query: SELECT E.DATE, C.NAME, P.NAME, E.IS_CREDIT, 
+                       (E.QUANTITY * E.UNIT_PRICE) AS TOTAL,
+                       E.QUANTITY, P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                ORDER BY E.ID DESC
+                LIMIT 5
+2025-07-13 05:27:24,669 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:25,630 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:27:26,272 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:26,906 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:26,906 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT ID, NAME FROM CUSTOMERS ORDER BY NAME
+2025-07-13 05:27:26,906 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT ID, NAME, BATCH_NUMBER, EXPIRY_DATE, UNIT_PRICE 
+                FROM PRODUCTS 
+                ORDER BY NAME
+2025-07-13 05:27:26,957 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:27:27,584 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:28,540 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:27:29,178 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:29,779 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:29,779 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT NAME FROM CUSTOMERS ORDER BY NAME
+2025-07-13 05:27:29,830 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:27:30,485 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:27:30,485 - src.database.mongo_adapter - WARNING - Unsupported query: SELECT E.ID, E.DATE, C.NAME, P.NAME, E.QUANTITY, E.UNIT_PRICE,
+                       T.AMOUNT, E.IS_CREDIT, T.BALANCE, E.NOTES,
+                       P.BATCH_NUMBER, P.EXPIRY_DATE
+                FROM ENTRIES E
+                LEFT JOIN CUSTOMERS C ON E.CUSTOMER_ID = C.ID
+                LEFT JOIN PRODUCTS P ON E.PRODUCT_ID = P.ID
+                LEFT JOIN TRANSACTIONS T ON T.ENTRY_ID = E.ID
+                WHERE 1=1
+             AND E.DATE BETWEEN ? AND ? ORDER BY E.DATE DESC, E.ID DESC
+2025-07-13 05:27:30,538 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:27:30,550 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:27:30,551 - database.db - INFO - Database connection closed
+2025-07-13 05:27:30,551 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:27:30,552 - database.db - INFO - Database connection closed
+2025-07-13 05:27:30,553 - root - ERROR - Application startup error: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'mongodb:'
+2025-07-13 05:29:26,110 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:29:26,111 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:29:26,112 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:29:27,460 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:29:28,068 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:29:29,017 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:29:29,017 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:29:33,060 - root - INFO - User admin logged in successfully
+2025-07-13 05:29:33,080 - database.mongo_adapter - ERROR - Error getting product alerts: 'MongoDB' object has no attribute 'get_all_products'
+2025-07-13 05:29:33,080 - database.mongo_adapter - ERROR - Error getting product alerts: 'MongoDB' object has no attribute 'get_all_products'
+2025-07-13 05:29:33,080 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,081 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,081 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,081 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,087 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,088 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,088 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,088 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,088 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,090 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,092 - database.mongo_adapter - ERROR - Error getting product alerts: 'MongoDB' object has no attribute 'get_all_products'
+2025-07-13 05:29:33,094 - database.mongo_adapter - ERROR - Error getting entries data: 'MongoDB' object has no attribute 'get_all_entries'
+2025-07-13 05:29:33,116 - root - ERROR - Application startup error: MongoAdapter.__init__() got an unexpected keyword argument 'mongo_db_instance'
+2025-07-13 05:31:38,725 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:31:38,727 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:31:38,727 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:31:40,068 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:31:40,661 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:31:41,621 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:31:41,621 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:31:46,069 - root - INFO - User admin logged in successfully
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,090 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,097 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,098 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,099 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,100 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:31:46,100 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,103 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:31:46,135 - root - ERROR - Application startup error: 'MongoAdapter' object has no attribute 'init_db'
+2025-07-13 05:32:41,553 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:32:41,554 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:32:41,554 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:32:42,851 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:32:43,434 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:32:44,365 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:32:44,365 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:32:47,987 - root - INFO - User admin logged in successfully
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,009 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,015 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,015 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,015 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,016 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,018 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,019 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:32:48,019 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,022 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:32:48,668 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:32:49,642 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:32:50,264 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:32:50,856 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:33:00,943 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:33:01,535 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:33:02,490 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:33:03,089 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:33:03,715 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:33:03,768 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:33:04,360 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:33:04,812 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:33:04,828 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:33:04,829 - database.db - INFO - Database connection closed
+2025-07-13 05:33:04,829 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:33:04,830 - database.db - INFO - Database connection closed
+2025-07-13 05:33:04,831 - root - ERROR - Application startup error: 'MongoAdapter' object has no attribute 'db_path'
+2025-07-13 05:34:51,539 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:34:51,541 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:34:51,541 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:34:52,879 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:34:53,491 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:34:54,454 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:34:54,455 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:34:56,849 - root - INFO - User admin logged in successfully
+2025-07-13 05:34:56,867 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:34:56,867 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,867 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:34:56,867 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,868 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,868 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,868 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,868 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,874 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,874 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,874 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,875 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,877 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,878 - database.mongo_db - ERROR - Error getting products: 'NoneType' object has no attribute 'products'
+2025-07-13 05:34:56,878 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:56,880 - database.mongo_db - ERROR - Error getting entries: 'NoneType' object has no attribute 'entries'
+2025-07-13 05:34:57,508 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:34:58,458 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:34:59,067 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:34:59,676 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:34:59,729 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:00,314 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:01,243 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:35:01,846 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:02,440 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:02,495 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:03,100 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:03,210 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:03,222 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:35:03,223 - database.db - INFO - Database connection closed
+2025-07-13 05:35:03,223 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:35:03,224 - database.db - INFO - Database connection closed
+2025-07-13 05:35:03,226 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 05:35:24,017 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:24,122 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:26,318 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:26,422 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:30,619 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:30,726 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:41,741 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:41,848 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:49,590 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:49,694 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:35:59,144 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:35:59,250 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:36:53,020 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:36:53,127 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:37:10,991 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:37:11,103 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:03,334 - root - INFO - Configuration saved to data\config.json
+2025-07-13 05:39:03,335 - root - INFO - Configuration saved to data\config.json
+2025-07-13 05:39:03,335 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:03,335 - root - INFO - MongoDB connection closed
+2025-07-13 05:39:05,925 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:39:05,926 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:39:05,926 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:39:07,284 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:07,904 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:08,880 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:39:08,933 - root - INFO - Found 5 existing customers
+2025-07-13 05:39:08,933 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:39:14,129 - root - INFO - User admin logged in successfully
+2025-07-13 05:39:14,772 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:16,893 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:17,778 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:18,440 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:19,393 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:39:19,995 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:20,624 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:20,677 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:21,290 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:21,965 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:22,645 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:23,626 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:39:24,219 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:24,812 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:24,864 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:25,469 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:25,577 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:26,200 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:26,861 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:26,969 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:27,587 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:27,639 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:39:28,262 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:28,910 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:28,968 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:39:28,969 - database.db - INFO - Database connection closed
+2025-07-13 05:39:28,970 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 05:39:28,971 - database.db - INFO - Database connection closed
+2025-07-13 05:39:29,569 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:30,235 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:39:30,290 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 05:40:41,692 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:40:41,797 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:40:57,475 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:40:57,584 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:41:07,212 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:41:07,321 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:41:16,425 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:41:16,532 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:41:18,891 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:41:19,000 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:34,027 - root - INFO - Configuration saved to data\config.json
+2025-07-13 05:47:34,027 - root - INFO - Configuration saved to data\config.json
+2025-07-13 05:47:34,027 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:34,027 - root - INFO - MongoDB connection closed
+2025-07-13 05:47:39,079 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:47:39,081 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:47:39,081 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:47:40,388 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:41,014 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:41,989 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:47:42,154 - root - INFO - Initial data check: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:42,154 - root - INFO - Sufficient data available
+2025-07-13 05:47:42,154 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:47:45,329 - root - INFO - User admin logged in successfully
+2025-07-13 05:47:45,942 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:46,105 - database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:48,191 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:48,352 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:48,684 - root - INFO - Dashboard KPI metrics loaded successfully
+2025-07-13 05:47:49,395 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:49,555 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:50,174 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:51,106 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:47:51,698 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:52,303 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:52,356 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:52,959 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:53,119 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:53,713 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:53,877 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:54,499 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:55,443 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:47:56,028 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:56,642 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:56,695 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:57,283 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:57,387 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:57,992 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:58,153 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:47:58,744 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:58,799 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:58,799 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 05:47:59,381 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:47:59,485 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:47:59,485 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 05:47:59,485 - root - ERROR - Application startup error: 'MainWindow' object has no attribute 'create_graphs_tab'
+2025-07-13 05:50:53,268 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:50:53,269 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 05:50:53,270 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 05:50:53,877 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:50:54,467 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:50:55,405 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:50:55,562 - root - INFO - Initial data check: 5 customers, 5 products, 36 entries
+2025-07-13 05:50:55,562 - root - INFO - Sufficient sample data already exists
+2025-07-13 05:50:55,562 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 05:50:59,738 - root - INFO - User admin logged in successfully
+2025-07-13 05:51:00,348 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:00,504 - database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:51:00,504 - database.mongo_adapter - INFO - Sufficient data already available
+2025-07-13 05:51:02,574 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:02,731 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:51:02,731 - src.database.mongo_adapter - INFO - Sufficient data already available
+2025-07-13 05:51:02,941 - root - INFO - Dashboard KPI metrics loaded successfully
+2025-07-13 05:51:03,530 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:03,687 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:51:03,687 - src.database.mongo_adapter - INFO - Sufficient data already available
+2025-07-13 05:51:04,288 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:05,265 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:51:05,891 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:06,533 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:06,587 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:51:07,176 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:07,338 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:51:07,339 - src.database.mongo_adapter - INFO - Sufficient data already available
+2025-07-13 05:51:07,947 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:08,108 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:51:08,108 - src.database.mongo_adapter - INFO - Sufficient data already available
+2025-07-13 05:51:08,733 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:09,693 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 05:51:10,281 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:10,899 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:10,952 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:51:11,549 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:11,655 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:51:12,283 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:12,446 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 05:51:12,446 - src.database.mongo_adapter - INFO - Sufficient data already available
+2025-07-13 05:51:13,064 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:13,116 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:51:13,116 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 05:51:13,710 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 05:51:13,814 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 05:51:13,814 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 05:51:13,814 - root - ERROR - Application startup error: 'MainWindow' object has no attribute 'create_graphs_tab'
+2025-07-13 06:03:10,418 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:03:10,419 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:03:10,419 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:03:12,040 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:12,040 - root - INFO - MongoDB connection successful
+2025-07-13 06:03:12,673 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:13,651 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:03:13,651 - root - INFO - MongoDB initialization successful
+2025-07-13 06:03:13,814 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:13,814 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:03:13,814 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:03:23,444 - root - INFO - User admin logged in successfully
+2025-07-13 06:03:24,094 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:24,255 - database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:24,255 - database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:26,291 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:26,451 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:26,451 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:26,666 - root - INFO - Dashboard KPI metrics loaded successfully
+2025-07-13 06:03:27,291 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:27,449 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:27,449 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:28,048 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:28,987 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:03:29,572 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:30,199 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:30,254 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:03:30,879 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:31,042 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:31,042 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:31,652 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:31,807 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:31,807 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:32,448 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:33,405 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:03:34,007 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:34,607 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:34,660 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:03:35,299 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:35,403 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:03:35,992 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:36,153 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:36,153 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:36,726 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:36,779 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:03:36,779 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 06:03:37,388 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:37,492 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:03:37,492 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 06:03:38,118 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:38,295 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:38,295 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:38,898 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:39,060 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:03:39,060 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:03:39,654 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:03:39,707 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:03:39,707 - root - INFO - Reports tab customers loaded successfully
+2025-07-13 06:03:39,707 - root - ERROR - Application startup error: 'MainWindow' object has no attribute 'create_manage_data_tab'
+2025-07-13 06:05:15,584 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:05:15,585 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:05:15,585 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:05:16,943 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:16,944 - root - INFO - MongoDB connection successful
+2025-07-13 06:05:17,558 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:18,503 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:05:18,503 - root - INFO - MongoDB initialization successful
+2025-07-13 06:05:18,660 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:18,660 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:05:18,660 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:05:21,994 - root - INFO - User admin logged in successfully
+2025-07-13 06:05:22,598 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:22,756 - database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:22,757 - database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:24,727 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:24,888 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:24,888 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:25,103 - root - INFO - Dashboard KPI metrics loaded successfully
+2025-07-13 06:05:25,702 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:25,858 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:25,858 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:26,450 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:27,395 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:05:27,988 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:28,593 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:28,646 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:29,238 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:29,400 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:29,400 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:29,977 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:30,134 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:30,134 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:30,731 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:31,672 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:05:32,260 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:32,860 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:32,913 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:33,516 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:33,624 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:34,220 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:34,383 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:34,383 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:34,977 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:35,030 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:35,031 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 06:05:35,634 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:35,740 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:35,740 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 06:05:36,333 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:36,497 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:36,497 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:37,090 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:37,253 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:37,253 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:37,862 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:37,929 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:37,929 - root - INFO - Reports tab customers loaded successfully
+2025-07-13 06:05:37,946 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:05:37,957 - database.db - INFO - Database connection closed
+2025-07-13 06:05:37,957 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:05:37,961 - database.db - INFO - Database connection closed
+2025-07-13 06:05:38,555 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:38,718 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:38,718 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:39,310 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:39,363 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:39,363 - root - INFO - Manage data tab customers loaded successfully
+2025-07-13 06:05:39,967 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:40,018 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:05:40,018 - root - INFO - Manage data tab products loaded successfully
+2025-07-13 06:05:40,623 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:05:40,782 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:05:40,782 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:05:40,787 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 06:07:06,663 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:07:06,768 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:07:08,149 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:07:08,255 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:10:58,690 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:10:58,691 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:10:58,691 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:11:00,017 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:00,017 - root - INFO - MongoDB connection successful
+2025-07-13 06:11:00,642 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:01,569 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:11:01,569 - root - INFO - MongoDB initialization successful
+2025-07-13 06:11:01,725 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:01,725 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:11:01,725 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:11:07,452 - root - INFO - User admin logged in successfully
+2025-07-13 06:11:08,066 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:08,226 - database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:08,226 - database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:10,231 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:10,390 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:10,390 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:10,600 - root - INFO - Dashboard KPI metrics loaded successfully
+2025-07-13 06:11:11,229 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:11,393 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:11,393 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:11,987 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:12,981 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:11:13,599 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:14,216 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:14,268 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:14,863 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:15,023 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:15,023 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:15,634 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:15,809 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:15,809 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:16,434 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:17,381 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:11:17,971 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:18,574 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:18,625 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:19,229 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:19,337 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:19,935 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:20,097 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:20,097 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:20,708 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:20,761 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:20,761 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 06:11:21,360 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:21,468 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:21,468 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 06:11:22,067 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:22,227 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:22,227 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:22,816 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:22,978 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:22,978 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:23,556 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:23,609 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:23,609 - root - INFO - Reports tab customers loaded successfully
+2025-07-13 06:11:23,615 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:11:23,616 - database.db - INFO - Database connection closed
+2025-07-13 06:11:23,616 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:11:23,618 - database.db - INFO - Database connection closed
+2025-07-13 06:11:24,221 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:24,383 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:24,383 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:24,982 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:25,036 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:25,036 - root - INFO - Manage data tab customers loaded successfully
+2025-07-13 06:11:25,619 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:25,676 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:25,676 - root - INFO - Manage data tab products loaded successfully
+2025-07-13 06:11:26,256 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:26,416 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:11:26,416 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:11:26,418 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 06:11:37,872 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:37,977 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:57,432 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:57,485 - src.database.mongo_db - INFO - Added customer: test
+2025-07-13 06:11:59,341 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:11:59,392 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:11:59,392 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:12:20,858 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:12:20,961 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:12:22,213 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:12:22,316 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:03,631 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:15:03,631 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:15:03,632 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:03,632 - root - INFO - MongoDB connection closed
+2025-07-13 06:15:08,530 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:15:08,532 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:15:08,532 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:15:09,905 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:09,905 - root - INFO - MongoDB connection successful
+2025-07-13 06:15:10,535 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:11,526 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:15:11,526 - root - INFO - MongoDB initialization successful
+2025-07-13 06:15:11,689 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:11,689 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:15:11,689 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:15:15,338 - root - INFO - User admin logged in successfully
+2025-07-13 06:15:15,953 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:16,113 - database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:16,113 - database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:18,142 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:18,303 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:18,303 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:18,920 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:19,082 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:19,082 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:19,674 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:20,910 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:15:21,655 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:22,357 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:22,413 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:23,004 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:23,165 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:23,165 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:23,756 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:23,919 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:23,919 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:24,503 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:25,448 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:15:26,038 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:26,626 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:26,678 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:27,273 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:27,377 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:27,961 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:28,120 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:28,120 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:28,735 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:28,898 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:28,898 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:29,505 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:29,666 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:29,666 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:30,294 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:30,349 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:30,349 - root - INFO - Reports tab customers loaded successfully
+2025-07-13 06:15:30,355 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:15:30,356 - database.db - INFO - Database connection closed
+2025-07-13 06:15:30,356 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:15:30,357 - database.db - INFO - Database connection closed
+2025-07-13 06:15:30,990 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:31,153 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:31,153 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:31,764 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:31,924 - src.database.mongo_adapter - INFO - Current data: 5 customers, 5 products, 36 entries
+2025-07-13 06:15:31,924 - src.database.mongo_adapter - INFO - Sufficient sample data already exists
+2025-07-13 06:15:31,925 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 06:15:32,206 - root - INFO - Dashboard KPI metrics loaded successfully
+2025-07-13 06:15:32,799 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:32,855 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:32,856 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 06:15:33,456 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:33,561 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:33,562 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 06:15:34,189 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:34,243 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:34,243 - root - INFO - Manage data tab customers loaded successfully
+2025-07-13 06:15:34,845 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:15:34,896 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:15:34,897 - root - INFO - Manage data tab products loaded successfully
+2025-07-13 06:16:03,603 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:16:03,711 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:16:08,130 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:16:08,243 - src.database.mongo_db - INFO - MongoDB connection closed

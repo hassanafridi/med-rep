@@ -3,3 +3,21 @@
 /src/ui/__pycache__
 /src/utils/__pycache__
 
+# Build directories
+/build
+/dist
+
+# Database backups
+*.json.backup
+*.db.backup
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.pyc
+__pycache__/
+

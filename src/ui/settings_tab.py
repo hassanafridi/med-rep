@@ -19,7 +19,12 @@ import logging
 
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database.db import Database
+try:
+    from src.database.mongo_adapter import MongoAdapter
+    from src.config import Config
+except ImportError:
+    # Fallback for transition period
+    from database.db import Database
 
 class RestoreDialog(QDialog):
     def __init__(self, backup_files, parent=None):
@@ -27,11 +32,7 @@ class RestoreDialog(QDialog):
         self.backup_files = backup_files
         self.selected_backup = None
         self.initUI()
-        self.sync_manager = SyncManager(self.db.db_path)
-        self.sync_manager.sync_started.connect(self.onSyncStarted)
-        self.sync_manager.sync_completed.connect(self.onSyncCompleted)
-        self.sync_manager.sync_progress.connect(self.onSyncProgress)
-        self.sync_manager.sync_status_changed.connect(self.onSyncStatusChanged)
+        # Remove sync_manager initialization from here - it should be in SettingsTab
 
     def initUI(self):
         """Initialize the dialog UI"""
@@ -83,8 +84,29 @@ class RestoreDialog(QDialog):
 class SettingsTab(QWidget):
     def __init__(self, config=None):
         super().__init__()
-        self.config = config
-        self.db = Database(config.get('db_path') if config else None)
+        self.config = config or Config()
+        
+        # Initialize database based on config
+        db_type = self.config.get('db_type', 'mongo')
+        if db_type == 'mongo':
+            self.db = MongoAdapter()
+        else:
+            # Fallback to SQLite
+            try:
+                from database.db import Database
+                self.db = Database(self.config.get('db_path'))
+            except ImportError:
+                from src.database.db import Database
+                self.db = Database(self.config.get('db_path'))
+        
+        # Initialize sync manager
+        db_path = self.config.get('db_path', 'data/medtran.db')
+        self.sync_manager = SyncManager(db_path)
+        self.sync_manager.sync_started.connect(self.onSyncStarted)
+        self.sync_manager.sync_completed.connect(self.onSyncCompleted)
+        self.sync_manager.sync_progress.connect(self.onSyncProgress)
+        self.sync_manager.sync_status_changed.connect(self.onSyncStatusChanged)
+        
         self.initUI()
         
     def initUI(self):

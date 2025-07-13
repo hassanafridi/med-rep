@@ -25,7 +25,6 @@ from src.ui.settings_tab import SettingsTab
 from src.ui.manage_data_tab import ManageDataTab
 from src.database.mongo_db import MongoDB
 from src.database.mongo_adapter import MongoAdapter
-from src.database.db import Database
 from src.config import Config
 from src.user_auth import UserAuth
 from src.ui.login_dialog import LoginDialog
@@ -56,19 +55,30 @@ class MainWindow(QMainWindow):
         # Set logging level from config
         log_level = getattr(logging, self.config.get('log_level', 'INFO'))
         logging.getLogger().setLevel(log_level)
-                
+        
         # Initialize MongoDB as primary database
         self.db = self.initialize_mongodb()
         if not self.db:
+            # Show error and exit gracefully
+            QMessageBox.critical(None, "Database Error", 
+                               "Failed to initialize database connection.\n"
+                               "Please check your MongoDB configuration and try again.")
             sys.exit(1)
         
         # Initialize user authentication with MongoDB
-        self.auth_manager = UserAuth(self.db)
-        self.current_user = None
-        
-        # Show login dialog
-        if not self.login():
-            sys.exit(0)
+        try:
+            self.auth_manager = UserAuth(self.db)
+            self.current_user = None
+            
+            # Show login dialog
+            if not self.login():
+                sys.exit(0)
+                
+        except Exception as e:
+            logging.error(f"Authentication initialization error: {e}")
+            QMessageBox.critical(None, "Authentication Error",
+                               f"Failed to initialize authentication:\n{str(e)}")
+            sys.exit(1)
         
         self.initUI()
     
@@ -84,35 +94,54 @@ class MainWindow(QMainWindow):
                 logging.warning("No mongo_uri in config, using default Atlas connection")
                 mongo_uri = "mongodb+srv://medrep:Dk9Glbs2B2E0Dxof@cluster0.tgwmarr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
             
-            # Create MongoDB instance
+            # Create MongoDB instance directly (not MongoAdapter)
             db = MongoDB(connection_string=mongo_uri, database_name=mongo_dbname)
             
-            # Test connection
-            if not db.connect():
-                QMessageBox.critical(self, "Database Connection Error",
-                    "Cannot connect to MongoDB Atlas!\n\n"
-                    "Please check:\n"
-                    "1. Your internet connection\n"
-                    "2. MongoDB Atlas cluster is running\n"
-                    "3. Your IP address is whitelisted\n"
-                    "4. Connection string is correct\n\n"
-                    "Check data/config.json for mongo_uri setting.")
+            # Test connection with proper boolean check
+            try:
+                connection_result = db.connect()
+                if connection_result is None or connection_result is False:
+                    logging.error("Failed to connect to MongoDB - connection returned None or False")
+                    return None
+                logging.info("MongoDB connection successful")
+            except Exception as conn_error:
+                logging.error(f"MongoDB connection failed with exception: {conn_error}")
                 return None
             
             # Initialize database collections and indexes
-            if not db.init_db():
-                QMessageBox.critical(self, "Database Initialization Error",
-                    "Failed to initialize MongoDB collections and indexes.")
+            try:
+                init_result = db.init_db()
+                if init_result is None or init_result is False:
+                    logging.error("Failed to initialize MongoDB collections")
+                    return None
+                logging.info("MongoDB initialization successful")
+            except Exception as init_error:
+                logging.error(f"MongoDB initialization failed with exception: {init_error}")
                 return None
+            
+            # Check existing data without trying to insert sample data
+            try:
+                customers = db.get_customers()
+                products = db.get_products()
+                entries = db.get_entries()
+                
+                logging.info(f"Data verification: {len(customers)} customers, {len(products)} products, {len(entries)} entries")
+                
+                # Based on test output, we know data exists, so don't try to insert more
+                if len(customers) >= 1 and len(products) >= 1:
+                    logging.info("Database contains sufficient data for operation")
+                else:
+                    logging.warning("Database appears to have no data, but continuing anyway")
+                    
+            except Exception as data_error:
+                logging.error(f"Error checking existing data: {data_error}")
+                # Don't fail the entire initialization for data checking issues
             
             logging.info("Successfully connected to MongoDB Atlas")
             return db
             
         except Exception as e:
             logging.error(f"MongoDB initialization error: {e}")
-            QMessageBox.critical(self, "Database Error",
-                f"Failed to initialize MongoDB:\n{str(e)}\n\n"
-                "Please check your MongoDB configuration.")
             return None
 
     def initUI(self):
@@ -185,77 +214,201 @@ class MainWindow(QMainWindow):
     
     def create_dashboard_tab(self):
         """Create the dashboard tab with MongoDB data"""
-        # DashboardTab expects only current_user parameter, uses Database() internally
-        dashboard_tab = DashboardTab(self.current_user)
-        # Replace the internal Database instance with MongoAdapter for compatibility
-        if hasattr(dashboard_tab, 'db'):
-            # Use MongoAdapter to make MongoDB compatible with SQLite interface
-            dashboard_tab.db = MongoAdapter(self.db)
-        self.tabs.addTab(dashboard_tab, "Dashboard")
-    
+        try:
+            dashboard_tab = DashboardTab(self.current_user)
+            dashboard_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force refresh the dashboard data after DB is set with delay
+            from PyQt5.QtCore import QTimer
+            def load_dashboard_data():
+                try:
+                    if hasattr(dashboard_tab, 'loadKPIMetrics'):
+                        dashboard_tab.loadKPIMetrics()
+                        logging.info("Dashboard KPI metrics loaded successfully")
+                    
+                    if hasattr(dashboard_tab, 'loadRecentTransactions'):
+                        dashboard_tab.loadRecentTransactions()
+                        logging.info("Dashboard recent transactions loaded successfully")
+                    
+                    if hasattr(dashboard_tab, 'loadCharts'):
+                        dashboard_tab.loadCharts()
+                        logging.info("Dashboard charts loaded successfully")
+                        
+                except Exception as e:
+                    logging.error(f"Error loading dashboard data: {e}")
+            
+            # Load data after a short delay to ensure UI is ready
+            QTimer.singleShot(100, load_dashboard_data)
+            
+            self.tabs.addTab(dashboard_tab, "Dashboard")
+        except Exception as e:
+            logging.error(f"Error creating dashboard tab: {e}")
+            # Add a placeholder tab
+            placeholder = QLabel("Dashboard temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "Dashboard")
+
     def create_new_entry_tab(self):
         """Create the enhanced new entry tab with MongoDB support"""
-        # Create NewEntryTab with SQLite compatibility
-        self.new_entry_tab = NewEntryTab()
-        if hasattr(self.new_entry_tab, 'db'):
-            # Use MongoAdapter to make MongoDB compatible with SQLite interface
-            self.new_entry_tab.db = MongoAdapter(self.db)
-        
-        # Connect invoice generation signal if it exists
-        if hasattr(self.new_entry_tab, 'entry_saved'):
-            self.new_entry_tab.entry_saved.connect(self.on_invoice_generated)
-        
-        self.tabs.addTab(self.new_entry_tab, "New Entry")
-    
+        try:
+            self.new_entry_tab = NewEntryTab()
+            self.new_entry_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force load customers and products after DB is set with delay
+            from PyQt5.QtCore import QTimer
+            def load_entry_data():
+                try:
+                    if hasattr(self.new_entry_tab, 'loadCustomers'):
+                        self.new_entry_tab.loadCustomers()
+                        logging.info("New entry tab customers loaded successfully")
+                    
+                    if hasattr(self.new_entry_tab, 'loadProducts'):
+                        self.new_entry_tab.loadProducts()
+                        logging.info("New entry tab products loaded successfully")
+                        
+                except Exception as e:
+                    logging.error(f"Error loading new entry data: {e}")
+            
+            # Load data after a short delay
+            QTimer.singleShot(100, load_entry_data)
+            
+            if hasattr(self.new_entry_tab, 'entry_saved'):
+                self.new_entry_tab.entry_saved.connect(self.on_invoice_generated)
+            self.tabs.addTab(self.new_entry_tab, "New Entry")
+        except Exception as e:
+            logging.error(f"Error creating new entry tab: {e}")
+            placeholder = QLabel("New Entry temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "New Entry")
+
     def create_ledger_tab(self):
         """Create the enhanced ledger tab with MongoDB support"""
-        # Create LedgerTab with SQLite compatibility
-        self.ledger_tab = LedgerTab()
-        if hasattr(self.ledger_tab, 'db'):
-            # Use MongoAdapter to make MongoDB compatible with SQLite interface
-            self.ledger_tab.db = MongoAdapter(self.db)
-        
-        self.tabs.addTab(self.ledger_tab, "Ledger")
-        
-        # Connect tab change to refresh ledger when selected
-        self.tabs.currentChanged.connect(self.on_tab_changed)
-    
+        try:
+            self.ledger_tab = LedgerTab()
+            self.ledger_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force load initial data after DB is set with delay
+            from PyQt5.QtCore import QTimer
+            def load_ledger_data():
+                try:
+                    if hasattr(self.ledger_tab, 'loadCustomers'):
+                        self.ledger_tab.loadCustomers()
+                        logging.info("Ledger tab customers loaded successfully")
+                    
+                    if hasattr(self.ledger_tab, 'loadEntries'):
+                        self.ledger_tab.loadEntries()
+                        logging.info("Ledger tab entries loaded successfully")
+                        
+                except Exception as e:
+                    logging.error(f"Error loading ledger data: {e}")
+            
+            # Load data after a short delay
+            QTimer.singleShot(100, load_ledger_data)
+            
+            self.tabs.addTab(self.ledger_tab, "Ledger")
+            
+            # Connect tab change to refresh ledger when selected
+            self.tabs.currentChanged.connect(self.on_tab_changed)
+        except Exception as e:
+            logging.error(f"Error creating ledger tab: {e}")
+            placeholder = QLabel("Ledger temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "Ledger")
+
     def create_graphs_tab(self):
         """Create the graphs tab with MongoDB data"""
-        # GraphsTab constructor shows it expects no parameters, uses Database() internally
-        graphs_tab = GraphsTab()
-        # Replace the internal Database instance with MongoAdapter for compatibility
-        if hasattr(graphs_tab, 'db'):
-            graphs_tab.db = MongoAdapter(self.db)
-        self.tabs.addTab(graphs_tab, "Graphs")
-    
-    def create_manage_data_tab(self):
-        """Create the manage data tab with MongoDB support"""
-        # Create ManageDataTab with SQLite compatibility
-        manage_data_tab = ManageDataTab()
-        if hasattr(manage_data_tab, 'db'):
-            # Use MongoAdapter to make MongoDB compatible with SQLite interface
-            manage_data_tab.db = MongoAdapter(self.db)
-        self.tabs.addTab(manage_data_tab, "Manage Data")
+        try:
+            graphs_tab = GraphsTab()
+            graphs_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force load data for graphs
+            if hasattr(graphs_tab, 'loadData'):
+                try:
+                    graphs_tab.loadData()
+                    logging.info("Graphs tab data loaded successfully")
+                except Exception as e:
+                    logging.error(f"Error loading graphs data: {e}")
+                    
+            self.tabs.addTab(graphs_tab, "Graphs")
+        except Exception as e:
+            logging.error(f"Error creating graphs tab: {e}")
+            placeholder = QLabel("Graphs temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "Graphs")
+
+    def create_reports_tab(self):
+        """Create and add the Reports tab with MongoDB support"""
+        try:
+            reports_tab = ReportsTab()
+            reports_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force load customers for reports
+            if hasattr(reports_tab, 'loadCustomers'):
+                try:
+                    reports_tab.loadCustomers()
+                    logging.info("Reports tab customers loaded successfully")
+                except Exception as e:
+                    logging.error(f"Error loading reports customers: {e}")
+            
+            self.tabs.addTab(reports_tab, "Reports")
+        except Exception as e:
+            logging.error(f"Error creating reports tab: {e}")
+            placeholder = QLabel("Reports temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "Reports")
     
     def create_settings_tab(self):
         """Create the settings tab"""
-        # SettingsTab expects config parameter and uses Database internally
-        settings_tab = SettingsTab(self.config)
-        # Replace the internal Database instance with MongoAdapter for compatibility
-        if hasattr(settings_tab, 'db'):
-            settings_tab.db = MongoAdapter(self.db)
-        self.tabs.addTab(settings_tab, "Settings")
-    
-    def create_reports_tab(self):
-        """Create and add the Reports tab with MongoDB support"""
-        # ReportsTab constructor shows it expects no parameters, uses Database() internally
-        reports_tab = ReportsTab()
-        # Replace the internal Database instance with MongoAdapter for compatibility
-        if hasattr(reports_tab, 'db'):
-            reports_tab.db = MongoAdapter(self.db)
-        self.tabs.addTab(reports_tab, "Reports")
-    
+        try:
+            settings_tab = SettingsTab(self.config)
+            settings_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force load data for settings
+            if hasattr(settings_tab, 'loadData'):
+                try:
+                    settings_tab.loadData()
+                    logging.info("Settings tab data loaded successfully")
+                except Exception as e:
+                    logging.error(f"Error loading settings data: {e}")
+                    
+            self.tabs.addTab(settings_tab, "Settings")
+        except Exception as e:
+            logging.error(f"Error creating settings tab: {e}")
+            placeholder = QLabel("Settings temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "Settings")
+
+    def create_manage_data_tab(self):
+        """Create the manage data tab with MongoDB support"""
+        try:
+            manage_data_tab = ManageDataTab()
+            manage_data_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            
+            # Force load data after DB is set with delay
+            from PyQt5.QtCore import QTimer
+            def load_manage_data():
+                try:
+                    if hasattr(manage_data_tab, 'loadCustomers'):
+                        manage_data_tab.loadCustomers()
+                        logging.info("Manage data tab customers loaded successfully")
+                    
+                    if hasattr(manage_data_tab, 'loadProducts'):
+                        manage_data_tab.loadProducts()
+                        logging.info("Manage data tab products loaded successfully")
+                        
+                except Exception as e:
+                    logging.error(f"Error loading manage data: {e}")
+            
+            # Load data after a short delay
+            QTimer.singleShot(100, load_manage_data)
+            
+            self.tabs.addTab(manage_data_tab, "Manage Data")
+        except Exception as e:
+            logging.error(f"Error creating manage data tab: {e}")
+            placeholder = QLabel("Manage Data temporarily unavailable")
+            placeholder.setAlignment(Qt.AlignCenter)
+            self.tabs.addTab(placeholder, "Manage Data")
+
     def login(self):
         """Show login dialog and authenticate user"""
         dialog = LoginDialog(self.auth_manager)
@@ -282,7 +435,7 @@ class MainWindow(QMainWindow):
         charts_tab = AdvancedChartsTab()
         # Replace the internal Database instance with MongoAdapter for compatibility
         if hasattr(charts_tab, 'db'):
-            charts_tab.db = MongoAdapter(self.db)
+            charts_tab.db = MongoAdapter(mongo_db_instance=self.db)
         charts_window.setCentralWidget(charts_tab)
         
         charts_window.show()
@@ -557,14 +710,11 @@ if __name__ == "__main__":
     # Ensure invoice folder exists
     ensure_invoice_folder()
     
-    # Check if migration is needed
+    # Check database configuration
     config = Config()
-    db_path = config.get('db_path', 'data/medtran.db')
+    db_type = config.get('db_type', 'mongo')  # Default to MongoDB now
     
-    if os.path.exists(db_path):
-        # Check if we need to migrate from SQLite to MongoDB
-        print("SQLite database found. Consider running migration:")
-        print("python migration/sqlite_to_mongo.py --sqlite-path data/medtran.db --create-backup")
+    print("Using MongoDB Atlas as primary database")
     
     # Create and show main window
     try:
@@ -574,5 +724,6 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"Application startup error: {e}")
         QMessageBox.critical(None, "Startup Error", 
-                           f"Failed to start application:\n{str(e)}")
+                           f"Failed to start application:\n{str(e)}\n\n"
+                           "Please check your MongoDB connection and configuration.")
         sys.exit(1)

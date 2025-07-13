@@ -4,6 +4,6 @@
     "backup_path": "data\\backups",
     "currency_format": "$ (USD)",
     "log_level": "INFO",
-    "window_width": 1600,
-    "window_height": 923
+    "window_width": 1920,
+    "window_height": 1057
 }

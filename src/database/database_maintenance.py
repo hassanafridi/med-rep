@@ -1,194 +1,214 @@
 import os
-import sqlite3
 import logging
 import shutil
 import datetime
 import time
+from src.database.mongo_adapter import MongoAdapter
+from src.config import Config
 
 class DatabaseMaintenance:
-    """Database maintenance and integrity check utilities"""
+    """Database maintenance and integrity check utilities for MongoDB"""
     
-    def __init__(self, db_path):
+    def __init__(self, db_path=None):
+        # For MongoDB, db_path is not used but kept for compatibility
         self.db_path = db_path
+        self.config = Config()
+        
+        # Initialize MongoDB connection
+        try:
+            self.db = MongoAdapter()
+            if not self.db.connect():
+                logging.error("Failed to connect to MongoDB for maintenance")
+                self.db = None
+        except Exception as e:
+            logging.error(f"MongoDB maintenance initialization error: {e}")
+            self.db = None
         
     def check_integrity(self):
-        """Check database integrity"""
+        """Check database integrity for MongoDB"""
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
+            if not self.db:
+                return False, "No database connection"
             
-            # Run SQLite integrity check
-            cursor.execute("PRAGMA integrity_check")
-            result = cursor.fetchone()[0]
+            # Test basic operations
+            test_result = self.db.mongo_db.db.command("ping")
+            if test_result.get('ok') != 1:
+                return False, "MongoDB ping failed"
             
-            conn.close()
+            # Check collections exist
+            expected_collections = ['customers', 'products', 'entries', 'transactions', 'users']
+            existing_collections = self.db.mongo_db.db.list_collection_names()
             
-            if result != "ok":
-                logging.error(f"Database integrity check failed: {result}")
-                return False, result
+            missing_collections = [col for col in expected_collections if col not in existing_collections]
+            if missing_collections:
+                return False, f"Missing collections: {', '.join(missing_collections)}"
             
+            logging.info("MongoDB integrity check passed")
             return True, "Database integrity check passed"
             
         except Exception as e:
-            logging.error(f"Database integrity check error: {e}")
+            logging.error(f"MongoDB integrity check error: {e}")
             return False, str(e)
     
     def vacuum_database(self):
-        """Vacuum the database to optimize storage"""
+        """Equivalent to vacuum for MongoDB - compact collections"""
         try:
-            conn = sqlite3.connect(self.db_path)
+            if not self.db:
+                return False, "No database connection"
             
-            # Run VACUUM command
-            conn.execute("VACUUM")
+            collections = ['customers', 'products', 'entries', 'transactions', 'users']
+            compacted = []
             
-            conn.close()
+            for collection_name in collections:
+                try:
+                    result = self.db.mongo_db.db.command("compact", collection_name)
+                    if result.get('ok') == 1:
+                        compacted.append(collection_name)
+                except Exception as e:
+                    logging.warning(f"Could not compact {collection_name}: {e}")
             
-            logging.info("Database vacuum completed successfully")
-            return True, "Database vacuum completed successfully"
+            message = f"Compacted collections: {', '.join(compacted)}" if compacted else "No collections compacted"
+            logging.info(f"MongoDB compact completed: {message}")
+            return True, f"Database compaction completed. {message}"
             
         except Exception as e:
-            logging.error(f"Database vacuum error: {e}")
+            logging.error(f"MongoDB compact error: {e}")
             return False, str(e)
     
     def analyze_database(self):
-        """Run ANALYZE to update statistics"""
+        """Equivalent to analyze for MongoDB - rebuild indexes"""
         try:
-            conn = sqlite3.connect(self.db_path)
+            if not self.db:
+                return False, "No database connection"
             
-            # Run ANALYZE command
-            conn.execute("ANALYZE")
+            collections = ['customers', 'products', 'entries', 'transactions', 'users']
+            reindexed = []
             
-            conn.close()
+            for collection_name in collections:
+                try:
+                    collection = self.db.mongo_db.db[collection_name]
+                    collection.reindex()
+                    reindexed.append(collection_name)
+                except Exception as e:
+                    logging.warning(f"Could not reindex {collection_name}: {e}")
             
-            logging.info("Database analysis completed successfully")
-            return True, "Database analysis completed successfully"
+            message = f"Reindexed collections: {', '.join(reindexed)}" if reindexed else "No collections reindexed"
+            logging.info(f"MongoDB reindex completed: {message}")
+            return True, f"Database analysis completed. {message}"
             
         except Exception as e:
-            logging.error(f"Database analysis error: {e}")
+            logging.error(f"MongoDB analysis error: {e}")
             return False, str(e)
     
     def repair_database(self):
-        """Attempt to repair a corrupted database"""
+        """Attempt to repair MongoDB connection issues"""
         try:
-            # Create backup before repair
-            backup_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = f"{self.db_path}.repair_backup_{backup_time}"
-            shutil.copy2(self.db_path, backup_path)
+            # For MongoDB, repair usually means reconnecting and rebuilding indexes
+            if self.db:
+                self.db.close()
             
-            # Create a new connection
-            conn = sqlite3.connect(self.db_path)
+            # Reinitialize connection
+            self.db = MongoAdapter()
+            if not self.db.connect():
+                return False, "Failed to reconnect to MongoDB"
             
-            # Dump all data
-            with conn:
-                dump = "".join(conn.iterdump())
+            # Rebuild indexes
+            success, message = self.analyze_database()
+            if not success:
+                return False, f"Repair failed during index rebuild: {message}"
             
-            conn.close()
-            
-            # Delete the original database file
-            os.remove(self.db_path)
-            
-            # Create a new database file
-            new_conn = sqlite3.connect(self.db_path)
-            
-            # Restore data from dump
-            new_conn.executescript(dump)
-            new_conn.close()
-            
-            logging.info(f"Database repair completed successfully. Backup at {backup_path}")
-            return True, f"Database repair completed successfully. Backup at {backup_path}"
+            logging.info("MongoDB repair completed successfully")
+            return True, "Database repair completed successfully"
             
         except Exception as e:
-            logging.error(f"Database repair error: {e}")
+            logging.error(f"MongoDB repair error: {e}")
             return False, str(e)
     
     def get_database_info(self):
-        """Get information about the database"""
+        """Get information about the MongoDB database"""
         try:
+            if not self.db:
+                return None
+            
             info = {}
             
-            # File info
-            info['file_size'] = os.path.getsize(self.db_path) / (1024 * 1024)  # Size in MB
-            info['last_modified'] = datetime.datetime.fromtimestamp(
-                os.path.getmtime(self.db_path)
-            ).strftime("%Y-%m-%d %H:%M:%S")
+            # Database stats
+            db_stats = self.db.mongo_db.db.command("dbStats")
+            info['file_size'] = db_stats.get('dataSize', 0) / (1024 * 1024)  # Size in MB
+            info['last_modified'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            # Connect to database
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            
-            # Get table information
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-            tables = cursor.fetchall()
-            
+            # Collection information
+            collections = ['customers', 'products', 'entries', 'transactions', 'users']
             info['tables'] = []
             total_rows = 0
             
-            for table in tables:
-                table_name = table[0]
-                if table_name.startswith('sqlite_'):
-                    continue
-                
-                cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-                row_count = cursor.fetchone()[0]
-                
-                info['tables'].append({
-                    'name': table_name,
-                    'rows': row_count
-                })
-                
-                total_rows += row_count
+            for collection_name in collections:
+                try:
+                    collection = self.db.mongo_db.db[collection_name]
+                    row_count = collection.count_documents({})
+                    
+                    info['tables'].append({
+                        'name': collection_name,
+                        'rows': row_count
+                    })
+                    
+                    total_rows += row_count
+                except Exception as e:
+                    logging.warning(f"Could not get stats for {collection_name}: {e}")
             
             info['total_rows'] = total_rows
             
-            # Get index information
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='index'")
-            indexes = cursor.fetchall()
-            info['indexes'] = [index[0] for index in indexes if not index[0].startswith('sqlite_')]
+            # Index information
+            all_indexes = []
+            for collection_name in collections:
+                try:
+                    collection = self.db.mongo_db.db[collection_name]
+                    indexes = collection.list_indexes()
+                    for index in indexes:
+                        if index['name'] != '_id_':  # Skip default _id index
+                            all_indexes.append(f"{collection_name}.{index['name']}")
+                except Exception as e:
+                    logging.warning(f"Could not get indexes for {collection_name}: {e}")
             
-            # Get schema version
-            cursor.execute("PRAGMA schema_version")
-            info['schema_version'] = cursor.fetchone()[0]
+            info['indexes'] = all_indexes
             
-            conn.close()
+            # MongoDB doesn't have schema version like SQLite
+            info['schema_version'] = "MongoDB"
             
             return info
             
         except Exception as e:
-            logging.error(f"Error getting database info: {e}")
+            logging.error(f"Error getting MongoDB database info: {e}")
             return None
     
     def optimize_database(self):
-        """Fully optimize the database"""
+        """Fully optimize the MongoDB database"""
         try:
             # Check integrity first
             integrity_ok, message = self.check_integrity()
             if not integrity_ok:
                 return False, f"Integrity check failed: {message}"
             
-            # Create backup before optimization
-            backup_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = f"{self.db_path}.optimize_backup_{backup_time}"
-            shutil.copy2(self.db_path, backup_path)
-            
-            # Connect to database
-            conn = sqlite3.connect(self.db_path)
-            
             # Run optimization steps
-            with conn:
-                # Reindex
-                conn.execute("REINDEX")
-                
-                # Analyze
-                conn.execute("ANALYZE")
-                
-                # Vacuum
-                conn.execute("VACUUM")
+            steps_completed = []
             
-            conn.close()
+            # Compact collections
+            compact_ok, compact_msg = self.vacuum_database()
+            if compact_ok:
+                steps_completed.append("Compaction")
             
-            logging.info("Database optimization completed successfully")
-            return True, "Database optimization completed successfully"
+            # Rebuild indexes
+            analyze_ok, analyze_msg = self.analyze_database()
+            if analyze_ok:
+                steps_completed.append("Index rebuild")
+            
+            if steps_completed:
+                message = f"Database optimization completed: {', '.join(steps_completed)}"
+                logging.info(message)
+                return True, message
+            else:
+                return False, "No optimization steps completed successfully"
             
         except Exception as e:
-            logging.error(f"Database optimization error: {e}")
+            logging.error(f"MongoDB optimization error: {e}")
             return False, str(e)

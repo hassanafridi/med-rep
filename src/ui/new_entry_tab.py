@@ -19,7 +19,7 @@ import json
 from src.utils.auto_invoice_generator import AutoInvoiceGenerator
 
 # Import your existing database module
-from src.database.db import Database
+from src.database.mongo_adapter import MongoAdapter
 from src.database.audit_trail import AuditTrail
 
 
@@ -168,7 +168,9 @@ class NewEntryTab(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.db = Database()
+        self.db = MongoAdapter()
+        self.db.init_db()
+        self.db.connect()
         self.invoice_generator = AutoInvoiceGenerator()
         self.customer_data = {}
         self.product_data = {}

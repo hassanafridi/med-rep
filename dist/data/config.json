@@ -2,10 +2,10 @@
   "db_type": "mongo",
   "mongo_uri": "mongodb+srv://medrep:Dk9Glbs2B2E0Dxof@cluster0.tgwmarr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
   "mongo_dbname": "medrep",
-  "db_path": "data\\medtran.db",
-  "backup_path": "data\\backups",
+  "db_path": "data/medtran.db",
+  "backup_path": "data/backups",
   "currency_format": "Rs.  (PKR)",
   "log_level": "INFO",
-  "window_width": 1600,
-  "window_height": 837
+  "window_width": 1000,
+  "window_height": 700
 }

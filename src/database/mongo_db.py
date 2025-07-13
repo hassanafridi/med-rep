@@ -89,11 +89,22 @@ class MongoDB:
             logger.error(f"MongoDB initialization error: {e}")
             return False
     
+    def is_connected(self) -> bool:
+        """Check if MongoDB connection is active"""
+        try:
+            if self.client:
+                self.client.admin.command('ping')
+                return True
+            return False
+        except Exception:
+            return False
+
     def insert_sample_data(self) -> bool:
         """Insert sample data for testing"""
         try:
             if not self.db:
-                self.connect()
+                if not self.connect():
+                    return False
                 
             # Sample customers
             customers = [
@@ -114,15 +125,27 @@ class MongoDB:
                     "contact": "555-9101", 
                     "address": "789 Hospital Blvd",
                     "created_at": datetime.now(timezone.utc)
+                },
+                {
+                    "name": "City Pharmacy",
+                    "contact": "555-2468",
+                    "address": "321 Commerce St",
+                    "created_at": datetime.now(timezone.utc)
+                },
+                {
+                    "name": "Health Clinic B",
+                    "contact": "555-1357",
+                    "address": "654 Medical Plaza",
+                    "created_at": datetime.now(timezone.utc)
                 }
             ]
             
             # Insert customers if collection is empty
             if self.db.customers.count_documents({}) == 0:
                 result = self.db.customers.insert_many(customers)
-                logger.info(f"Inserted {len(result.inserted_ids)} customers")
+                logger.info(f"Inserted {len(result.inserted_ids)} sample customers")
             
-            # Sample products
+            # Sample products with more variety
             products = [
                 {
                     "name": "MediCure",
@@ -171,13 +194,45 @@ class MongoDB:
                     "batch_number": "HB-2024-002",
                     "expiry_date": "2026-09-10",
                     "created_at": datetime.now(timezone.utc)
+                },
+                {
+                    "name": "ColdRelief",
+                    "description": "Cold and flu medicine",
+                    "unit_price": 18.25,
+                    "batch_number": "CR-2024-001",
+                    "expiry_date": "2025-10-15",
+                    "created_at": datetime.now(timezone.utc)
+                },
+                {
+                    "name": "HeartCare",
+                    "description": "Cardiovascular support",
+                    "unit_price": 45.00,
+                    "batch_number": "HC-2024-001",
+                    "expiry_date": "2026-12-31",
+                    "created_at": datetime.now(timezone.utc)
                 }
             ]
             
             # Insert products if collection is empty
             if self.db.products.count_documents({}) == 0:
                 result = self.db.products.insert_many(products)
-                logger.info(f"Inserted {len(result.inserted_ids)} products")
+                logger.info(f"Inserted {len(result.inserted_ids)} sample products")
+            
+            # Create a default admin user if users collection is empty
+            if self.db.users.count_documents({}) == 0:
+                import hashlib
+                default_password = "admin123"
+                password_hash = hashlib.sha256(default_password.encode()).hexdigest()
+                
+                admin_user = {
+                    "username": "admin",
+                    "password_hash": password_hash,
+                    "role": "admin",
+                    "created_at": datetime.now(timezone.utc),
+                    "last_login": None
+                }
+                result = self.db.users.insert_one(admin_user)
+                logger.info(f"Created default admin user (password: {default_password})")
             
             return True
             
@@ -541,3 +596,15 @@ class MongoDB:
                     obj[i] = item.isoformat()
                 elif isinstance(item, (dict, list)):
                     self._convert_bson_types(item)
+    
+    def clear_all_data(self) -> bool:
+        """Clear all data from the database (use with caution)"""
+        try:
+            collections = ['customers', 'products', 'entries', 'transactions', 'users', 'audit_trail']
+            for collection_name in collections:
+                result = self.db[collection_name].delete_many({})
+                logger.info(f"Cleared {result.deleted_count} documents from {collection_name}")
+            return True
+        except Exception as e:
+            logger.error(f"Error clearing database: {e}")
+            return False
