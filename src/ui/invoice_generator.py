@@ -18,6 +18,161 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.database.mongo_adapter import MongoAdapter
 from src.utils.pdf_generator import PDFGenerator
 
+class PDFInfoDialog(QDialog):
+    """Dialog to collect additional information needed for PDF generation"""
+    
+    def __init__(self, parent=None, existing_data=None):
+        super().__init__(parent)
+        self.setWindowTitle("PDF Invoice Information")
+        self.setModal(True)
+        self.setMinimumWidth(500)
+        self.existing_data = existing_data or {}
+        self.initUI()
+    
+    def initUI(self):
+        """Initialize the dialog UI"""
+        layout = QVBoxLayout()
+        
+        # Instructions
+        instruction_label = QLabel("Please fill in the following information for the PDF invoice:")
+        instruction_label.setStyleSheet("font-weight: bold; color: #4B0082; margin-bottom: 10px;")
+        layout.addWidget(instruction_label)
+        
+        # Form layout
+        form_layout = QFormLayout()
+        
+        # Transport Information Group
+        transport_group = QGroupBox("Transport & Delivery Information")
+        transport_layout = QFormLayout()
+        
+        self.transport_name = QLineEdit()
+        self.transport_name.setPlaceholderText("e.g., Jawad Aslam, TCS, Standard Delivery")
+        self.transport_name.setText(self.existing_data.get('transport_name', 'Standard Delivery'))
+        self.transport_name.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        transport_layout.addRow("Transport Name:", self.transport_name)
+        
+        self.delivery_date = QDateEdit()
+        self.delivery_date.setCalendarPopup(True)
+        delivery_date_str = self.existing_data.get('delivery_date', '')
+        if delivery_date_str:
+            self.delivery_date.setDate(QDate.fromString(delivery_date_str, "dd-MM-yy"))
+        else:
+            self.delivery_date.setDate(QDate.currentDate())
+        self.delivery_date.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        transport_layout.addRow("Delivery Date:", self.delivery_date)
+        
+        self.delivery_location = QLineEdit()
+        self.delivery_location.setPlaceholderText("e.g., adda johal, Main Market Faisalabad")
+        self.delivery_location.setText(self.existing_data.get('delivery_location', ''))
+        self.delivery_location.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        transport_layout.addRow("Delivery Location:", self.delivery_location)
+        
+        transport_group.setLayout(transport_layout)
+        layout.addWidget(transport_group)
+        
+        # Company Information Group
+        company_group = QGroupBox("Company Information")
+        company_layout = QFormLayout()
+        
+        self.company_name = QLineEdit()
+        self.company_name.setText(self.existing_data.get('company_name', 'Tru_pharma'))
+        self.company_name.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        company_layout.addRow("Company Name:", self.company_name)
+        
+        self.company_contact = QLineEdit()
+        self.company_contact.setText(self.existing_data.get('company_contact', '0333-99-11-514'))
+        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        company_layout.addRow("Company Contact:", self.company_contact)
+        
+        self.company_address = QTextEdit()
+        self.company_address.setMaximumHeight(80)
+        default_address = self.existing_data.get('company_address', 
+            'Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514')
+        self.company_address.setText(default_address)
+        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        company_layout.addRow("Company Address:", self.company_address)
+        
+        company_group.setLayout(company_layout)
+        layout.addWidget(company_group)
+        
+        # Terms and Conditions Group
+        terms_group = QGroupBox("Terms & Conditions")
+        terms_layout = QVBoxLayout()
+        
+        self.terms_text = QTextEdit()
+        self.terms_text.setMaximumHeight(100)
+        default_terms = self.existing_data.get('terms', 
+            'Thank you for your business! Payment is due within 30 days.\n'
+            'All products are subject to our standard terms and conditions.')
+        self.terms_text.setText(default_terms)
+        self.terms_text.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        terms_layout.addWidget(self.terms_text)
+        
+        terms_group.setLayout(terms_layout)
+        layout.addWidget(terms_group)
+        
+        # Customer Information (read-only display)
+        customer_group = QGroupBox("Customer Information (from invoice)")
+        customer_layout = QFormLayout()
+        
+        customer_name = self.existing_data.get('customer_name', 'N/A')
+        customer_address = self.existing_data.get('customer_address', 'N/A')
+        customer_contact = self.existing_data.get('customer_contact', 'N/A')
+        
+        customer_info_label = QLabel(f"Name: {customer_name}\nAddress: {customer_address}\nContact: {customer_contact}")
+        customer_info_label.setStyleSheet("background-color: #f5f5f5; padding: 10px; border: 1px solid #ccc;")
+        customer_layout.addRow("Customer:", customer_info_label)
+        
+        customer_group.setLayout(customer_layout)
+        layout.addWidget(customer_group)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        
+        self.generate_btn = QPushButton("Generate PDF")
+        self.generate_btn.clicked.connect(self.accept)
+        self.generate_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 10px 20px;
+                font-weight: bold;
+                font-size: 14px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
+        
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.clicked.connect(self.reject)
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                padding: 10px 20px;
+                font-size: 14px;
+                border-radius: 5px;
+            }
+        """)
+        
+        button_layout.addWidget(self.cancel_btn)
+        button_layout.addWidget(self.generate_btn)
+        
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+    
+    def get_pdf_data(self):
+        """Get the collected PDF data"""
+        return {
+            'transport_name': self.transport_name.text().strip() or 'Standard Delivery',
+            'delivery_date': self.delivery_date.date().toString("dd-MM-yy"),
+            'delivery_location': self.delivery_location.text().strip() or 'Customer Location',
+            'company_name': self.company_name.text().strip() or 'Tru_pharma',
+            'company_contact': self.company_contact.text().strip() or '0333-99-11-514',
+            'company_address': self.company_address.toPlainText().strip(),
+            'terms': self.terms_text.toPlainText().strip()
+        }
+
 class InvoicePreviewDialog(QDialog):
     def __init__(self, invoice_html, parent=None):
         super().__init__(parent)
@@ -1169,8 +1324,8 @@ class InvoiceGenerator(QWidget):
         except:
             return "amount not specified"
 
-    def prepareInvoiceData(self):
-        """Prepare invoice data for PDF generation"""
+    def prepareInvoiceData(self, pdf_info=None):
+        """Prepare invoice data for PDF generation with additional PDF info"""
         # Get customer info
         customer_name = self.customer_combo.currentText()
         customer_info = self.customer_data.get(customer_name, {})
@@ -1196,25 +1351,45 @@ class InvoiceGenerator(QWidget):
                 'amount': item['total']
             })
         
+        # Use PDF info if provided, otherwise use defaults
+        if pdf_info:
+            transport_name = pdf_info['transport_name']
+            delivery_date = pdf_info['delivery_date']
+            delivery_location = pdf_info['delivery_location']
+            company_name = pdf_info['company_name']
+            company_contact = pdf_info['company_contact']
+            company_address = pdf_info['company_address']
+            terms = pdf_info['terms']
+        else:
+            transport_name = 'Standard Delivery'
+            delivery_date = self.due_date.date().toString("dd-MM-yy")
+            delivery_location = customer_address.split('\n')[0] if customer_address else 'Customer Location'
+            company_name = self.company_name.text()
+            company_contact = self.company_contact.text()
+            company_address = self.company_address.toPlainText()
+            terms = self.notes.toPlainText()
+        
         return {
-            'company_name': self.company_name.text(),
+            'company_name': company_name,
             'company_logo': self.company_logo,
+            'company_contact': company_contact,
+            'company_address': company_address,
             'customer_info': {
                 'name': customer_name,
                 'address': customer_address,
                 'contact': customer_contact
             },
             'transport_info': {
-                'transport_name': 'Standard Delivery',
-                'delivery_date': self.due_date.date().toString("dd-MM-yy"),
-                'delivery_location': customer_address.split('\n')[0] if customer_address else 'Customer Location'
+                'transport_name': transport_name,
+                'delivery_date': delivery_date,
+                'delivery_location': delivery_location
             },
             'invoice_details': {
                 'invoice_number': self.invoice_number.text(),
-                'invoice_date': QDate.currentDate().toString("dd-MM-yy")  # Use current date
+                'invoice_date': QDate.currentDate().toString("dd-MM-yy")
             },
             'items': items_data,
-            'terms': self.notes.toPlainText(),
+            'terms': terms,
             'total_amount': total
         }
 
@@ -1229,11 +1404,37 @@ class InvoiceGenerator(QWidget):
         preview_dialog.exec_()
     
     def saveAsPdf(self):
-        """Save the invoice as a PDF file using reportlab"""
+        """Save the invoice as a PDF file using reportlab with dialog for additional info"""
         if not self.invoice_items:
             QMessageBox.warning(self, "No Items", "Please add at least one item to the invoice.")
             return
         
+        # Get customer info for the dialog
+        customer_name = self.customer_combo.currentText()
+        customer_info = self.customer_data.get(customer_name, {})
+        
+        # Prepare existing data for the dialog
+        existing_data = {
+            'customer_name': customer_name,
+            'customer_address': customer_info.get('address', ''),
+            'customer_contact': customer_info.get('contact', ''),
+            'company_name': self.company_name.text(),
+            'company_contact': self.company_contact.text(),
+            'company_address': self.company_address.toPlainText(),
+            'terms': self.notes.toPlainText(),
+            'transport_name': 'Standard Delivery',
+            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else ''
+        }
+        
+        # Show PDF info dialog
+        pdf_dialog = PDFInfoDialog(self, existing_data)
+        if pdf_dialog.exec_() != QDialog.Accepted:
+            return
+        
+        # Get PDF-specific information
+        pdf_info = pdf_dialog.get_pdf_data()
+        
+        # Get file save location
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getSaveFileName(
             self, "Save Invoice as PDF", f"{self.invoice_number.text()}.pdf",
@@ -1242,17 +1443,21 @@ class InvoiceGenerator(QWidget):
         
         if file_name:
             try:
-                # Prepare invoice data for PDF generator
-                invoice_data = self.prepareInvoiceData()
+                # Prepare invoice data for PDF generator with additional info
+                invoice_data = self.prepareInvoiceData(pdf_info)
                 
-                # Generate PDF using reportlab
-                pdf_generator = PDFGenerator()
+                # Generate PDF using the improved PDF generator
+                from src.utils.pdf_generator import ImprovedPDFGenerator
+                pdf_generator = ImprovedPDFGenerator()
                 success = pdf_generator.generate_invoice_pdf(invoice_data, file_name)
                 
                 if success:
                     QMessageBox.information(
                         self, "PDF Saved",
-                        f"Invoice saved as PDF:\n{file_name}"
+                        f"Invoice saved as PDF:\n{file_name}\n\n"
+                        f"Transport: {pdf_info['transport_name']}\n"
+                        f"Delivery: {pdf_info['delivery_location']} ({pdf_info['delivery_date']})\n"
+                        f"Total Amount: ${invoice_data['total_amount']:.2f}"
                     )
                 else:
                     QMessageBox.critical(
@@ -1273,30 +1478,51 @@ class InvoiceGenerator(QWidget):
                 )
     
     def printInvoice(self):
-        """Print the invoice using reportlab PDF"""
+        """Print the invoice using reportlab PDF with dialog for additional info"""
         if not self.invoice_items:
             QMessageBox.warning(self, "No Items", "Please add at least one item to the invoice.")
             return
+        
+        # Get customer info for the dialog
+        customer_name = self.customer_combo.currentText()
+        customer_info = self.customer_data.get(customer_name, {})
+        
+        # Prepare existing data for the dialog
+        existing_data = {
+            'customer_name': customer_name,
+            'customer_address': customer_info.get('address', ''),
+            'customer_contact': customer_info.get('contact', ''),
+            'company_name': self.company_name.text(),
+            'company_contact': self.company_contact.text(),
+            'company_address': self.company_address.toPlainText(),
+            'terms': self.notes.toPlainText(),
+            'transport_name': 'Standard Delivery',
+            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else ''
+        }
+        
+        # Show PDF info dialog
+        pdf_dialog = PDFInfoDialog(self, existing_data)
+        if pdf_dialog.exec_() != QDialog.Accepted:
+            return
+        
+        # Get PDF-specific information
+        pdf_info = pdf_dialog.get_pdf_data()
         
         try:
             # Create temporary PDF file
             temp_dir = tempfile.gettempdir()
             temp_pdf = os.path.join(temp_dir, f"temp_invoice_{self.invoice_number.text()}.pdf")
             
-            # Prepare invoice data
-            invoice_data = self.prepareInvoiceData()
+            # Prepare invoice data with additional info
+            invoice_data = self.prepareInvoiceData(pdf_info)
             
-            # Generate PDF
-            pdf_generator = PDFGenerator()
+            # Generate PDF using the improved PDF generator
+            from src.utils.pdf_generator import ImprovedPDFGenerator
+            pdf_generator = ImprovedPDFGenerator()
             success = pdf_generator.generate_invoice_pdf(invoice_data, temp_pdf)
             
             if success:
-                # Show print dialog using QPrinter
-                from PyQt5.QtPrintSupport import QPrintDialog
-                from PyQt5.QtGui import QTextDocument
-                
-                # For now, we'll open the PDF file for printing
-                # In a real implementation, you might want to use a PDF viewer
+                # Open the PDF file for printing
                 import subprocess
                 if sys.platform == "win32":
                     os.startfile(temp_pdf)
@@ -1307,7 +1533,9 @@ class InvoiceGenerator(QWidget):
                     
                 QMessageBox.information(
                     self, "Print Ready",
-                    f"PDF generated and opened for printing:\n{temp_pdf}"
+                    f"PDF generated and opened for printing:\n{temp_pdf}\n\n"
+                    f"Transport: {pdf_info['transport_name']}\n"
+                    f"Delivery: {pdf_info['delivery_location']} ({pdf_info['delivery_date']})"
                 )
             else:
                 QMessageBox.critical(

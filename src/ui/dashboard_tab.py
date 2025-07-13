@@ -513,24 +513,47 @@ class DashboardTab(QWidget):
             entries = self.db.get_entries()
             transactions = self.db.get_transactions()
             
-            # Calculate current month sales
-            current_sales = 0
+            # Calculate current month metrics
+            current_credits = 0
+            current_debits = 0
             current_count = 0
-            last_month_sales = 0
+            last_month_credits = 0
+            last_month_debits = 0
             last_month_count = 0
+            
+            # Calculate cumulative balance (all time)
+            total_credits = 0
+            total_debits = 0
             
             for entry in entries:
                 entry_date = entry.get('date', '')
                 amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
                 
+                # Cumulative totals for balance calculation
+                if entry.get('is_credit'):
+                    total_credits += amount
+                else:
+                    total_debits += amount
+                
                 if entry_date >= current_month_start:
                     current_count += 1
                     if entry.get('is_credit'):
-                        current_sales += amount
+                        current_credits += amount
+                    else:
+                        current_debits += amount
                 elif last_month_start <= entry_date <= last_month_end:
                     last_month_count += 1
                     if entry.get('is_credit'):
-                        last_month_sales += amount
+                        last_month_credits += amount
+                    else:
+                        last_month_debits += amount
+            
+            # Total sales = credits + debits (both are revenue)
+            current_sales = current_credits + current_debits
+            last_month_sales = last_month_credits + last_month_debits
+            
+            # Current balance = credits - debits (net position)
+            current_balance = total_credits - total_debits
             
             # Calculate percentage changes
             sales_change = 0
@@ -548,19 +571,6 @@ class DashboardTab(QWidget):
             average_change = 0
             if last_month_average > 0:
                 average_change = ((average_sale - last_month_average) / last_month_average) * 100
-            
-            # Get current balance from MongoDB transactions
-            current_balance = 0
-            if transactions:
-                balances = []
-                for t in transactions:
-                    balance = t.get('balance')
-                    if balance is not None:
-                        try:
-                            balances.append(float(balance))
-                        except (ValueError, TypeError):
-                            continue
-                current_balance = max(balances) if balances else 0
             
             return {
                 'total_sales': current_sales,

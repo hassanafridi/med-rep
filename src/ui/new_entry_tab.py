@@ -7,9 +7,10 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox,
                              QCheckBox, QPushButton, QGroupBox, QFormLayout,
                              QMessageBox, QLineEdit, QTableWidget, QTableWidgetItem,
-                             QDialog, QDialogButtonBox, QHeaderView)
+                             QDialog, QDialogButtonBox, QHeaderView, QTextEdit,
+                             QFileDialog)
 from PyQt5.QtCore import QDate, pyqtSignal, Qt
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QFont, QColor, QPixmap
 from datetime import datetime
 import os
 import sys
@@ -161,6 +162,245 @@ class ProductItemDialog(QDialog):
         }
 
 
+class InvoiceDetailsDialog(QDialog):
+    """Dialog to collect invoice generation details"""
+    
+    def __init__(self, parent=None, customer_info=None):
+        super().__init__(parent)
+        self.setWindowTitle("Invoice Generation Details")
+        self.setModal(True)
+        self.setMinimumWidth(600)
+        self.customer_info = customer_info or {}
+        self.company_logo_path = None
+        self.initUI()
+    
+    def initUI(self):
+        """Initialize the dialog UI"""
+        layout = QVBoxLayout()
+        
+        # Instructions
+        instruction_label = QLabel("Please provide the following details for invoice generation:")
+        instruction_label.setStyleSheet("font-weight: bold; color: #4B0082; margin-bottom: 15px; font-size: 14px;")
+        layout.addWidget(instruction_label)
+        
+        # Company Information Group
+        company_group = QGroupBox("Company Information")
+        company_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        company_layout = QFormLayout()
+        
+        # Company name
+        self.company_name = QLineEdit()
+        self.company_name.setText("Tru_pharma")
+        self.company_name.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        company_layout.addRow("Company Name:", self.company_name)
+        
+        # Company contact
+        self.company_contact = QLineEdit()
+        self.company_contact.setText("0333-99-11-514")
+        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        company_layout.addRow("Company Contact:", self.company_contact)
+        
+        # Company address
+        self.company_address = QTextEdit()
+        self.company_address.setMaximumHeight(100)
+        self.company_address.setText("Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514\nEmail: info@trupharma.com")
+        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        company_layout.addRow("Company Address:", self.company_address)
+        
+        # Logo selection
+        logo_layout = QHBoxLayout()
+        self.logo_preview = QLabel("No logo selected")
+        self.logo_preview.setFixedSize(120, 60)
+        self.logo_preview.setAlignment(Qt.AlignCenter)
+        self.logo_preview.setStyleSheet("border: 2px dashed #4B0082; background-color: #f8f8f8;")
+        
+        self.select_logo_btn = QPushButton("Select Logo")
+        self.select_logo_btn.clicked.connect(self.selectLogo)
+        self.select_logo_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px 15px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
+        
+        self.remove_logo_btn = QPushButton("Remove Logo")
+        self.remove_logo_btn.clicked.connect(self.removeLogo)
+        self.remove_logo_btn.setEnabled(False)
+        
+        logo_layout.addWidget(self.logo_preview)
+        logo_layout.addWidget(self.select_logo_btn)
+        logo_layout.addWidget(self.remove_logo_btn)
+        logo_layout.addStretch()
+        
+        company_layout.addRow("Company Logo:", logo_layout)
+        
+        company_group.setLayout(company_layout)
+        layout.addWidget(company_group)
+        
+        # Transport & Delivery Information Group
+        transport_group = QGroupBox("Transport & Delivery Information")
+        transport_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        transport_layout = QFormLayout()
+        
+        # Transport name
+        self.transport_name = QLineEdit()
+        self.transport_name.setPlaceholderText("e.g., Jawad Aslam, TCS, Standard Delivery")
+        self.transport_name.setText("Standard Delivery")
+        self.transport_name.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        transport_layout.addRow("Transport Name:", self.transport_name)
+        
+        # Delivery date
+        self.delivery_date = QDateEdit()
+        self.delivery_date.setCalendarPopup(True)
+        self.delivery_date.setDate(QDate.currentDate())
+        self.delivery_date.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        transport_layout.addRow("Delivery Date:", self.delivery_date)
+        
+        # Delivery location
+        self.delivery_location = QLineEdit()
+        self.delivery_location.setPlaceholderText("e.g., adda johal, Main Market Faisalabad")
+        # Auto-fill from customer address if available
+        customer_address = self.customer_info.get('address', '')
+        if customer_address:
+            first_line = customer_address.split('\n')[0].strip()
+            self.delivery_location.setText(first_line)
+        self.delivery_location.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        transport_layout.addRow("Delivery Location:", self.delivery_location)
+        
+        transport_group.setLayout(transport_layout)
+        layout.addWidget(transport_group)
+        
+        # # Terms & Conditions Group
+        # terms_group = QGroupBox("Terms & Conditions")
+        # terms_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        # terms_layout = QVBoxLayout()
+        
+        # self.terms_text = QTextEdit()
+        # self.terms_text.setMaximumHeight(120)
+        # default_terms = ("Thank you for your business! Payment is due within 30 days.\n"
+        #                 "All products are subject to our standard terms and conditions.\n"
+        #                 "Please check all items upon delivery.")
+        # self.terms_text.setText(default_terms)
+        # self.terms_text.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 12px;")
+        # terms_layout.addWidget(self.terms_text)
+        
+        # terms_group.setLayout(terms_layout)
+        # layout.addWidget(terms_group)
+        
+        # Customer Information (read-only display)
+        customer_group = QGroupBox("Customer Information (from entry)")
+        customer_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        customer_layout = QFormLayout()
+        
+        customer_name = self.customer_info.get('name', 'N/A')
+        customer_address = self.customer_info.get('address', 'N/A')
+        customer_contact = self.customer_info.get('contact', 'N/A')
+        
+        customer_info_text = f"Name: {customer_name}\nAddress: {customer_address}\nContact: {customer_contact}"
+        customer_info_label = QLabel(customer_info_text)
+        customer_info_label.setStyleSheet("background-color: #f5f5f5; padding: 10px; border: 1px solid #ccc; font-size: 11px;")
+        customer_info_label.setWordWrap(True)
+        customer_layout.addRow("Customer Details:", customer_info_label)
+        
+        customer_group.setLayout(customer_layout)
+        layout.addWidget(customer_group)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        
+        self.generate_btn = QPushButton("Generate Invoice")
+        self.generate_btn.clicked.connect(self.accept)
+        self.generate_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 12px 25px;
+                font-weight: bold;
+                font-size: 14px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
+        
+        self.cancel_btn = QPushButton("Skip Invoice Generation")
+        self.cancel_btn.clicked.connect(self.reject)
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                padding: 12px 25px;
+                font-size: 14px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+            }
+        """)
+        
+        button_layout.addWidget(self.cancel_btn)
+        button_layout.addWidget(self.generate_btn)
+        
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+    
+    def selectLogo(self):
+        """Select a company logo image file"""
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Select Company Logo", "", 
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)", 
+            options=options
+        )
+        
+        if file_name:
+            try:
+                pixmap = QPixmap(file_name)
+                
+                if not pixmap.isNull():
+                    # Scale pixmap to fit preview
+                    scaled_pixmap = pixmap.scaled(120, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                    self.logo_preview.setPixmap(scaled_pixmap)
+                    self.logo_preview.setText("")  # Clear text when image is set
+                    
+                    # Store the original path
+                    self.company_logo_path = file_name
+                    
+                    # Enable remove button
+                    self.remove_logo_btn.setEnabled(True)
+                    
+                    # Update button text
+                    self.select_logo_btn.setText("Change Logo")
+                else:
+                    QMessageBox.warning(self, "Invalid Image", "Could not load the selected image file.")
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to load image: {str(e)}")
+    
+    def removeLogo(self):
+        """Remove the selected logo"""
+        self.logo_preview.clear()
+        self.logo_preview.setText("No logo selected")
+        self.company_logo_path = None
+        self.remove_logo_btn.setEnabled(False)
+        self.select_logo_btn.setText("Select Logo")
+    
+    def get_invoice_data(self):
+        """Get the collected invoice data"""
+        return {
+            'company_name': self.company_name.text().strip() or 'Tru_pharma',
+            'company_contact': self.company_contact.text().strip() or '0333-99-11-514',
+            'company_address': self.company_address.toPlainText().strip(),
+            'company_logo': self.company_logo_path,
+            'transport_name': self.transport_name.text().strip() or 'Standard Delivery',
+            'delivery_date': self.delivery_date.date().toString("dd-MM-yy"),
+            'delivery_location': self.delivery_location.text().strip() or 'Customer Location',
+            'terms': self.terms_text.toPlainText().strip()
+        }
+
+
 class NewEntryTab(QWidget):
     """
     Enhanced New Entry tab with multi-product support and automatic invoicing - MongoDB Only
@@ -304,21 +544,21 @@ class NewEntryTab(QWidget):
         self.auto_invoice_check.setToolTip("Automatically generate PDF invoice when saving entry")
         invoice_layout.addRow("", self.auto_invoice_check)
         
-        # Transport name
-        self.transport_name_edit = QLineEdit()
-        self.transport_name_edit.setPlaceholderText("e.g., Jawad Aslam")
-        invoice_layout.addRow("Transport Name:", self.transport_name_edit)
+        # # Transport name
+        # self.transport_name_edit = QLineEdit()
+        # self.transport_name_edit.setPlaceholderText("e.g., Jawad Aslam")
+        # invoice_layout.addRow("Transport Name:", self.transport_name_edit)
         
-        # Delivery date
-        self.delivery_date_edit = QDateEdit()
-        self.delivery_date_edit.setCalendarPopup(True)
-        self.delivery_date_edit.setDate(QDate.currentDate())
-        invoice_layout.addRow("Delivery Date:", self.delivery_date_edit)
+        # # Delivery date
+        # self.delivery_date_edit = QDateEdit()
+        # self.delivery_date_edit.setCalendarPopup(True)
+        # self.delivery_date_edit.setDate(QDate.currentDate())
+        # invoice_layout.addRow("Delivery Date:", self.delivery_date_edit)
         
-        # Delivery location
-        self.delivery_location_edit = QLineEdit()
-        self.delivery_location_edit.setPlaceholderText("e.g., adda johal")
-        invoice_layout.addRow("Delivery Location:", self.delivery_location_edit)
+        # # Delivery location
+        # self.delivery_location_edit = QLineEdit()
+        # self.delivery_location_edit.setPlaceholderText("e.g., adda johal")
+        # invoice_layout.addRow("Delivery Location:", self.delivery_location_edit)
         
         invoice_group.setLayout(invoice_layout)
         main_layout.addWidget(invoice_group)
@@ -539,12 +779,43 @@ class NewEntryTab(QWidget):
             
             is_credit = self.is_credit.isChecked()
             
+            # If auto-invoice is checked, show invoice details dialog
+            invoice_details = None
+            if self.auto_invoice_check.isChecked():
+                # Get customer info for the dialog
+                customers = self.db.get_customers()
+                customer_info = next((c for c in customers if str(c.get('id')) == str(customer_id)), {})
+                
+                # Show invoice details dialog
+                invoice_dialog = InvoiceDetailsDialog(self, customer_info)
+                if invoice_dialog.exec_() == QDialog.Accepted:
+                    invoice_details = invoice_dialog.get_invoice_data()
+                else:
+                    # User cancelled invoice generation, ask if they want to continue without invoice
+                    reply = QMessageBox.question(
+                        self, "Continue Without Invoice?",
+                        "Do you want to save the entry without generating an invoice?",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No
+                    )
+                    if reply == QMessageBox.No:
+                        return
+                    # Continue without invoice
+                    self.auto_invoice_check.setChecked(False)
+            
             # Prepare notes with invoice information
             base_notes = self.notes_edit.text().strip()
             invoice_info = f"Invoice: {invoice_number}"
             
-            # Add transport and delivery info if auto-invoice is enabled
-            if self.auto_invoice_check.isChecked():
+            # Add transport and delivery info if invoice details were provided
+            if invoice_details:
+                transport_name = invoice_details['transport_name']
+                delivery_location = invoice_details['delivery_location']
+                delivery_date = invoice_details['delivery_date']
+                
+                invoice_info += f" | Transport: {transport_name} | Delivery: {delivery_location} ({delivery_date})"
+            elif self.auto_invoice_check.isChecked():
+                # Fallback to form values if dialog wasn't shown but auto-invoice is checked
                 transport_name = self.transport_name_edit.text().strip() or "Standard Delivery"
                 delivery_location = self.delivery_location_edit.text().strip() or "Customer Location"
                 delivery_date = self.delivery_date_edit.date().toString("dd-MM-yy")
@@ -587,14 +858,20 @@ class NewEntryTab(QWidget):
             )
             
             if success:
-                # Generate invoice if auto-invoice is enabled
+                # Generate invoice if auto-invoice is enabled and details were provided
                 invoice_path = None
-                if self.auto_invoice_check.isChecked() and self.invoice_generator:
+                if self.auto_invoice_check.isChecked() and invoice_details:
                     try:
-                        invoice_path = self.generateAutoInvoice(invoice_number, customer_id, date, total_amount)
+                        invoice_path = self.generateAutoInvoiceWithDetails(
+                            invoice_number, customer_id, date, total_amount, invoice_details
+                        )
                     except Exception as e:
                         print(f"Auto-invoice generation failed: {e}")
-                        # Continue without failing the entry save
+                        QMessageBox.warning(
+                            self, "Invoice Generation Failed",
+                            f"Entry saved successfully but invoice generation failed:\n{str(e)}\n\n"
+                            "You can regenerate the invoice later from the Ledger tab."
+                        )
                 
                 # Show success message with balance info
                 customer_name = customer_display_name.split(' (')[0]  # Remove contact info
@@ -641,7 +918,7 @@ class NewEntryTab(QWidget):
         return f"INV-{today.year}{today.month:02d}{today.day:02d}-{random_suffix}"
     
     def generateAutoInvoice(self, invoice_number, customer_id, date, total_amount):
-        """Generate invoice automatically using the auto invoice generator"""
+        """Generate invoice automatically using the improved PDF generator"""
         try:
             # Get customer and product details
             customers = self.db.get_customers()
@@ -650,32 +927,126 @@ class NewEntryTab(QWidget):
             if not customer:
                 raise Exception("Customer not found")
             
-            # Prepare invoice data
+            # Prepare invoice data for the improved PDF generator
             invoice_data = {
-                'invoice_number': invoice_number,
-                'date': date,
-                'customer': {
+                'company_name': 'Tru_pharma',
+                'company_logo': None,
+                'company_contact': '0333-99-11-514',
+                'company_address': 'Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514',
+                'customer_info': {
                     'name': customer.get('name', ''),
                     'address': customer.get('address', ''),
                     'contact': customer.get('contact', '')
                 },
-                'items': self.product_items,
-                'total_amount': total_amount,
-                'transport_name': self.transport_name_edit.text().strip() or "Standard Delivery",
-                'delivery_location': self.delivery_location_edit.text().strip() or customer.get('address', '').split('\n')[0],
-                'delivery_date': self.delivery_date_edit.date().toString("dd-MM-yy"),
-                'notes': self.notes_edit.text().strip()
+                'transport_info': {
+                    'transport_name': self.transport_name_edit.text().strip() or "Standard Delivery",
+                    'delivery_date': self.delivery_date_edit.date().toString("dd-MM-yy"),
+                    'delivery_location': self.delivery_location_edit.text().strip() or customer.get('address', '').split('\n')[0] if customer.get('address') else 'Customer Location'
+                },
+                'invoice_details': {
+                    'invoice_number': invoice_number,
+                    'invoice_date': date
+                },
+                'items': [{
+                    'product_name': item['product_name'],
+                    'batch_number': item.get('batch_number', 'N/A'),
+                    'product_id': item.get('product_id', 'N/A'),
+                    'quantity': item['quantity'],
+                    'unit_price': item['unit_price'],
+                    'discount': item.get('discount', 0),
+                    'amount': item['amount']
+                } for item in self.product_items],
+                'terms': self.notes_edit.text().strip() or 'Thank you for your business!',
+                'total_amount': total_amount
             }
             
-            # Generate invoice using the auto invoice generator
-            invoice_path = self.invoice_generator.generate_invoice(invoice_data)
+            # Create invoices directory if it doesn't exist
+            invoice_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'invoices')
+            os.makedirs(invoice_dir, exist_ok=True)
             
-            return invoice_path
+            # Generate invoice file path
+            invoice_filename = f"{invoice_number}_{customer.get('name', 'customer').replace(' ', '_')}.pdf"
+            invoice_path = os.path.join(invoice_dir, invoice_filename)
+            
+            # Generate invoice using the improved PDF generator
+            from src.utils.pdf_generator import ImprovedPDFGenerator
+            pdf_generator = ImprovedPDFGenerator()
+            success = pdf_generator.generate_invoice_pdf(invoice_data, invoice_path)
+            
+            if success:
+                return invoice_path
+            else:
+                raise Exception("PDF generation failed")
             
         except Exception as e:
             print(f"Error generating auto invoice: {e}")
             raise e
     
+    def generateAutoInvoiceWithDetails(self, invoice_number, customer_id, date, total_amount, invoice_details):
+        """Generate invoice automatically with the provided details"""
+        try:
+            # Get customer details
+            customers = self.db.get_customers()
+            customer = next((c for c in customers if str(c.get('id')) == str(customer_id)), None)
+            
+            if not customer:
+                raise Exception("Customer not found")
+            
+            # Prepare invoice data for the improved PDF generator with custom details
+            invoice_data = {
+                'company_name': invoice_details['company_name'],
+                'company_logo': invoice_details['company_logo'],
+                'company_contact': invoice_details['company_contact'],
+                'company_address': invoice_details['company_address'],
+                'customer_info': {
+                    'name': customer.get('name', ''),
+                    'address': customer.get('address', ''),
+                    'contact': customer.get('contact', '')
+                },
+                'transport_info': {
+                    'transport_name': invoice_details['transport_name'],
+                    'delivery_date': invoice_details['delivery_date'],
+                    'delivery_location': invoice_details['delivery_location']
+                },
+                'invoice_details': {
+                    'invoice_number': invoice_number,
+                    'invoice_date': date
+                },
+                'items': [{
+                    'product_name': item['product_name'],
+                    'batch_number': item.get('batch_number', 'N/A'),
+                    'product_id': item.get('product_id', 'N/A'),
+                    'quantity': item['quantity'],
+                    'unit_price': item['unit_price'],
+                    'discount': item.get('discount', 0),
+                    'amount': item['amount']
+                } for item in self.product_items],
+                'terms': invoice_details['terms'],
+                'total_amount': total_amount
+            }
+            
+            # Create invoices directory if it doesn't exist
+            invoice_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'invoices')
+            os.makedirs(invoice_dir, exist_ok=True)
+            
+            # Generate invoice file path
+            invoice_filename = f"{invoice_number}_{customer.get('name', 'customer').replace(' ', '_')}.pdf"
+            invoice_path = os.path.join(invoice_dir, invoice_filename)
+            
+            # Generate invoice using the improved PDF generator
+            from src.utils.pdf_generator import ImprovedPDFGenerator
+            pdf_generator = ImprovedPDFGenerator()
+            success = pdf_generator.generate_invoice_pdf(invoice_data, invoice_path)
+            
+            if success:
+                return invoice_path
+            else:
+                raise Exception("PDF generation failed")
+            
+        except Exception as e:
+            print(f"Error generating auto invoice with details: {e}")
+            raise e
+
     def validateInputs(self):
         """Validate form inputs"""
         if self.customer_combo.currentIndex() == 0:

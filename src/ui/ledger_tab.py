@@ -491,14 +491,16 @@ class LedgerTab(QWidget):
                 'delivery_location': transport_info.get('delivery_location', customer.get('address', '').split('\n')[0] if customer.get('address') else 'Customer Location')
             }
             
-            # Generate invoice using PDF generator
+            # Generate invoice using improved PDF generator
             try:
-                from src.utils.pdf_generator import PDFGenerator
+                from src.utils.pdf_generator import ImprovedPDFGenerator
                 
                 # Prepare invoice data for PDF generator
                 invoice_data = {
-                    'company_name': 'Your Company Name',  # Can be made configurable
-                    'company_logo': None,  # Can be made configurable
+                    'company_name': 'Tru_pharma',
+                    'company_logo': None,
+                    'company_contact': '0333-99-11-514',
+                    'company_address': 'Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514',
                     'customer_info': {
                         'name': entry_data['customer_name'],
                         'address': entry_data['customer_address'],
@@ -514,7 +516,7 @@ class LedgerTab(QWidget):
                         'invoice_date': entry_data['date']
                     },
                     'items': entry_data['items'],
-                    'terms': entry_data['notes'],
+                    'terms': entry_data['notes'] or 'Thank you for your business!',
                     'total_amount': entry_data['total_amount']
                 }
                 
@@ -526,7 +528,7 @@ class LedgerTab(QWidget):
                 )
                 
                 if file_path:
-                    pdf_generator = PDFGenerator()
+                    pdf_generator = ImprovedPDFGenerator()
                     success = pdf_generator.generate_invoice_pdf(invoice_data, file_path)
                     
                     if success:

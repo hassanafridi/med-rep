@@ -357,3 +357,19 @@ class ImprovedPDFGenerator:
             return f"{result.strip()} rupees"
         except:
             return "amount not specified"
+
+
+# Backward compatibility - alias for the original class name
+class PDFGenerator(ImprovedPDFGenerator):
+    """Backward compatibility alias for PDFGenerator"""
+    
+    def __init__(self):
+        super().__init__()
+    
+    def generate_invoice_pdf(self, invoice_data, output_path):
+        """Generate PDF using the improved generator"""
+        return super().generate_invoice_pdf(invoice_data, output_path)
+    
+    def amount_to_words(self, amount):
+        """Convert amount to words - backward compatibility method"""
+        return self._amount_to_words(amount)
