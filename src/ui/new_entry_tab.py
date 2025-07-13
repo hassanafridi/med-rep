@@ -1,5 +1,5 @@
 """
-Enhanced New Entry Tab for MedRep with Multi-Product Support
+Enhanced New Entry Tab for MedRep with Multi-Product Support - MongoDB Only
 Automatically generates Tru-Pharma style invoice when saving entries
 """
 
@@ -16,11 +16,14 @@ import sys
 import json
 
 # Add the auto invoice generator
-from src.utils.auto_invoice_generator import AutoInvoiceGenerator
+try:
+    from src.utils.auto_invoice_generator import AutoInvoiceGenerator
+except ImportError:
+    print("Warning: Auto invoice generator not available")
+    AutoInvoiceGenerator = None
 
-# Import your existing database module
+# Import MongoDB database module only
 from src.database.mongo_adapter import MongoAdapter
-from src.database.audit_trail import AuditTrail
 
 
 class ProductItemDialog(QDialog):
@@ -160,7 +163,7 @@ class ProductItemDialog(QDialog):
 
 class NewEntryTab(QWidget):
     """
-    Enhanced New Entry tab with multi-product support and automatic invoicing
+    Enhanced New Entry tab with multi-product support and automatic invoicing - MongoDB Only
     """
     
     # Signal emitted when entry is saved with invoice path
@@ -168,16 +171,53 @@ class NewEntryTab(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.db = MongoAdapter()
-        self.db.init_db()
-        self.db.connect()
-        self.invoice_generator = AutoInvoiceGenerator()
-        self.customer_data = {}
-        self.product_data = {}
-        self.product_items = []  # List of products in current entry
-        self.initUI()
-        self.loadCustomersAndProducts()
+        try:
+            self.db = MongoAdapter()
+            if AutoInvoiceGenerator:
+                self.invoice_generator = AutoInvoiceGenerator()
+            else:
+                self.invoice_generator = None
+            self.customer_data = {}
+            self.product_data = {}
+            self.product_items = []  # List of products in current entry
+            self.initUI()
+            self.loadCustomersAndProducts()
+        except Exception as e:
+            print(f"Error initializing New Entry tab: {e}")
+            self.createErrorUI(str(e))
     
+    def createErrorUI(self, error_message):
+        """Create a minimal error UI when initialization fails"""
+        layout = QVBoxLayout()
+        
+        error_label = QLabel(f"New Entry tab temporarily unavailable\n\nError: {error_message}")
+        error_label.setAlignment(Qt.AlignCenter)
+        error_label.setStyleSheet("color: #e74c3c; font-weight: bold; padding: 20px;")
+        
+        retry_btn = QPushButton("Retry Initialization")
+        retry_btn.clicked.connect(self.retryInitialization)
+        
+        layout.addWidget(error_label)
+        layout.addWidget(retry_btn)
+        layout.addStretch()
+        
+        self.setLayout(layout)
+    
+    def retryInitialization(self):
+        """Retry initializing the new entry tab"""
+        try:
+            # Clear current layout
+            if self.layout():
+                QWidget().setLayout(self.layout())
+            
+            # Retry initialization
+            self.__init__()
+            
+        except Exception as e:
+            print(f"Retry failed: {e}")
+            QMessageBox.critical(self, "Initialization Failed", 
+                               f"Failed to initialize New Entry tab: {str(e)}")
+
     def initUI(self):
         """Initialize the UI"""
         main_layout = QVBoxLayout()
@@ -320,34 +360,48 @@ class NewEntryTab(QWidget):
         self.setLayout(main_layout)
     
     def loadCustomersAndProducts(self):
-        """Load customers and products from database"""
+        """Load customers and products from MongoDB database"""
         try:
-            self.db.connect()
+            # Ensure we have a valid database connection
+            if not self.db:
+                self.db = MongoAdapter()
             
-            # Load customers
+            if not self.db.connected:
+                self.db.connect()
+            
+            # Load customers from MongoDB
             self.customer_data = {}
             self.customer_combo.clear()
             self.customer_combo.addItem("-- Select Customer --")
             
-            self.db.cursor.execute('SELECT id, name FROM customers ORDER BY name')
-            customers = self.db.cursor.fetchall()
+            customers = self.db.get_customers()
             
-            for customer_id, name in customers:
-                self.customer_combo.addItem(name)
-                self.customer_data[name] = customer_id
+            for customer in customers:
+                customer_id = str(customer.get('id', ''))
+                name = customer.get('name', 'Unknown')
+                contact = customer.get('contact', '')
+                
+                display_name = f"{name} ({contact})" if contact else name
+                self.customer_combo.addItem(display_name)
+                self.customer_data[display_name] = customer_id
             
-            # Load products
+            # Load products from MongoDB
             self.product_data = {}
             
-            self.db.cursor.execute('''
-                SELECT id, name, batch_number, expiry_date, unit_price 
-                FROM products 
-                ORDER BY name
-            ''')
-            products = self.db.cursor.fetchall()
+            products = self.db.get_products()
             
-            for product_id, name, batch, expiry, price in products:
-                display_name = f"{name} (Batch: {batch}, Exp: {expiry})"
+            for product in products:
+                product_id = str(product.get('id', ''))
+                name = product.get('name', 'Unknown')
+                batch = product.get('batch_number', 'No batch')
+                expiry = product.get('expiry_date', 'No expiry')
+                
+                try:
+                    price = float(product.get('unit_price', 0))
+                except (ValueError, TypeError):
+                    price = 0.0
+                
+                display_name = f"{name} - {batch} (Exp: {expiry}) - Rs. {price:.2f}"
                 self.product_data[display_name] = {
                     'id': product_id,
                     'name': name,
@@ -357,21 +411,41 @@ class NewEntryTab(QWidget):
                 }
                 
                 # Check if expired
-                try:
-                    exp_date = datetime.strptime(expiry, '%Y-%m-%d')
-                    if exp_date < datetime.now():
-                        self.product_data[display_name]['is_expired'] = True
-                except:
-                    pass
+                if expiry and expiry != 'No expiry':
+                    try:
+                        exp_date = datetime.strptime(expiry, '%Y-%m-%d')
+                        if exp_date < datetime.now():
+                            self.product_data[display_name]['is_expired'] = True
+                    except Exception:
+                        pass
             
+            print(f"Loaded {len(customers)} customers and {len(products)} products from MongoDB")
+                
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", 
-                               f"Failed to load data: {str(e)}")
-        finally:
-            self.db.close()
-    
+            error_msg = f"Failed to load data from MongoDB: {str(e)}"
+            print(f"MongoDB load error: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # Show user-friendly error message
+            QMessageBox.critical(self, "MongoDB Error", error_msg)
+            
+            # Set default empty data to prevent further errors
+            if not hasattr(self, 'customer_data') or not self.customer_data:
+                self.customer_data = {}
+                self.customer_combo.clear()
+                self.customer_combo.addItem("-- No Customers Available --")
+            
+            if not hasattr(self, 'product_data') or not self.product_data:
+                self.product_data = {}
+
     def add_product_item(self):
         """Add a product to the entry"""
+        if not self.product_data:
+            QMessageBox.warning(self, "No Products", 
+                              "No products available. Please add products first or refresh the data.")
+            return
+            
         dialog = ProductItemDialog(self, self.product_data)
         if dialog.exec_() == QDialog.Accepted:
             item_data = dialog.get_item_data()
@@ -441,7 +515,7 @@ class NewEntryTab(QWidget):
         self.total_label.setText(f"Total: Rs {total:.2f}")
     
     def saveEntry(self):
-        """Save the entry and generate invoice if enabled"""
+        """Save the entry to MongoDB and generate invoice if enabled"""
         # Validate inputs
         if self.customer_combo.currentIndex() == 0:
             QMessageBox.warning(self, "Validation Error", "Please select a customer")
@@ -451,60 +525,89 @@ class NewEntryTab(QWidget):
             QMessageBox.warning(self, "Validation Error", "Please add at least one product")
             return
         
+        # Validate database connection
+        if not self.db:
+            QMessageBox.critical(self, "Database Error", "Database connection not available")
+            return
+        
         try:
-            self.db.connect()
+            # Ensure connection
+            if not self.db.connected:
+                self.db.connect()
             
             # Get form data
             date = self.date_edit.date().toString("yyyy-MM-dd")
-            customer_name = self.customer_combo.currentText()
-            customer_id = self.customer_data[customer_name]
-            is_credit = 1 if self.is_credit.isChecked() else 0
+            customer_display_name = self.customer_combo.currentText()
+            
+            # Validate customer selection
+            if customer_display_name not in self.customer_data:
+                QMessageBox.warning(self, "Validation Error", "Invalid customer selection")
+                return
+                
+            customer_id = self.customer_data[customer_display_name]
+            is_credit = self.is_credit.isChecked()
             notes = self.notes_edit.text()
             
             # Calculate total
             total_amount = sum(item['amount'] for item in self.product_items)
             
-            # Begin transaction
-            self.db.conn.execute('BEGIN TRANSACTION')
-            
-            # Get current balance
-            self.db.cursor.execute("SELECT MAX(balance) FROM transactions")
-            result = self.db.cursor.fetchone()
-            current_balance = result[0] if result[0] is not None else 0
+            # Get current balance from MongoDB
+            transactions = self.db.get_transactions()
+            current_balance = 0
+            if transactions:
+                balances = []
+                for t in transactions:
+                    balance = t.get('balance')
+                    if balance is not None:
+                        try:
+                            balances.append(float(balance))
+                        except (ValueError, TypeError):
+                            continue
+                current_balance = max(balances) if balances else 0
             
             # Calculate new balance
             new_balance = current_balance + total_amount if is_credit else current_balance - total_amount
             
-            # Create a combined entry for all products
-            products_json = json.dumps(self.product_items)
+            # Save each product as a separate entry in MongoDB
+            entry_ids = []
             
-            # Insert into entries table (simplified - you may need to adjust based on your schema)
-            self.db.cursor.execute('''
-                INSERT INTO entries
-                (date, customer_id, product_id, quantity, unit_price, is_credit, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (date, customer_id, 
-                  self.product_items[0]['product_id'],  # Use first product ID
-                  1,  # Quantity 1 for the entry
-                  total_amount,  # Total as unit price
-                  is_credit, 
-                  f"{notes} | Products: {products_json}"))
+            for item in self.product_items:
+                # Validate product data
+                if not item.get('product_id'):
+                    QMessageBox.warning(self, "Data Error", f"Invalid product data for {item.get('product_name', 'Unknown')}")
+                    continue
+                    
+                # Add entry to MongoDB
+                entry_id = self.db.add_entry(
+                    date=date,
+                    customer_id=customer_id,
+                    product_id=item['product_id'],
+                    quantity=item['quantity'],
+                    unit_price=item['unit_price'],
+                    is_credit=is_credit,
+                    notes=f"{notes} | Discount: {item.get('discount', 0)}% | Amount: Rs.{item['amount']:.2f}"
+                )
+                
+                if entry_id:
+                    entry_ids.append(str(entry_id))
             
-            entry_id = self.db.cursor.lastrowid
+            if not entry_ids:
+                QMessageBox.critical(self, "Save Error", "Failed to save any entries to MongoDB")
+                return
             
-            # Insert into transactions table
-            self.db.cursor.execute('''
-                INSERT INTO transactions
-                (entry_id, amount, balance)
-                VALUES (?, ?, ?)
-            ''', (entry_id, total_amount, new_balance))
+            # Add transaction record for the total
+            transaction_id = self.db.add_transaction(
+                entry_id=entry_ids[0],  # Use first entry ID
+                amount=total_amount,
+                balance=new_balance
+            )
             
             # Prepare entry data for invoice
             entry_data = {
-                'entry_id': entry_id,
+                'entry_id': entry_ids[0],
                 'date': date,
                 'customer_id': customer_id,
-                'customer_name': customer_name,
+                'customer_name': customer_display_name.split(' (')[0],  # Remove contact info
                 'items': self.product_items,  # Multiple products
                 'total_amount': total_amount,
                 'is_credit': is_credit,
@@ -512,61 +615,33 @@ class NewEntryTab(QWidget):
                 'balance': new_balance,
                 'transport_name': self.transport_name_edit.text() or 'N/A',
                 'delivery_date': self.delivery_date_edit.date().toString("dd-MM-yy"),
-                'delivery_location': self.delivery_location_edit.text()
+                'delivery_location': self.delivery_location_edit.text() or 'N/A'
             }
             
-            # Generate invoice if enabled
+            # Generate invoice if enabled and available
             invoice_path = None
             invoice_number = None
-            if self.auto_invoice_check.isChecked():
+            if self.auto_invoice_check.isChecked() and self.invoice_generator:
                 try:
-                    invoice_path = self.invoice_generator.generate_invoice_from_entry(
-                        entry_data, self.db.conn
-                    )
+                    invoice_path = self.invoice_generator.generate_invoice_from_entry(entry_data)
                     
-                    # Extract invoice number
-                    invoice_filename = os.path.basename(invoice_path)
-                    invoice_number = invoice_filename.split('_')[1]
-                    
-                    # Update notes with invoice number
-                    updated_notes = f"{notes} [Invoice: INV-{invoice_number}]" if notes else f"Invoice: INV-{invoice_number}"
-                    
-                    self.db.cursor.execute(
-                        "UPDATE entries SET notes = ? WHERE id = ?",
-                        (updated_notes, entry_id)
-                    )
-                    
+                    if invoice_path:
+                        # Extract invoice number
+                        invoice_filename = os.path.basename(invoice_path)
+                        invoice_number = invoice_filename.split('_')[1] if '_' in invoice_filename else 'N/A'
+                        
                 except Exception as e:
                     print(f"Invoice generation error: {e}")
                     QMessageBox.warning(self, "Invoice Warning", 
                                       f"Entry saved but invoice generation failed: {str(e)}")
             
-            # Log audit trail
-            try:
-                main_window = self.window()
-                user_id = main_window.current_user['user_id'] if hasattr(main_window, 'current_user') else None
-                username = main_window.current_user['username'] if hasattr(main_window, 'current_user') else 'system'
-                
-                audit_trail = AuditTrail(self.db.db_path)
-                audit_trail.log_data_change(
-                    user_id=user_id,
-                    username=username,
-                    operation="INSERT",
-                    table_name="entries",
-                    record_id=entry_id,
-                    new_values=entry_data
-                )
-            except Exception as e:
-                print(f"Audit trail error: {e}")
-            
-            # Commit transaction
-            self.db.conn.commit()
-            
             # Show success message
-            success_message = f"Entry saved successfully!\n\n"
+            success_message = f"Entry saved successfully to MongoDB!\n\n"
+            success_message += f"Entry IDs: {', '.join(entry_ids)}\n"
             success_message += f"Products: {len(self.product_items)}\n"
             success_message += f"Total Amount: Rs. {total_amount:.2f}\n"
-            success_message += f"New Balance: Rs. {new_balance:.2f}"
+            success_message += f"New Balance: Rs. {new_balance:.2f}\n"
+            success_message += f"Entry Type: {'Credit' if is_credit else 'Debit'}"
             
             if invoice_path:
                 success_message += f"\n\nInvoice generated: {os.path.basename(invoice_path)}"
@@ -575,6 +650,9 @@ class NewEntryTab(QWidget):
                 
                 # Emit signal with invoice path
                 self.entry_saved.emit(invoice_path)
+            else:
+                self.status_label.setText("✓ Entry saved to MongoDB successfully")
+                self.status_label.setStyleSheet("color: green; font-weight: bold;")
             
             QMessageBox.information(self, "Success", success_message)
             
@@ -582,12 +660,12 @@ class NewEntryTab(QWidget):
             self.clearForm()
             
         except Exception as e:
-            self.db.conn.rollback()
-            QMessageBox.critical(self, "Error", f"Failed to save entry: {str(e)}")
-            
-        finally:
-            self.db.close()
-    
+            error_msg = f"Failed to save entry to MongoDB: {str(e)}"
+            print(error_msg)
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "MongoDB Error", error_msg)
+
     def clearForm(self):
         """Clear all form fields"""
         self.date_edit.setDate(QDate.currentDate())
@@ -603,7 +681,6 @@ class NewEntryTab(QWidget):
         self.status_label.clear()
 
 
-# Quick view dialog (same as before)
 class InvoiceQuickViewDialog(QDialog):
     """Quick view dialog to show invoice path and open options"""
     

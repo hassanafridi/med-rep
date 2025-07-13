@@ -1,0 +1,42 @@
+[
+  {
+    "id": "6872f70d98dfe7da56eb9578",
+    "name": "MediCure",
+    "description": "General antibiotic",
+    "unit_price": 25.5,
+    "batch_number": "LEGACY-001",
+    "expiry_date": "2025-12-31"
+  },
+  {
+    "id": "6872f70d98dfe7da56eb9579",
+    "name": "PainAway",
+    "description": "Pain reliever",
+    "unit_price": 12.75,
+    "batch_number": "LEGACY-001",
+    "expiry_date": "2025-12-31"
+  },
+  {
+    "id": "6872f70d98dfe7da56eb957a",
+    "name": "HealthBoost",
+    "description": "Vitamin supplement",
+    "unit_price": 35.0,
+    "batch_number": "LEGACY-001",
+    "expiry_date": "2025-12-31"
+  },
+  {
+    "id": "6872f70e98dfe7da56eb957b",
+    "name": "Alpha",
+    "description": "",
+    "unit_price": 5.01,
+    "batch_number": "LEGACY-001",
+    "expiry_date": "2025-12-31"
+  },
+  {
+    "id": "6872f70e98dfe7da56eb957c",
+    "name": "Repel",
+    "description": "Vitamin",
+    "unit_price": 21.01,
+    "batch_number": "R-112",
+    "expiry_date": "2025-05-30"
+  }
+]

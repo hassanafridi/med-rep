@@ -1,7 +1,7 @@
 # src/ui/enhanced_reports_tab.py
 
 """
-Enhanced reports tab that leverages MongoDB's advanced querying capabilities
+Enhanced reports tab that leverages MongoDB's advanced querying capabilities - MongoDB Only
 """
 
 from PyQt5.QtWidgets import (
@@ -21,8 +21,7 @@ import json
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database.mongo_db import MongoDB
-from database.advanced_queries import AdvancedQueries
+from src.database.mongo_adapter import MongoAdapter
 
 class ReportGenerationThread(QThread):
     """Thread for generating complex reports without freezing the UI"""
@@ -47,12 +46,48 @@ class ReportGenerationThread(QThread):
             self.error_occurred.emit(str(e))
 
 class EnhancedReportsTab(QWidget):
-    def __init__(self, mongo_db: MongoDB):
+    def __init__(self, mongo_adapter=None):
         super().__init__()
-        self.mongo_db = mongo_db
-        self.advanced_queries = AdvancedQueries(mongo_db)
-        self.current_thread = None
-        self.initUI()
+        try:
+            self.mongo_adapter = mongo_adapter or MongoAdapter()
+            self.current_thread = None
+            self.current_product_data = []
+            self.initUI()
+        except Exception as e:
+            print(f"Error initializing Enhanced Reports tab: {e}")
+            self.createErrorUI(str(e))
+    
+    def createErrorUI(self, error_message):
+        """Create a minimal error UI when initialization fails"""
+        layout = QVBoxLayout()
+        
+        error_label = QLabel(f"Enhanced Reports tab temporarily unavailable\n\nError: {error_message}")
+        error_label.setAlignment(Qt.AlignCenter)
+        error_label.setStyleSheet("color: #e74c3c; font-weight: bold; padding: 20px;")
+        
+        retry_btn = QPushButton("Retry Initialization")
+        retry_btn.clicked.connect(self.retryInitialization)
+        
+        layout.addWidget(error_label)
+        layout.addWidget(retry_btn)
+        layout.addStretch()
+        
+        self.setLayout(layout)
+    
+    def retryInitialization(self):
+        """Retry initializing the enhanced reports tab"""
+        try:
+            # Clear current layout
+            if self.layout():
+                QWidget().setLayout(self.layout())
+            
+            # Retry initialization
+            self.__init__(self.mongo_adapter)
+            
+        except Exception as e:
+            print(f"Retry failed: {e}")
+            QMessageBox.critical(self, "Initialization Failed", 
+                               f"Failed to initialize Enhanced Reports tab: {str(e)}")
     
     def initUI(self):
         """Initialize the enhanced reports UI"""
@@ -60,7 +95,7 @@ class EnhancedReportsTab(QWidget):
         
         # Header
         header_layout = QHBoxLayout()
-        title_label = QLabel("Enhanced Analytics & Reports")
+        title_label = QLabel("Enhanced Analytics & Reports - MongoDB Edition")
         title_label.setFont(QFont("Arial", 16, QFont.Bold))
         header_layout.addWidget(title_label)
         header_layout.addStretch()
@@ -116,6 +151,17 @@ class EnhancedReportsTab(QWidget):
         # Generate button
         generate_customer_btn = QPushButton("Generate Customer Report")
         generate_customer_btn.clicked.connect(self.generate_customer_analytics)
+        generate_customer_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
         controls_layout.addWidget(generate_customer_btn)
         
         # Segmentation button
@@ -157,9 +203,20 @@ class EnhancedReportsTab(QWidget):
         
         generate_product_btn = QPushButton("Analyze Product Performance")
         generate_product_btn.clicked.connect(self.generate_product_analysis)
+        generate_product_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
         controls_layout.addWidget(generate_product_btn)
         
-        export_btn = QPushButton("Export to Excel")
+        export_btn = QPushButton("Export to CSV")
         export_btn.clicked.connect(self.export_product_analysis)
         controls_layout.addWidget(export_btn)
         
@@ -201,6 +258,17 @@ class EnhancedReportsTab(QWidget):
         
         generate_trend_btn = QPushButton("Generate Trend Report")
         generate_trend_btn.clicked.connect(self.generate_sales_trends)
+        generate_trend_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
         controls_layout.addWidget(generate_trend_btn)
         
         forecast_btn = QPushButton("Sales Forecasting")
@@ -218,6 +286,7 @@ class EnhancedReportsTab(QWidget):
         # Summary table
         self.trends_table = QTableWidget()
         self.trends_table.setMaximumHeight(200)
+        self.trends_table.setAlternatingRowColors(True)
         layout.addWidget(self.trends_table)
         
         widget.setLayout(layout)
@@ -234,6 +303,17 @@ class EnhancedReportsTab(QWidget):
         
         credit_debit_btn = QPushButton("Credit/Debit Analysis")
         credit_debit_btn.clicked.connect(self.generate_credit_debit_analysis)
+        credit_debit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
         controls_layout.addWidget(credit_debit_btn)
         
         outstanding_btn = QPushButton("Outstanding Balances")
@@ -283,6 +363,17 @@ class EnhancedReportsTab(QWidget):
         
         expiry_btn = QPushButton("Check Expiring Products")
         expiry_btn.clicked.connect(self.generate_expiry_report)
+        expiry_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
         controls_layout.addWidget(expiry_btn)
         
         stock_movement_btn = QPushButton("Stock Movement Analysis")
@@ -300,19 +391,19 @@ class EnhancedReportsTab(QWidget):
         
         widget.setLayout(layout)
         return widget
-    
+
     def create_summary_cards(self, layout):
         """Create summary cards for financial overview"""
         # Total Revenue Card
-        self.revenue_card = self.create_summary_card("Total Revenue", "₹0", QColor(76, 175, 80))
+        self.revenue_card = self.create_summary_card("Total Revenue", "PKR0", QColor(76, 175, 80))
         layout.addWidget(self.revenue_card, 0, 0)
         
         # Outstanding Balance Card
-        self.outstanding_card = self.create_summary_card("Outstanding", "₹0", QColor(255, 152, 0))
+        self.outstanding_card = self.create_summary_card("Outstanding", "PKR0", QColor(255, 152, 0))
         layout.addWidget(self.outstanding_card, 0, 1)
         
         # Credit Balance Card
-        self.credit_card = self.create_summary_card("Credit Balance", "₹0", QColor(33, 150, 243))
+        self.credit_card = self.create_summary_card("Credit Balance", "PKR0", QColor(33, 150, 243))
         layout.addWidget(self.credit_card, 0, 2)
         
         # Active Customers Card
@@ -351,22 +442,86 @@ class EnhancedReportsTab(QWidget):
         card.value_label = value_label
         
         return card
-    
-    # Report Generation Methods
+
+    # MongoDB-based Report Generation Methods
     
     def generate_customer_analytics(self):
-        """Generate customer analytics report"""
-        self.show_progress()
-        limit = int(self.customer_count_combo.currentText())
-        
-        self.current_thread = ReportGenerationThread(
-            self.advanced_queries.get_top_customers_by_revenue, limit
-        )
-        self.current_thread.report_ready.connect(self.display_customer_analytics)
-        self.current_thread.progress_updated.connect(self.update_progress)
-        self.current_thread.error_occurred.connect(self.handle_error)
-        self.current_thread.start()
-    
+        """Generate customer analytics report using MongoDB"""
+        try:
+            # Validate prerequisites
+            if not self.mongo_adapter:
+                QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+                return
+            
+            self.show_progress()
+            limit = int(self.customer_count_combo.currentText())
+            
+            self.current_thread = ReportGenerationThread(
+                self.get_top_customers_by_revenue, limit
+            )
+            self.current_thread.report_ready.connect(self.display_customer_analytics)
+            self.current_thread.progress_updated.connect(self.update_progress)
+            self.current_thread.error_occurred.connect(self.handle_error)
+            self.current_thread.start()
+            
+        except Exception as e:
+            self.hide_progress()
+            QMessageBox.critical(self, "Error", f"Failed to generate customer analytics: {str(e)}")
+
+    def get_top_customers_by_revenue(self, limit=10):
+        """Get top customers by revenue using MongoDB aggregation"""
+        try:
+            # Check if mongo_adapter is available
+            if not self.mongo_adapter:
+                print("MongoDB adapter not available")
+                return []
+            
+            # Get entries and customers from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            customers = self.mongo_adapter.get_customers()
+            
+            # Validate data
+            if not entries or not customers:
+                print(f"Insufficient data: {len(entries) if entries else 0} entries, {len(customers) if customers else 0} customers")
+                return []
+            
+            # Create customer lookup
+            customer_lookup = {}
+            for customer in customers:
+                customer_lookup[str(customer.get('id', ''))] = customer
+            
+            # Calculate revenue per customer
+            customer_revenue = {}
+            for entry in entries:
+                if entry.get('is_credit'):
+                    customer_id = str(entry.get('customer_id', ''))
+                    revenue = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    
+                    if customer_id in customer_revenue:
+                        customer_revenue[customer_id]['total_revenue'] += revenue
+                        customer_revenue[customer_id]['entry_count'] += 1
+                    else:
+                        customer_info = customer_lookup.get(customer_id, {})
+                        customer_revenue[customer_id] = {
+                            'name': customer_info.get('name', 'Unknown'),
+                            'contact': customer_info.get('contact', ''),
+                            'total_revenue': revenue,
+                            'entry_count': 1
+                        }
+            
+            # Sort and limit
+            sorted_customers = sorted(
+                customer_revenue.values(), 
+                key=lambda x: x['total_revenue'], 
+                reverse=True
+            )[:limit]
+            
+            return sorted_customers
+            
+        except Exception as e:
+            print(f"Error getting top customers: {e}")
+            return []
+
     def display_customer_analytics(self, customers):
         """Display customer analytics results"""
         self.hide_progress()
@@ -381,7 +536,7 @@ class EnhancedReportsTab(QWidget):
         for row, customer in enumerate(customers):
             self.customer_table.setItem(row, 0, QTableWidgetItem(customer.get("name", "")))
             self.customer_table.setItem(row, 1, QTableWidgetItem(customer.get("contact", "")))
-            self.customer_table.setItem(row, 2, QTableWidgetItem(f"₹{customer.get('total_revenue', 0):,.2f}"))
+            self.customer_table.setItem(row, 2, QTableWidgetItem(f"PKR{customer.get('total_revenue', 0):,.2f}"))
             self.customer_table.setItem(row, 3, QTableWidgetItem(str(customer.get("entry_count", 0))))
         
         self.customer_table.horizontalHeader().setStretchLastSection(True)
@@ -420,17 +575,104 @@ class EnhancedReportsTab(QWidget):
         self.customer_chart_view.setChart(chart)
     
     def generate_customer_segmentation(self):
-        """Generate customer segmentation report"""
+        """Generate customer segmentation report using MongoDB"""
         self.show_progress()
         
         self.current_thread = ReportGenerationThread(
-            self.advanced_queries.get_customer_segmentation
+            self.get_customer_segmentation
         )
         self.current_thread.report_ready.connect(self.display_customer_segmentation)
         self.current_thread.progress_updated.connect(self.update_progress)
         self.current_thread.error_occurred.connect(self.handle_error)
         self.current_thread.start()
     
+    def get_customer_segmentation(self):
+        """Get customer segmentation using MongoDB data"""
+        try:
+            # Check if mongo_adapter is available
+            if not self.mongo_adapter:
+                print("MongoDB adapter not available for customer segmentation")
+                return {}
+            
+            # Get data from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            customers = self.mongo_adapter.get_customers()
+            
+            # Validate data
+            if not entries or not customers:
+                print("Insufficient data for customer segmentation")
+                return {}
+            
+            # Create customer lookup
+            customer_lookup = {}
+            for customer in customers:
+                customer_lookup[str(customer.get('id', ''))] = customer
+            
+            # Calculate customer metrics
+            customer_metrics = {}
+            for entry in entries:
+                if entry.get('is_credit'):
+                    customer_id = str(entry.get('customer_id', ''))
+                    amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    entry_date = entry.get('date', '')
+                    
+                    if customer_id not in customer_metrics:
+                        customer_info = customer_lookup.get(customer_id, {})
+                        customer_metrics[customer_id] = {
+                            'name': customer_info.get('name', 'Unknown'),
+                            'total_spent': 0,
+                            'order_count': 0,
+                            'last_order_date': entry_date,
+                            'first_order_date': entry_date
+                        }
+                    
+                    customer_metrics[customer_id]['total_spent'] += amount
+                    customer_metrics[customer_id]['order_count'] += 1
+                    
+                    # Update dates
+                    if entry_date > customer_metrics[customer_id]['last_order_date']:
+                        customer_metrics[customer_id]['last_order_date'] = entry_date
+                    if entry_date < customer_metrics[customer_id]['first_order_date']:
+                        customer_metrics[customer_id]['first_order_date'] = entry_date
+            
+            # Calculate derived metrics and segment
+            today = datetime.now().date()
+            segmentation = {
+                'High Value': {'count': 0, 'customers': []},
+                'Medium Value': {'count': 0, 'customers': []},
+                'Low Value': {'count': 0, 'customers': []},
+                'Inactive': {'count': 0, 'customers': []}
+            }
+            
+            for customer_id, metrics in customer_metrics.items():
+                # Calculate additional metrics
+                metrics['avg_order_value'] = metrics['total_spent'] / metrics['order_count']
+                
+                try:
+                    last_order = datetime.strptime(metrics['last_order_date'], '%Y-%m-%d').date()
+                    metrics['days_since_last_order'] = (today - last_order).days
+                except:
+                    metrics['days_since_last_order'] = 999
+                
+                # Segment customers
+                if metrics['days_since_last_order'] > 180:
+                    segment = 'Inactive'
+                elif metrics['total_spent'] > 10000:
+                    segment = 'High Value'
+                elif metrics['total_spent'] > 5000:
+                    segment = 'Medium Value'
+                else:
+                    segment = 'Low Value'
+                
+                segmentation[segment]['count'] += 1
+                segmentation[segment]['customers'].append(metrics)
+            
+            return segmentation
+            
+        except Exception as e:
+            print(f"Error getting customer segmentation: {e}")
+            return {}
+
     def display_customer_segmentation(self, segmentation):
         """Display customer segmentation results"""
         self.hide_progress()
@@ -469,25 +711,104 @@ class EnhancedReportsTab(QWidget):
         for row, customer in enumerate(all_customers):
             self.customer_table.setItem(row, 0, QTableWidgetItem(customer.get("name", "")))
             self.customer_table.setItem(row, 1, QTableWidgetItem(customer.get("segment", "")))
-            self.customer_table.setItem(row, 2, QTableWidgetItem(f"₹{customer.get('total_spent', 0):,.2f}"))
+            self.customer_table.setItem(row, 2, QTableWidgetItem(f"PKR{customer.get('total_spent', 0):,.2f}"))
             self.customer_table.setItem(row, 3, QTableWidgetItem(str(customer.get("order_count", 0))))
-            self.customer_table.setItem(row, 4, QTableWidgetItem(f"₹{customer.get('avg_order_value', 0):,.2f}"))
+            self.customer_table.setItem(row, 4, QTableWidgetItem(f"PKR{customer.get('avg_order_value', 0):,.2f}"))
             self.customer_table.setItem(row, 5, QTableWidgetItem(f"{customer.get('days_since_last_order', 0):.0f}"))
         
         self.customer_table.resizeColumnsToContents()
-    
+
     def generate_product_analysis(self):
-        """Generate product performance analysis"""
-        self.show_progress()
-        
-        self.current_thread = ReportGenerationThread(
-            self.advanced_queries.get_product_performance_analysis
-        )
-        self.current_thread.report_ready.connect(self.display_product_analysis)
-        self.current_thread.progress_updated.connect(self.update_progress)
-        self.current_thread.error_occurred.connect(self.handle_error)
-        self.current_thread.start()
-    
+        """Generate product performance analysis using MongoDB"""
+        try:
+            # Validate prerequisites
+            if not self.mongo_adapter:
+                QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+                return
+            
+            self.show_progress()
+            
+            self.current_thread = ReportGenerationThread(
+                self.get_product_performance_analysis
+            )
+            self.current_thread.report_ready.connect(self.display_product_analysis)
+            self.current_thread.progress_updated.connect(self.update_progress)
+            self.current_thread.error_occurred.connect(self.handle_error)
+            self.current_thread.start()
+            
+        except Exception as e:
+            self.hide_progress()
+            QMessageBox.critical(self, "Error", f"Failed to generate product analysis: {str(e)}")
+
+    def get_product_performance_analysis(self):
+        """Get product performance analysis using MongoDB"""
+        try:
+            # Check if mongo_adapter is available
+            if not self.mongo_adapter:
+                print("MongoDB adapter not available for product analysis")
+                return []
+            
+            # Get data from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            products = self.mongo_adapter.get_products()
+            
+            # Validate data
+            if not entries or not products:
+                print("Insufficient data for product analysis")
+                return []
+            
+            # Create product lookup
+            product_lookup = {}
+            for product in products:
+                product_lookup[str(product.get('id', ''))] = product
+            
+            # Calculate product metrics
+            product_metrics = {}
+            for entry in entries:
+                if entry.get('is_credit'):
+                    product_id = str(entry.get('product_id', ''))
+                    quantity = float(entry.get('quantity', 0))
+                    unit_price = float(entry.get('unit_price', 0))
+                    revenue = quantity * unit_price
+                    customer_id = str(entry.get('customer_id', ''))
+                    
+                    if product_id not in product_metrics:
+                        product_info = product_lookup.get(product_id, {})
+                        product_metrics[product_id] = {
+                            'name': product_info.get('name', 'Unknown'),
+                            'description': product_info.get('description', ''),
+                            'batch_number': product_info.get('batch_number', ''),
+                            'unit_price': product_info.get('unit_price', 0),
+                            'total_quantity_sold': 0,
+                            'total_revenue': 0,
+                            'unique_customers': set(),
+                            'order_count': 0
+                        }
+                    
+                    product_metrics[product_id]['total_quantity_sold'] += quantity
+                    product_metrics[product_id]['total_revenue'] += revenue
+                    product_metrics[product_id]['unique_customers'].add(customer_id)
+                    product_metrics[product_id]['order_count'] += 1
+            
+            # Calculate derived metrics
+            result = []
+            for product_id, metrics in product_metrics.items():
+                unique_customers = len(metrics['unique_customers'])
+                metrics['unique_customers'] = unique_customers
+                metrics['avg_order_size'] = metrics['total_quantity_sold'] / metrics['order_count'] if metrics['order_count'] > 0 else 0
+                metrics['revenue_per_customer'] = metrics['total_revenue'] / unique_customers if unique_customers > 0 else 0
+                
+                result.append(metrics)
+            
+            # Sort by revenue
+            result.sort(key=lambda x: x['total_revenue'], reverse=True)
+            
+            return result
+            
+        except Exception as e:
+            print(f"Error getting product performance: {e}")
+            return []
+
     def display_product_analysis(self, products):
         """Display product analysis results"""
         self.hide_progress()
@@ -503,10 +824,10 @@ class EnhancedReportsTab(QWidget):
             self.product_table.setItem(row, 0, QTableWidgetItem(product.get("name", "")))
             self.product_table.setItem(row, 1, QTableWidgetItem(product.get("batch_number", "")))
             self.product_table.setItem(row, 2, QTableWidgetItem(str(product.get("total_quantity_sold", 0))))
-            self.product_table.setItem(row, 3, QTableWidgetItem(f"₹{product.get('total_revenue', 0):,.2f}"))
+            self.product_table.setItem(row, 3, QTableWidgetItem(f"PKR{product.get('total_revenue', 0):,.2f}"))
             self.product_table.setItem(row, 4, QTableWidgetItem(str(product.get("unique_customers", 0))))
             self.product_table.setItem(row, 5, QTableWidgetItem(f"{product.get('avg_order_size', 0):.1f}"))
-            self.product_table.setItem(row, 6, QTableWidgetItem(f"₹{product.get('revenue_per_customer', 0):,.2f}"))
+            self.product_table.setItem(row, 6, QTableWidgetItem(f"PKR{product.get('revenue_per_customer', 0):,.2f}"))
         
         self.product_table.resizeColumnsToContents()
         
@@ -548,22 +869,86 @@ class EnhancedReportsTab(QWidget):
         series.attachAxis(axis_y)
         
         self.product_chart_view.setChart(chart)
-    
+
     def generate_sales_trends(self):
-        """Generate sales trends analysis"""
+        """Generate sales trends analysis using MongoDB"""
         self.show_progress()
         
         period_text = self.trend_period_combo.currentText()
         months = int(period_text.split()[0])
         
         self.current_thread = ReportGenerationThread(
-            self.advanced_queries.get_monthly_sales_trend, months
+            self.get_monthly_sales_trend, months
         )
         self.current_thread.report_ready.connect(self.display_sales_trends)
         self.current_thread.progress_updated.connect(self.update_progress)
         self.current_thread.error_occurred.connect(self.handle_error)
         self.current_thread.start()
     
+    def get_monthly_sales_trend(self, months=6):
+        """Get monthly sales trend using MongoDB"""
+        try:
+            # Check if mongo_adapter is available
+            if not self.mongo_adapter:
+                print("MongoDB adapter not available for sales trends")
+                return []
+            
+            # Get entries from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            
+            # Validate data
+            if not entries:
+                print("No entries available for sales trends")
+                return []
+            
+            # Calculate date range
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=months * 30)
+            
+            # Group by month
+            monthly_data = {}
+            for entry in entries:
+                if entry.get('is_credit'):
+                    entry_date_str = entry.get('date', '')
+                    try:
+                        entry_date = datetime.strptime(entry_date_str, '%Y-%m-%d')
+                        if start_date <= entry_date <= end_date:
+                            month_key = entry_date.strftime('%Y-%m')
+                            quantity = float(entry.get('quantity', 0))
+                            unit_price = float(entry.get('unit_price', 0))
+                            revenue = quantity * unit_price
+                            customer_id = str(entry.get('customer_id', ''))
+                            
+                            if month_key not in monthly_data:
+                                monthly_data[month_key] = {
+                                    'month': month_key,
+                                    'total_revenue': 0,
+                                    'total_quantity': 0,
+                                    'customers': set(),
+                                    'order_count': 0
+                                }
+                            
+                            monthly_data[month_key]['total_revenue'] += revenue
+                            monthly_data[month_key]['total_quantity'] += quantity
+                            monthly_data[month_key]['customers'].add(customer_id)
+                            monthly_data[month_key]['order_count'] += 1
+                    except:
+                        continue
+            
+            # Convert to list and calculate derived metrics
+            result = []
+            for month_key, data in sorted(monthly_data.items()):
+                data['customer_count'] = len(data['customers'])
+                data['avg_order_value'] = data['total_revenue'] / data['order_count'] if data['order_count'] > 0 else 0
+                del data['customers']  # Remove set for JSON serialization
+                result.append(data)
+            
+            return result
+            
+        except Exception as e:
+            print(f"Error getting sales trends: {e}")
+            return []
+
     def display_sales_trends(self, trends):
         """Display sales trends results"""
         self.hide_progress()
@@ -595,25 +980,119 @@ class EnhancedReportsTab(QWidget):
         
         for row, trend in enumerate(trends):
             self.trends_table.setItem(row, 0, QTableWidgetItem(trend.get("month", "")))
-            self.trends_table.setItem(row, 1, QTableWidgetItem(f"₹{trend.get('total_revenue', 0):,.2f}"))
+            self.trends_table.setItem(row, 1, QTableWidgetItem(f"PKR{trend.get('total_revenue', 0):,.2f}"))
             self.trends_table.setItem(row, 2, QTableWidgetItem(str(trend.get("total_quantity", 0))))
             self.trends_table.setItem(row, 3, QTableWidgetItem(str(trend.get("customer_count", 0))))
-            self.trends_table.setItem(row, 4, QTableWidgetItem(f"₹{trend.get('avg_order_value', 0):,.2f}"))
+            self.trends_table.setItem(row, 4, QTableWidgetItem(f"PKR{trend.get('avg_order_value', 0):,.2f}"))
         
         self.trends_table.resizeColumnsToContents()
     
     def generate_credit_debit_analysis(self):
-        """Generate credit/debit analysis"""
-        self.show_progress()
-        
-        self.current_thread = ReportGenerationThread(
-            self.advanced_queries.get_credit_debit_analysis
-        )
-        self.current_thread.report_ready.connect(self.display_credit_debit_analysis)
-        self.current_thread.progress_updated.connect(self.update_progress)
-        self.current_thread.error_occurred.connect(self.handle_error)
-        self.current_thread.start()
-    
+        """Generate credit/debit analysis using MongoDB"""
+        try:
+            # Validate prerequisites
+            if not self.mongo_adapter:
+                QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+                return
+            
+            self.show_progress()
+            
+            self.current_thread = ReportGenerationThread(
+                self.get_credit_debit_analysis
+            )
+            self.current_thread.report_ready.connect(self.display_credit_debit_analysis)
+            self.current_thread.progress_updated.connect(self.update_progress)
+            self.current_thread.error_occurred.connect(self.handle_error)
+            self.current_thread.start()
+            
+        except Exception as e:
+            self.hide_progress()
+            QMessageBox.critical(self, "Error", f"Failed to generate credit/debit analysis: {str(e)}")
+
+    def get_credit_debit_analysis(self):
+        """Get credit/debit analysis using MongoDB"""
+        try:
+            # Check if mongo_adapter is available
+            if not self.mongo_adapter:
+                print("MongoDB adapter not available for credit/debit analysis")
+                return {'customer_balances': [], 'summary': []}
+            
+            # Get data from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            customers = self.mongo_adapter.get_customers()
+            
+            # Validate data
+            if not entries or not customers:
+                print("Insufficient data for credit/debit analysis")
+                return {'customer_balances': [], 'summary': []}
+            
+            # Create customer lookup
+            customer_lookup = {}
+            for customer in customers:
+                customer_lookup[str(customer.get('id', ''))] = customer
+            
+            # Calculate customer balances
+            customer_balances = {}
+            summary = {'total_credit': 0, 'total_debit': 0}
+            
+            for entry in entries:
+                customer_id = str(entry.get('customer_id', ''))
+                quantity = float(entry.get('quantity', 0))
+                unit_price = float(entry.get('unit_price', 0))
+                amount = quantity * unit_price
+                is_credit = entry.get('is_credit', False)
+                
+                if customer_id not in customer_balances:
+                    customer_info = customer_lookup.get(customer_id, {})
+                    customer_balances[customer_id] = {
+                        'customer_name': customer_info.get('name', 'Unknown'),
+                        'credit_total': 0,
+                        'debit_total': 0,
+                        'balance': 0
+                    }
+                
+                if is_credit:
+                    customer_balances[customer_id]['credit_total'] += amount
+                    customer_balances[customer_id]['balance'] += amount
+                    summary['total_credit'] += amount
+                else:
+                    customer_balances[customer_id]['debit_total'] += amount
+                    customer_balances[customer_id]['balance'] -= amount
+                    summary['total_debit'] += amount
+            
+            # Add status for each customer
+            for customer_id, balance_data in customer_balances.items():
+                balance = balance_data['balance']
+                if balance > 1000:
+                    balance_data['status'] = 'High Credit'
+                elif balance > 0:
+                    balance_data['status'] = 'Credit Balance'
+                elif balance < -1000:
+                    balance_data['status'] = 'High Debit'
+                elif balance < 0:
+                    balance_data['status'] = 'Debit Balance'
+                else:
+                    balance_data['status'] = 'Balanced'
+            
+            # Convert to list format
+            customer_balances_list = list(customer_balances.values())
+            customer_balances_list.sort(key=lambda x: x['balance'], reverse=True)
+            
+            # Create summary in expected format
+            summary_list = [
+                {'_id': True, 'total_amount': summary['total_credit']},
+                {'_id': False, 'total_amount': summary['total_debit']}
+            ]
+            
+            return {
+                'customer_balances': customer_balances_list,
+                'summary': summary_list
+            }
+            
+        except Exception as e:
+            print(f"Error getting credit/debit analysis: {e}")
+            return {'customer_balances': [], 'summary': []}
+
     def display_credit_debit_analysis(self, analysis):
         """Display credit/debit analysis results"""
         self.hide_progress()
@@ -627,9 +1106,9 @@ class EnhancedReportsTab(QWidget):
         net_outstanding = total_credit - total_debit
         active_customers = len(customer_balances)
         
-        self.revenue_card.value_label.setText(f"₹{total_credit:,.2f}")
-        self.outstanding_card.value_label.setText(f"₹{abs(net_outstanding):,.2f}")
-        self.credit_card.value_label.setText(f"₹{total_debit:,.2f}")
+        self.revenue_card.value_label.setText(f"PKR{total_credit:,.2f}")
+        self.outstanding_card.value_label.setText(f"PKR{abs(net_outstanding):,.2f}")
+        self.credit_card.value_label.setText(f"PKR{total_debit:,.2f}")
         self.customers_card.value_label.setText(str(active_customers))
         
         # Setup table
@@ -641,11 +1120,11 @@ class EnhancedReportsTab(QWidget):
         # Populate table
         for row, balance in enumerate(customer_balances):
             self.financial_table.setItem(row, 0, QTableWidgetItem(balance.get("customer_name", "")))
-            self.financial_table.setItem(row, 1, QTableWidgetItem(f"₹{balance.get('credit_total', 0):,.2f}"))
-            self.financial_table.setItem(row, 2, QTableWidgetItem(f"₹{balance.get('debit_total', 0):,.2f}"))
+            self.financial_table.setItem(row, 1, QTableWidgetItem(f"PKR{balance.get('credit_total', 0):,.2f}"))
+            self.financial_table.setItem(row, 2, QTableWidgetItem(f"PKR{balance.get('debit_total', 0):,.2f}"))
             
             balance_amount = balance.get("balance", 0)
-            balance_item = QTableWidgetItem(f"₹{balance_amount:,.2f}")
+            balance_item = QTableWidgetItem(f"PKR{balance_amount:,.2f}")
             if balance_amount > 0:
                 balance_item.setBackground(QColor(200, 255, 200))  # Light green for positive
             elif balance_amount < 0:
@@ -681,19 +1160,85 @@ class EnhancedReportsTab(QWidget):
         self.financial_chart_view.setChart(chart)
     
     def generate_expiry_report(self):
-        """Generate expiring products report"""
+        """Generate expiring products report using MongoDB"""
         self.show_progress()
         
         days = int(self.expiry_days_combo.currentText())
         
         self.current_thread = ReportGenerationThread(
-            self.advanced_queries.get_expiring_products, days
+            self.get_expiring_products, days
         )
         self.current_thread.report_ready.connect(self.display_expiry_report)
         self.current_thread.progress_updated.connect(self.update_progress)
         self.current_thread.error_occurred.connect(self.handle_error)
         self.current_thread.start()
     
+    def get_expiring_products(self, days=30):
+        """Get expiring products using MongoDB"""
+        try:
+            # Check if mongo_adapter is available
+            if not self.mongo_adapter:
+                print("MongoDB adapter not available for expiry analysis")
+                return []
+            
+            # Get products and entries from MongoDB
+            products = self.mongo_adapter.get_products()
+            entries = self.mongo_adapter.get_entries()
+            
+            # Validate data
+            if not products:
+                print("No products available for expiry analysis")
+                return []
+            
+            # Calculate stock movement for each product
+            product_movement = {}
+            for entry in entries:
+                product_id = str(entry.get('product_id', ''))
+                quantity = float(entry.get('quantity', 0))
+                
+                if product_id not in product_movement:
+                    product_movement[product_id] = 0
+                
+                if entry.get('is_credit'):
+                    product_movement[product_id] += quantity
+                else:
+                    product_movement[product_id] -= quantity
+            
+            # Check expiry dates
+            today = datetime.now().date()
+            warning_date = today + timedelta(days=days)
+            
+            expiring_products = []
+            for product in products:
+                expiry_str = product.get('expiry_date', '')
+                if expiry_str and expiry_str != 'No expiry':
+                    try:
+                        expiry_date = datetime.strptime(expiry_str, '%Y-%m-%d').date()
+                        
+                        if expiry_date <= warning_date:
+                            days_to_expiry = (expiry_date - today).days
+                            product_id = str(product.get('id', ''))
+                            
+                            expiring_products.append({
+                                'name': product.get('name', ''),
+                                'batch_number': product.get('batch_number', ''),
+                                'expiry_date': expiry_str,
+                                'days_to_expiry': days_to_expiry,
+                                'unit_price': float(product.get('unit_price', 0)),
+                                'stock_movement': product_movement.get(product_id, 0)
+                            })
+                    except:
+                        continue
+            
+            # Sort by days to expiry
+            expiring_products.sort(key=lambda x: x['days_to_expiry'])
+            
+            return expiring_products
+            
+        except Exception as e:
+            print(f"Error getting expiring products: {e}")
+            return []
+
     def display_expiry_report(self, products):
         """Display expiring products report"""
         self.hide_progress()
@@ -719,55 +1264,53 @@ class EnhancedReportsTab(QWidget):
                 days_item.setBackground(QColor(255, 255, 200))  # Yellow for warning
             
             self.inventory_table.setItem(row, 3, days_item)
-            self.inventory_table.setItem(row, 4, QTableWidgetItem(f"₹{product.get('unit_price', 0):,.2f}"))
+            self.inventory_table.setItem(row, 4, QTableWidgetItem(f"PKR{product.get('unit_price', 0):,.2f}"))
             self.inventory_table.setItem(row, 5, QTableWidgetItem(str(product.get("stock_movement", 0))))
         
         self.inventory_table.resizeColumnsToContents()
     
     def export_product_analysis(self):
-        """Export product analysis to Excel"""
+        """Export product analysis to CSV (simplified without Excel dependency)"""
         try:
-            if not hasattr(self, 'current_product_data'):
+            if not hasattr(self, 'current_product_data') or not self.current_product_data:
                 QMessageBox.warning(self, "No Data", "Please generate product analysis first.")
                 return
             
             from PyQt5.QtWidgets import QFileDialog
-            import xlsxwriter
+            import csv
             
             filename, _ = QFileDialog.getSaveFileName(
-                self, "Export Product Analysis", "product_analysis.xlsx",
-                "Excel Files (*.xlsx)"
+                self, "Export Product Analysis", "product_analysis.csv",
+                "CSV Files (*.csv)"
             )
             
             if filename:
-                workbook = xlsxwriter.Workbook(filename)
-                worksheet = workbook.add_worksheet("Product Analysis")
+                with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                    fieldnames = [
+                        'Product', 'Description', 'Batch', 'Unit Price', 'Qty Sold',
+                        'Revenue', 'Customers', 'Avg Order Size', 'Revenue/Customer'
+                    ]
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    
+                    writer.writeheader()
+                    for product in self.current_product_data:
+                        writer.writerow({
+                            'Product': product.get('name', ''),
+                            'Description': product.get('description', ''),
+                            'Batch': product.get('batch_number', ''),
+                            'Unit Price': product.get('unit_price', 0),
+                            'Qty Sold': product.get('total_quantity_sold', 0),
+                            'Revenue': product.get('total_revenue', 0),
+                            'Customers': product.get('unique_customers', 0),
+                            'Avg Order Size': product.get('avg_order_size', 0),
+                            'Revenue/Customer': product.get('revenue_per_customer', 0)
+                        })
                 
-                # Headers
-                headers = ["Product", "Description", "Batch", "Unit Price", "Qty Sold", 
-                          "Revenue", "Customers", "Avg Order Size", "Revenue/Customer"]
-                
-                for col, header in enumerate(headers):
-                    worksheet.write(0, col, header)
-                
-                # Data
-                for row, product in enumerate(self.current_product_data, 1):
-                    worksheet.write(row, 0, product.get("name", ""))
-                    worksheet.write(row, 1, product.get("description", ""))
-                    worksheet.write(row, 2, product.get("batch_number", ""))
-                    worksheet.write(row, 3, product.get("unit_price", 0))
-                    worksheet.write(row, 4, product.get("total_quantity_sold", 0))
-                    worksheet.write(row, 5, product.get("total_revenue", 0))
-                    worksheet.write(row, 6, product.get("unique_customers", 0))
-                    worksheet.write(row, 7, product.get("avg_order_size", 0))
-                    worksheet.write(row, 8, product.get("revenue_per_customer", 0))
-                
-                workbook.close()
                 QMessageBox.information(self, "Success", f"Data exported to {filename}")
                 
         except Exception as e:
             QMessageBox.critical(self, "Export Error", f"Failed to export data: {str(e)}")
-    
+
     # Utility Methods
     
     def show_progress(self):
@@ -786,14 +1329,24 @@ class EnhancedReportsTab(QWidget):
     def handle_error(self, error_message):
         """Handle error from background thread"""
         self.hide_progress()
-        QMessageBox.critical(self, "Error", f"Report generation failed: {error_message}")
+        
+        # Show user-friendly error message
+        if "MongoDB adapter not available" in error_message:
+            QMessageBox.warning(self, "Database Connection", 
+                              "Database connection is not available. Please check your MongoDB connection and try again.")
+        elif "Insufficient data" in error_message:
+            QMessageBox.information(self, "No Data", 
+                                   "There is insufficient data to generate this report. Please ensure you have customers, products, and entries in your database.")
+        else:
+            QMessageBox.critical(self, "Report Generation Error", 
+                               f"Failed to generate report:\n\n{error_message}")
     
     def generate_sales_forecast(self):
         """Generate sales forecasting report"""
         QMessageBox.information(
             self, "Coming Soon", 
             "Sales forecasting feature will be available in the next update. "
-            "This will use machine learning algorithms to predict future sales trends."
+            "This will use machine learning algorithms to predict future sales trends based on MongoDB data."
         )
     
     def generate_outstanding_report(self):
@@ -804,5 +1357,5 @@ class EnhancedReportsTab(QWidget):
         """Generate stock movement analysis"""
         QMessageBox.information(
             self, "Coming Soon",
-            "Stock movement analysis will show detailed inventory flow patterns and turnover rates."
+            "Stock movement analysis will show detailed inventory flow patterns and turnover rates using MongoDB aggregation."
         )

@@ -18,13 +18,49 @@ from datetime import datetime, timedelta
 
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database.db import Database
+from src.database.mongo_adapter import MongoAdapter
 
 class GraphsTab(QWidget):
-    def __init__(self):
+    def __init__(self, mongo_adapter=None):
         super().__init__()
-        self.db = Database()
-        self.initUI()
+        try:
+            self.mongo_adapter = mongo_adapter or MongoAdapter()
+            self.initUI()
+        except Exception as e:
+            print(f"Error initializing Graphs tab: {e}")
+            self.createErrorUI(str(e))
+    
+    def createErrorUI(self, error_message):
+        """Create a minimal error UI when initialization fails"""
+        layout = QVBoxLayout()
+        
+        error_label = QLabel(f"Graphs tab temporarily unavailable\n\nError: {error_message}")
+        error_label.setAlignment(Qt.AlignCenter)
+        error_label.setStyleSheet("color: #e74c3c; font-weight: bold; padding: 20px;")
+        
+        retry_btn = QPushButton("Retry Initialization")
+        retry_btn.clicked.connect(self.retryInitialization)
+        
+        layout.addWidget(error_label)
+        layout.addWidget(retry_btn)
+        layout.addStretch()
+        
+        self.setLayout(layout)
+    
+    def retryInitialization(self):
+        """Retry initializing the graphs tab"""
+        try:
+            # Clear current layout
+            if self.layout():
+                QWidget().setLayout(self.layout())
+            
+            # Retry initialization
+            self.__init__(self.mongo_adapter)
+            
+        except Exception as e:
+            print(f"Retry failed: {e}")
+            QMessageBox.critical(self, "Initialization Failed", 
+                               f"Failed to initialize Graphs tab: {str(e)}")
         
     def initUI(self):
         """Initialize the UI components"""
@@ -99,6 +135,18 @@ class GraphsTab(QWidget):
         
         self.generate_btn = QPushButton("Generate Chart")
         self.generate_btn.clicked.connect(self.generateChart)
+        self.generate_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 10px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
         generate_layout.addWidget(self.generate_btn)
         
         main_layout.addLayout(generate_layout)
@@ -150,6 +198,11 @@ class GraphsTab(QWidget):
     def generateChart(self):
         """Generate the selected chart type"""
         try:
+            # Validate MongoDB connection
+            if not self.mongo_adapter:
+                QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+                return
+            
             chart_type = self.chart_type.currentText()
             from_date = self.from_date_edit.date().toString("yyyy-MM-dd")
             to_date = self.to_date_edit.date().toString("yyyy-MM-dd")
@@ -174,36 +227,40 @@ class GraphsTab(QWidget):
             QMessageBox.critical(self, "Chart Error", f"Failed to generate chart: {str(e)}")
     
     def generateDailyChart(self, from_date, to_date):
-        """Generate daily transaction chart"""
+        """Generate daily transaction chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries from MongoDB
+            entries = self.mongo_adapter.get_entries()
             
-            # Determine data type condition
-            if self.radio_credit.isChecked():
-                data_type_filter = "AND e.is_credit = 1"
-            elif self.radio_debit.isChecked():
-                data_type_filter = "AND e.is_credit = 0"
-            else:
-                data_type_filter = ""
-            
-            query = f"""
-                SELECT 
-                    e.date,
-                    SUM(CASE WHEN e.is_credit = 1 THEN e.quantity * e.unit_price ELSE 0 END) as credit,
-                    SUM(CASE WHEN e.is_credit = 0 THEN e.quantity * e.unit_price ELSE 0 END) as debit
-                FROM entries e
-                WHERE e.date BETWEEN ? AND ?
-                {data_type_filter}
-                GROUP BY e.date
-                ORDER BY e.date
-            """
-            
-            self.db.cursor.execute(query, (from_date, to_date))
-            data = self.db.cursor.fetchall()
-            
-            if not data:
+            if not entries:
                 self.showEmptyChart("No data available for the selected period")
                 return
+            
+            # Filter entries by date range
+            filtered_entries = []
+            for entry in entries:
+                entry_date = entry.get('date', '')
+                if from_date <= entry_date <= to_date:
+                    filtered_entries.append(entry)
+            
+            if not filtered_entries:
+                self.showEmptyChart("No data available for the selected date range")
+                return
+            
+            # Group by date
+            daily_data = {}
+            for entry in filtered_entries:
+                date_str = entry.get('date', '')
+                is_credit = entry.get('is_credit', False)
+                amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                
+                if date_str not in daily_data:
+                    daily_data[date_str] = {'credit': 0, 'debit': 0}
+                
+                if is_credit:
+                    daily_data[date_str]['credit'] += amount
+                else:
+                    daily_data[date_str]['debit'] += amount
             
             # Create chart
             chart = QChart()
@@ -213,15 +270,16 @@ class GraphsTab(QWidget):
             # Create bar series
             series = QBarSeries()
             
-            # Prepare data
+            # Sort dates and prepare data
+            sorted_dates = sorted(daily_data.keys())
             dates = []
             credit_amounts = []
             debit_amounts = []
             
-            for date_str, credit, debit in data:
+            for date_str in sorted_dates:
                 dates.append(date_str)
-                credit_amounts.append(credit)
-                debit_amounts.append(debit)
+                credit_amounts.append(daily_data[date_str]['credit'])
+                debit_amounts.append(daily_data[date_str]['debit'])
             
             # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
@@ -255,7 +313,7 @@ class GraphsTab(QWidget):
             series.attachAxis(axisX)
             
             axisY = QValueAxis()
-            axisY.setTitleText("Amount (Rs. )")
+            axisY.setTitleText("Amount (PKR)")
             chart.addAxis(axisY, Qt.AlignLeft)
             series.attachAxis(axisY)
             
@@ -264,49 +322,38 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating chart: {str(e)}")
-        finally:
-            self.db.close()
-    
+
     def generateWeeklyChart(self, from_date, to_date):
-        """Generate weekly transaction chart"""
+        """Generate weekly transaction chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries from MongoDB
+            entries = self.mongo_adapter.get_entries()
             
-            # Get daily data first, then group by week
-            query = """
-                SELECT 
-                    e.date,
-                    SUM(CASE WHEN e.is_credit = 1 THEN e.quantity * e.unit_price ELSE 0 END) as credit,
-                    SUM(CASE WHEN e.is_credit = 0 THEN e.quantity * e.unit_price ELSE 0 END) as debit
-                FROM entries e
-                WHERE e.date BETWEEN ? AND ?
-                GROUP BY e.date
-                ORDER BY e.date
-            """
-            
-            self.db.cursor.execute(query, (from_date, to_date))
-            daily_data = self.db.cursor.fetchall()
-            
-            if not daily_data:
+            if not entries:
                 self.showEmptyChart("No data available for the selected period")
                 return
             
-            # Group by week
+            # Filter and group by week
             weekly_data = {}
             
-            for date_str, credit, debit in daily_data:
-                try:
-                    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                    # Get week number (year-week format)
-                    week_key = date_obj.strftime('%Y-W%U')
-                    
-                    if week_key not in weekly_data:
-                        weekly_data[week_key] = {'credit': 0, 'debit': 0}
-                    
-                    weekly_data[week_key]['credit'] += credit
-                    weekly_data[week_key]['debit'] += debit
-                except ValueError:
-                    continue  # Skip invalid dates
+            for entry in entries:
+                entry_date_str = entry.get('date', '')
+                if from_date <= entry_date_str <= to_date:
+                    try:
+                        date_obj = datetime.strptime(entry_date_str, '%Y-%m-%d')
+                        # Get week number (year-week format)
+                        week_key = date_obj.strftime('%Y-W%U')
+                        
+                        if week_key not in weekly_data:
+                            weekly_data[week_key] = {'credit': 0, 'debit': 0}
+                        
+                        amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                        if entry.get('is_credit'):
+                            weekly_data[week_key]['credit'] += amount
+                        else:
+                            weekly_data[week_key]['debit'] += amount
+                    except ValueError:
+                        continue  # Skip invalid dates
             
             if not weekly_data:
                 self.showEmptyChart("No valid data available for the selected period")
@@ -363,7 +410,7 @@ class GraphsTab(QWidget):
             series.attachAxis(axisX)
             
             axisY = QValueAxis()
-            axisY.setTitleText("Amount (Rs. )")
+            axisY.setTitleText("Amount (PKR)")
             chart.addAxis(axisY, Qt.AlignLeft)
             series.attachAxis(axisY)
             
@@ -372,30 +419,39 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating chart: {str(e)}")
-        finally:
-            self.db.close()
-    
+
     def generateMonthlyChart(self, from_date, to_date):
-        """Generate monthly transaction chart"""
+        """Generate monthly transaction chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries from MongoDB
+            entries = self.mongo_adapter.get_entries()
             
-            # Get data grouped by month
-            query = """
-                SELECT 
-                    strftime('%Y-%m', e.date) as month,
-                    SUM(CASE WHEN e.is_credit = 1 THEN e.quantity * e.unit_price ELSE 0 END) as credit,
-                    SUM(CASE WHEN e.is_credit = 0 THEN e.quantity * e.unit_price ELSE 0 END) as debit
-                FROM entries e
-                WHERE e.date BETWEEN ? AND ?
-                GROUP BY month
-                ORDER BY month
-            """
+            if not entries:
+                self.showEmptyChart("No data available for the selected period")
+                return
             
-            self.db.cursor.execute(query, (from_date, to_date))
-            data = self.db.cursor.fetchall()
+            # Filter and group by month
+            monthly_data = {}
             
-            if not data:
+            for entry in entries:
+                entry_date_str = entry.get('date', '')
+                if from_date <= entry_date_str <= to_date:
+                    try:
+                        date_obj = datetime.strptime(entry_date_str, '%Y-%m-%d')
+                        month_key = date_obj.strftime('%Y-%m')
+                        
+                        if month_key not in monthly_data:
+                            monthly_data[month_key] = {'credit': 0, 'debit': 0}
+                        
+                        amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                        if entry.get('is_credit'):
+                            monthly_data[month_key]['credit'] += amount
+                        else:
+                            monthly_data[month_key]['debit'] += amount
+                    except ValueError:
+                        continue
+            
+            if not monthly_data:
                 self.showEmptyChart("No data available for the selected period")
                 return
             
@@ -407,15 +463,16 @@ class GraphsTab(QWidget):
             # Create bar series
             series = QBarSeries()
             
-            # Prepare data
+            # Sort months and prepare data
+            sorted_months = sorted(monthly_data.keys())
             months = []
             credit_amounts = []
             debit_amounts = []
             
-            for month, credit, debit in data:
+            for month in sorted_months:
                 months.append(month)
-                credit_amounts.append(credit)
-                debit_amounts.append(debit)
+                credit_amounts.append(monthly_data[month]['credit'])
+                debit_amounts.append(monthly_data[month]['debit'])
             
             # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
@@ -449,7 +506,7 @@ class GraphsTab(QWidget):
             series.attachAxis(axisX)
             
             axisY = QValueAxis()
-            axisY.setTitleText("Amount (Rs. )")
+            axisY.setTitleText("Amount (PKR)")
             chart.addAxis(axisY, Qt.AlignLeft)
             series.attachAxis(axisY)
             
@@ -458,33 +515,39 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating chart: {str(e)}")
-        finally:
-            self.db.close()
-    
+
     def generateCustomerChart(self, from_date, to_date):
-        """Generate customer distribution pie chart"""
+        """Generate customer distribution pie chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries and customers from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            customers = self.mongo_adapter.get_customers()
             
-            # Get customer data
-            query = """
-                SELECT 
-                    c.name,
-                    SUM(e.quantity * e.unit_price) as total
-                FROM entries e
-                JOIN customers c ON e.customer_id = c.id
-                WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1
-                GROUP BY c.name
-                ORDER BY total DESC
-                LIMIT 10
-            """
-            
-            self.db.cursor.execute(query, (from_date, to_date))
-            data = self.db.cursor.fetchall()
-            
-            if not data:
+            if not entries or not customers:
                 self.showEmptyChart("No customer data available for the selected period")
                 return
+            
+            # Create customer lookup
+            customer_lookup = {str(customer.get('id')): customer.get('name', 'Unknown') 
+                             for customer in customers}
+            
+            # Calculate customer totals
+            customer_totals = {}
+            for entry in entries:
+                entry_date = entry.get('date', '')
+                if from_date <= entry_date <= to_date and entry.get('is_credit'):
+                    customer_id = str(entry.get('customer_id', ''))
+                    customer_name = customer_lookup.get(customer_id, 'Unknown')
+                    amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    
+                    customer_totals[customer_name] = customer_totals.get(customer_name, 0) + amount
+            
+            if not customer_totals:
+                self.showEmptyChart("No customer data available for the selected period")
+                return
+            
+            # Sort and get top 10
+            sorted_customers = sorted(customer_totals.items(), key=lambda x: x[1], reverse=True)[:10]
             
             # Create chart
             chart = QChart()
@@ -494,9 +557,9 @@ class GraphsTab(QWidget):
             # Create pie series
             series = QPieSeries()
             
-            total_amount = sum(amount for _, amount in data)
+            total_amount = sum(amount for _, amount in sorted_customers)
             
-            for customer, amount in data:
+            for customer, amount in sorted_customers:
                 slice = series.append(customer, amount)
                 # Calculate percentage
                 percentage = (amount / total_amount) * 100
@@ -510,34 +573,49 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating chart: {str(e)}")
-        finally:
-            self.db.close()
-    
+
     def generateProductChart(self, from_date, to_date):
-        """Generate product performance chart (grouped by product name)"""
+        """Generate product performance chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries and products from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            products = self.mongo_adapter.get_products()
             
-            # Get product data grouped by product name (combines all batches)
-            query = """
-                SELECT 
-                    p.name,
-                    SUM(e.quantity * e.unit_price) as total,
-                    COUNT(DISTINCT p.batch_number) as batch_count
-                FROM entries e
-                JOIN products p ON e.product_id = p.id
-                WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1
-                GROUP BY p.name
-                ORDER BY total DESC
-                LIMIT 10
-            """
-            
-            self.db.cursor.execute(query, (from_date, to_date))
-            data = self.db.cursor.fetchall()
-            
-            if not data:
+            if not entries or not products:
                 self.showEmptyChart("No product data available for the selected period")
                 return
+            
+            # Create product lookup
+            product_lookup = {str(product.get('id')): product for product in products}
+            
+            # Calculate product totals
+            product_totals = {}
+            for entry in entries:
+                entry_date = entry.get('date', '')
+                if from_date <= entry_date <= to_date and entry.get('is_credit'):
+                    product_id = str(entry.get('product_id', ''))
+                    product_info = product_lookup.get(product_id, {})
+                    product_name = product_info.get('name', 'Unknown')
+                    batch_number = product_info.get('batch_number', '')
+                    
+                    amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    
+                    if product_name not in product_totals:
+                        product_totals[product_name] = {
+                            'total': 0,
+                            'batches': set()
+                        }
+                    
+                    product_totals[product_name]['total'] += amount
+                    if batch_number:
+                        product_totals[product_name]['batches'].add(batch_number)
+            
+            if not product_totals:
+                self.showEmptyChart("No product data available for the selected period")
+                return
+            
+            # Sort and get top 10
+            sorted_products = sorted(product_totals.items(), key=lambda x: x[1]['total'], reverse=True)[:10]
             
             # Create chart
             chart = QChart()
@@ -551,11 +629,11 @@ class GraphsTab(QWidget):
             products = []
             amounts = []
             
-            for product, amount, batch_count in data:
-                # Add batch count info to product name
-                product_label = f"{product}\n({batch_count} batch{'es' if batch_count > 1 else ''})"
+            for product_name, data in sorted_products:
+                batch_count = len(data['batches'])
+                product_label = f"{product_name}\n({batch_count} batch{'es' if batch_count > 1 else ''})"
                 products.append(product_label)
-                amounts.append(amount)
+                amounts.append(data['total'])
             
             # Create bar set
             bar_set = QBarSet("Sales")
@@ -572,7 +650,7 @@ class GraphsTab(QWidget):
             series.attachAxis(axisX)
             
             axisY = QValueAxis()
-            axisY.setTitleText("Sales Amount (Rs. )")
+            axisY.setTitleText("Sales Amount (PKR)")
             chart.addAxis(axisY, Qt.AlignLeft)
             series.attachAxis(axisY)
             
@@ -581,66 +659,102 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating chart: {str(e)}")
-        finally:
-            self.db.close()
-    
+
     def generateBatchAnalysisChart(self, from_date, to_date):
-        """Generate batch analysis chart"""
+        """Generate batch analysis chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries and products from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            products = self.mongo_adapter.get_products()
             
-            # Check if we should show expired batches only
-            expired_filter = ""
-            current_date = QDate.currentDate().toString("yyyy-MM-dd")
-            
-            if hasattr(self, 'show_expired_only') and self.show_expired_only.isChecked():
-                expired_filter = f"AND p.expiry_date < '{current_date}'"
-            
-            # Check grouping option
-            group_by_product = hasattr(self, 'group_by_product') and self.group_by_product.isChecked()
-            
-            if group_by_product:
-                # Group by product name, showing total sales across all batches
-                query = f"""
-                    SELECT 
-                        p.name as label,
-                        SUM(e.quantity * e.unit_price) as total,
-                        COUNT(DISTINCT p.batch_number) as batch_count,
-                        COUNT(DISTINCT CASE WHEN p.expiry_date < '{current_date}' THEN p.batch_number END) as expired_batches
-                    FROM entries e
-                    JOIN products p ON e.product_id = p.id
-                    WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1 {expired_filter}
-                    GROUP BY p.name
-                    ORDER BY total DESC
-                    LIMIT 10
-                """
-            else:
-                # Show individual batches
-                query = f"""
-                    SELECT 
-                        p.name || ' (' || p.batch_number || ')' as label,
-                        SUM(e.quantity * e.unit_price) as total,
-                        1 as batch_count,
-                        CASE WHEN p.expiry_date < '{current_date}' THEN 1 ELSE 0 END as expired_batches
-                    FROM entries e
-                    JOIN products p ON e.product_id = p.id
-                    WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1 {expired_filter}
-                    GROUP BY p.id, p.name, p.batch_number
-                    ORDER BY total DESC
-                    LIMIT 15
-                """
-            
-            self.db.cursor.execute(query, (from_date, to_date))
-            data = self.db.cursor.fetchall()
-            
-            if not data:
+            if not entries or not products:
                 self.showEmptyChart("No batch data available for the selected criteria")
                 return
+            
+            # Create product lookup
+            product_lookup = {str(product.get('id')): product for product in products}
+            
+            # Check if we should show expired batches only
+            current_date = QDate.currentDate().toString("yyyy-MM-dd")
+            show_expired_only = hasattr(self, 'show_expired_only') and self.show_expired_only.isChecked()
+            group_by_product = hasattr(self, 'group_by_product') and self.group_by_product.isChecked()
+            
+            # Calculate batch/product totals
+            if group_by_product:
+                # Group by product name
+                product_totals = {}
+                for entry in entries:
+                    entry_date = entry.get('date', '')
+                    if from_date <= entry_date <= to_date and entry.get('is_credit'):
+                        product_id = str(entry.get('product_id', ''))
+                        product_info = product_lookup.get(product_id, {})
+                        product_name = product_info.get('name', 'Unknown')
+                        expiry_date = product_info.get('expiry_date', '')
+                        
+                        # Filter expired if needed
+                        if show_expired_only and expiry_date >= current_date:
+                            continue
+                        
+                        amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                        
+                        if product_name not in product_totals:
+                            product_totals[product_name] = {
+                                'total': 0,
+                                'batch_count': set(),
+                                'expired_batches': set()
+                            }
+                        
+                        product_totals[product_name]['total'] += amount
+                        batch_number = product_info.get('batch_number', '')
+                        if batch_number:
+                            product_totals[product_name]['batch_count'].add(batch_number)
+                            if expiry_date < current_date:
+                                product_totals[product_name]['expired_batches'].add(batch_number)
+                
+                data_list = [(name, data['total'], len(data['batch_count']), len(data['expired_batches'])) 
+                           for name, data in product_totals.items()]
+            else:
+                # Show individual batches
+                batch_totals = {}
+                for entry in entries:
+                    entry_date = entry.get('date', '')
+                    if from_date <= entry_date <= to_date and entry.get('is_credit'):
+                        product_id = str(entry.get('product_id', ''))
+                        product_info = product_lookup.get(product_id, {})
+                        product_name = product_info.get('name', 'Unknown')
+                        batch_number = product_info.get('batch_number', '')
+                        expiry_date = product_info.get('expiry_date', '')
+                        
+                        # Filter expired if needed
+                        if show_expired_only and expiry_date >= current_date:
+                            continue
+                        
+                        batch_key = f"{product_name} ({batch_number})"
+                        amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                        
+                        if batch_key not in batch_totals:
+                            batch_totals[batch_key] = {
+                                'total': 0,
+                                'is_expired': expiry_date < current_date
+                            }
+                        
+                        batch_totals[batch_key]['total'] += amount
+                
+                data_list = [(name, data['total'], 1, 1 if data['is_expired'] else 0) 
+                           for name, data in batch_totals.items()]
+            
+            if not data_list:
+                self.showEmptyChart("No batch data available for the selected criteria")
+                return
+            
+            # Sort and limit
+            data_list.sort(key=lambda x: x[1], reverse=True)
+            data_list = data_list[:15]
             
             # Create chart
             chart = QChart()
             title = "Product Batch Analysis"
-            if hasattr(self, 'show_expired_only') and self.show_expired_only.isChecked():
+            if show_expired_only:
                 title += " (Expired Batches Only)"
             chart.setTitle(title)
             chart.setAnimationOptions(QChart.SeriesAnimations)
@@ -652,24 +766,13 @@ class GraphsTab(QWidget):
             labels = []
             amounts = []
             
-            for label, amount, batch_count, expired_batches in data:
+            for label, amount, batch_count, expired_batches in data_list:
                 labels.append(label)
                 amounts.append(amount)
             
-            # Create bar set with color coding
+            # Create bar set
             bar_set = QBarSet("Sales")
-            
-            # Color based on expiry status if showing individual batches
-            if not group_by_product:
-                # Individual batches - color expired ones red
-                for i, (label, amount, batch_count, expired_batches) in enumerate(data):
-                    if expired_batches > 0:
-                        bar_set.setColor(QColor("#F44336"))  # Red for expired
-                    else:
-                        bar_set.setColor(QColor("#4CAF50"))  # Green for valid
-            else:
-                bar_set.setColor(QColor("#2196F3"))  # Blue for grouped view
-            
+            bar_set.setColor(QColor("#2196F3"))
             bar_set.append(amounts)
             
             series.append(bar_set)
@@ -682,7 +785,7 @@ class GraphsTab(QWidget):
             series.attachAxis(axisX)
             
             axisY = QValueAxis()
-            axisY.setTitleText("Sales Amount (Rs. )")
+            axisY.setTitleText("Sales Amount (PKR)")
             chart.addAxis(axisY, Qt.AlignLeft)
             series.attachAxis(axisY)
             
@@ -691,13 +794,20 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating batch analysis chart: {str(e)}")
-        finally:
-            self.db.close()
-    
+
     def generateExpiryAnalysisChart(self, from_date, to_date):
-        """Generate expiry date analysis chart"""
+        """Generate expiry date analysis chart using MongoDB"""
         try:
-            self.db.connect()
+            # Get entries and products from MongoDB
+            entries = self.mongo_adapter.get_entries()
+            products = self.mongo_adapter.get_products()
+            
+            if not entries or not products:
+                self.showEmptyChart("No product expiry data available for the selected period")
+                return
+            
+            # Create product lookup
+            product_lookup = {str(product.get('id')): product for product in products}
             
             # Get threshold from combobox
             threshold_text = "30 days"
@@ -717,29 +827,38 @@ class GraphsTab(QWidget):
             threshold_date = current_date.addDays(threshold_days).toString("yyyy-MM-dd")
             current_date_str = current_date.toString("yyyy-MM-dd")
             
-            # Get products with sales in the date range and their expiry status
-            query = """
-                SELECT 
-                    p.name,
-                    p.batch_number,
-                    p.expiry_date,
-                    SUM(e.quantity * e.unit_price) as total_sales,
-                    CASE 
-                        WHEN p.expiry_date < ? THEN 'Expired'
-                        WHEN p.expiry_date <= ? THEN 'Expiring Soon'
-                        ELSE 'Valid'
-                    END as expiry_status
-                FROM entries e
-                JOIN products p ON e.product_id = p.id
-                WHERE e.date BETWEEN ? AND ? AND e.is_credit = 1
-                GROUP BY p.id, p.name, p.batch_number, p.expiry_date
-                ORDER BY p.expiry_date
-            """
+            # Calculate product sales with expiry status
+            product_sales = {}
+            for entry in entries:
+                entry_date = entry.get('date', '')
+                if from_date <= entry_date <= to_date and entry.get('is_credit'):
+                    product_id = str(entry.get('product_id', ''))
+                    product_info = product_lookup.get(product_id, {})
+                    product_name = product_info.get('name', 'Unknown')
+                    batch_number = product_info.get('batch_number', '')
+                    expiry_date = product_info.get('expiry_date', '')
+                    
+                    # Determine expiry status
+                    if expiry_date < current_date_str:
+                        status = 'Expired'
+                    elif expiry_date <= threshold_date:
+                        status = 'Expiring Soon'
+                    else:
+                        status = 'Valid'
+                    
+                    key = f"{product_name} ({batch_number})"
+                    amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    
+                    if key not in product_sales:
+                        product_sales[key] = {
+                            'amount': 0,
+                            'status': status,
+                            'expiry_date': expiry_date
+                        }
+                    
+                    product_sales[key]['amount'] += amount
             
-            self.db.cursor.execute(query, (current_date_str, threshold_date, from_date, to_date))
-            data = self.db.cursor.fetchall()
-            
-            if not data:
+            if not product_sales:
                 self.showEmptyChart("No product expiry data available for the selected period")
                 return
             
@@ -755,8 +874,8 @@ class GraphsTab(QWidget):
                 # Group data by expiry status
                 status_totals = {'Expired': 0, 'Expiring Soon': 0, 'Valid': 0}
                 
-                for name, batch, expiry_date, sales, status in data:
-                    status_totals[status] += sales
+                for data in product_sales.values():
+                    status_totals[data['status']] += data['amount']
                 
                 # Create pie series
                 series = QPieSeries()
@@ -774,7 +893,7 @@ class GraphsTab(QWidget):
                         slice = series.append(status, amount)
                         slice.setColor(colors[status])
                         percentage = (amount / total_sales) * 100 if total_sales > 0 else 0
-                        slice.setLabel(f"{status}: Rs. {amount:.0f} ({percentage:.1f}%)")
+                        slice.setLabel(f"{status}: PKR{amount:.0f} ({percentage:.1f}%)")
                         slice.setLabelVisible(True)
                 
                 chart.addSeries(series)
@@ -786,13 +905,15 @@ class GraphsTab(QWidget):
                 chart.setAnimationOptions(QChart.SeriesAnimations)
                 
                 # Filter to show only expiring/expired products
-                filtered_data = [item for item in data if item[4] in ['Expired', 'Expiring Soon']]
+                filtered_data = [(key, data) for key, data in product_sales.items() 
+                               if data['status'] in ['Expired', 'Expiring Soon']]
                 
                 if not filtered_data:
                     self.showEmptyChart(f"No products expiring within {threshold_text}")
                     return
                 
-                # Limit to top 10 by sales
+                # Sort by amount and limit to top 10
+                filtered_data.sort(key=lambda x: x[1]['amount'], reverse=True)
                 filtered_data = filtered_data[:10]
                 
                 # Create bar series
@@ -800,24 +921,19 @@ class GraphsTab(QWidget):
                 
                 # Prepare data
                 labels = []
-                amounts = []
-                
-                for name, batch, expiry_date, sales, status in filtered_data:
-                    label = f"{name}\n({batch})\nExp: {expiry_date}"
-                    labels.append(label)
-                    amounts.append(sales)
-                
-                # Create bar sets by status
                 expired_amounts = []
                 expiring_amounts = []
                 
-                for name, batch, expiry_date, sales, status in filtered_data:
-                    if status == 'Expired':
-                        expired_amounts.append(sales)
+                for key, data in filtered_data:
+                    label = f"{key}\nExp: {data['expiry_date']}"
+                    labels.append(label)
+                    
+                    if data['status'] == 'Expired':
+                        expired_amounts.append(data['amount'])
                         expiring_amounts.append(0)
                     else:
                         expired_amounts.append(0)
-                        expiring_amounts.append(sales)
+                        expiring_amounts.append(data['amount'])
                 
                 # Add bar sets
                 if any(expired_amounts):
@@ -841,7 +957,7 @@ class GraphsTab(QWidget):
                 series.attachAxis(axisX)
                 
                 axisY = QValueAxis()
-                axisY.setTitleText("Sales Amount (Rs. )")
+                axisY.setTitleText("Sales Amount (PKR)")
                 chart.addAxis(axisY, Qt.AlignLeft)
                 series.attachAxis(axisY)
             
@@ -850,8 +966,6 @@ class GraphsTab(QWidget):
             
         except Exception as e:
             self.showEmptyChart(f"Error generating expiry analysis chart: {str(e)}")
-        finally:
-            self.db.close()
     
     def showEmptyChart(self, message):
         """Show an empty chart with message"""

@@ -6,15 +6,11 @@ from PyQt5.QtWidgets import (
     QCheckBox, QTimeEdit, QSpinBox, QProgressDialog, QApplication, QLabel,
     QProgressBar
 )
-from src.database.database_maintenance import DatabaseMaintenance
-from src.utils.auto_updater import AutoUpdater
-from src.utils.sync_manager import SyncManager, SyncStatus
 from PyQt5.QtCore import QDateTime, Qt, QTime
 from PyQt5.QtGui import QColor
 import os
 import sys
-import shutil
-import sqlite3
+import json
 import logging
 
 # Make sure we can import from parent directory
@@ -24,7 +20,7 @@ try:
     from src.config import Config
 except ImportError:
     # Fallback for transition period
-    from database.db import Database
+    print("Warning: Could not import MongoDB components")
 
 class RestoreDialog(QDialog):
     def __init__(self, backup_files, parent=None):
@@ -32,11 +28,10 @@ class RestoreDialog(QDialog):
         self.backup_files = backup_files
         self.selected_backup = None
         self.initUI()
-        # Remove sync_manager initialization from here - it should be in SettingsTab
 
     def initUI(self):
         """Initialize the dialog UI"""
-        self.setWindowTitle("Restore Backup")
+        self.setWindowTitle("Restore MongoDB Backup")
         self.setMinimumWidth(400)
         
         # Main layout
@@ -56,11 +51,11 @@ class RestoreDialog(QDialog):
         for backup_file in self.backup_files:
             # Extract timestamp from filename
             filename = os.path.basename(backup_file)
-            item = QListWidgetItem(filename)
+            item = QListWidgetItem(f"MongoDB Backup - {filename}")
             item.setData(Qt.UserRole, backup_file)
             self.list_widget.addItem(item)
         
-        layout.addWidget(QLabel("Select a backup to restore:"))
+        layout.addWidget(QLabel("Select a MongoDB backup to restore:"))
         layout.addWidget(self.list_widget)
         
         # Add buttons
@@ -75,7 +70,7 @@ class RestoreDialog(QDialog):
         """Handle dialog acceptance"""
         selected_items = self.list_widget.selectedItems()
         if not selected_items:
-            QMessageBox.warning(self, "Selection Required", "Please select a backup file to restore.")
+            QMessageBox.warning(self, "Selection Required", "Please select a backup to restore.")
             return
         
         self.selected_backup = selected_items[0].data(Qt.UserRole)
@@ -84,74 +79,77 @@ class RestoreDialog(QDialog):
 class SettingsTab(QWidget):
     def __init__(self, config=None):
         super().__init__()
-        self.config = config or Config()
-        
-        # Initialize database based on config
-        db_type = self.config.get('db_type', 'mongo')
-        if db_type == 'mongo':
+        try:
+            self.config = config
             self.db = MongoAdapter()
-        else:
-            # Fallback to SQLite
-            try:
-                from database.db import Database
-                self.db = Database(self.config.get('db_path'))
-            except ImportError:
-                from src.database.db import Database
-                self.db = Database(self.config.get('db_path'))
+            self.initUI()
+            
+        except Exception as e:
+            print(f"Error initializing Settings tab: {e}")
+            self.createErrorUI(str(e))
+    
+    def createErrorUI(self, error_message):
+        """Create a minimal error UI when initialization fails"""
+        layout = QVBoxLayout()
         
-        # Initialize sync manager
-        db_path = self.config.get('db_path', 'data/medtran.db')
-        self.sync_manager = SyncManager(db_path)
-        self.sync_manager.sync_started.connect(self.onSyncStarted)
-        self.sync_manager.sync_completed.connect(self.onSyncCompleted)
-        self.sync_manager.sync_progress.connect(self.onSyncProgress)
-        self.sync_manager.sync_status_changed.connect(self.onSyncStatusChanged)
+        error_label = QLabel(f"Settings tab temporarily unavailable\n\nError: {error_message}")
+        error_label.setAlignment(Qt.AlignCenter)
+        error_label.setStyleSheet("color: #e74c3c; font-weight: bold; padding: 20px;")
         
-        self.initUI()
+        retry_btn = QPushButton("Retry Initialization")
+        retry_btn.clicked.connect(self.retryInitialization)
         
+        layout.addWidget(error_label)
+        layout.addWidget(retry_btn)
+        layout.addStretch()
+        
+        self.setLayout(layout)
+    
+    def retryInitialization(self):
+        """Retry initializing the settings tab"""
+        try:
+            # Clear current layout
+            if self.layout():
+                QWidget().setLayout(self.layout())
+            
+            # Retry initialization
+            self.__init__(self.config if hasattr(self, 'config') else None)
+            
+        except Exception as e:
+            print(f"Retry failed: {e}")
+            QMessageBox.critical(self, "Initialization Failed", 
+                               f"Failed to initialize Settings tab: {str(e)}")
+    
     def initUI(self):
         """Initialize the UI components"""
         main_layout = QVBoxLayout()
         
-        # Add update button in update group
-        update_group = QGroupBox("Updates")
-        update_layout = QVBoxLayout()
-        
-        self.update_btn = QPushButton("Check for Updates")
-        self.update_btn.clicked.connect(self.checkForUpdates)
-        update_layout.addWidget(self.update_btn)  # Use update_layout instead of layout
-        
-        update_group.setLayout(update_layout)
-        main_layout.addWidget(update_group)
-        
         # Database Settings
-        db_group = QGroupBox("Database Settings")
+        db_group = QGroupBox("MongoDB Database Settings")
         db_layout = QFormLayout()
         
-        # Add maintenance button
-        self.maintenance_btn = QPushButton("Database Maintenance")
-        self.maintenance_btn.clicked.connect(self.showDatabaseMaintenance)
-        db_layout.addRow("Maintenance:", self.maintenance_btn)
-        
-        # DB path
+        # MongoDB connection info
         self.db_path_edit = QLineEdit()
-        self.db_path_edit.setText(self.db.db_path)
+        self.db_path_edit.setText("MongoDB Atlas Connection")
         self.db_path_edit.setReadOnly(True)
+        db_layout.addRow("Database:", self.db_path_edit)
         
-        db_path_layout = QHBoxLayout()
-        db_path_layout.addWidget(self.db_path_edit)
+        # Connection status
+        self.connection_status_label = QLabel("Checking connection...")
+        self.checkConnectionStatus()
+        db_layout.addRow("Status:", self.connection_status_label)
         
-        self.browse_db_btn = QPushButton("Browse")
-        self.browse_db_btn.clicked.connect(self.browseDbPath)
-        db_path_layout.addWidget(self.browse_db_btn)
-        
-        db_layout.addRow("Database Location:", db_path_layout)
+        # Test connection button
+        self.test_connection_btn = QPushButton("Test Connection")
+        self.test_connection_btn.clicked.connect(self.testConnection)
+        db_layout.addRow("", self.test_connection_btn)
               
         # Backup location
         self.backup_path_edit = QLineEdit()
-        backup_dir = os.path.join(os.path.dirname(self.db.db_path), "backups")
+        backup_dir = os.path.join(os.getcwd(), "data", "backups")
+        
         if not os.path.exists(backup_dir):
-            os.makedirs(backup_dir)
+            os.makedirs(backup_dir, exist_ok=True)
         self.backup_path_edit.setText(backup_dir)
         
         backup_path_layout = QHBoxLayout()
@@ -167,27 +165,22 @@ class SettingsTab(QWidget):
         main_layout.addWidget(db_group)
         
         # Backup & Restore
-        backup_group = QGroupBox("Backup & Restore")
+        backup_group = QGroupBox("MongoDB Backup & Restore")
         backup_layout = QVBoxLayout()
         
-        # Add this in the backup_layout in the initUI method
-        self.schedule_btn = QPushButton("Schedule Backups")
-        self.schedule_btn.clicked.connect(self.setupBackupSchedule)
-        backup_layout.addWidget(self.schedule_btn)
-        
         # Backup button
-        self.backup_btn = QPushButton("Create Manual Backup")
+        self.backup_btn = QPushButton("Create MongoDB Backup")
         self.backup_btn.clicked.connect(self.createBackup)
         backup_layout.addWidget(self.backup_btn)
         
         # Recent backups
-        backup_layout.addWidget(QLabel("Recent Backups:"))
+        backup_layout.addWidget(QLabel("Recent MongoDB Backups:"))
         self.backups_list = QListWidget()
         self.loadBackupsList()
         backup_layout.addWidget(self.backups_list)
         
         # Restore button
-        self.restore_btn = QPushButton("Restore from Backup")
+        self.restore_btn = QPushButton("Restore from MongoDB Backup")
         self.restore_btn.clicked.connect(self.restoreBackup)
         backup_layout.addWidget(self.restore_btn)
         
@@ -210,7 +203,7 @@ class SettingsTab(QWidget):
         
         # Currency format
         self.currency_combo = QComboBox()
-        self.currency_combo.addItems(["Rs.  (PKR)", "$ (USD)"])
+        self.currency_combo.addItems(["Rs. (PKR)", "$ (USD)", "€ (EUR)"])
         app_layout.addRow("Currency Format:", self.currency_combo)
         
         # Log level
@@ -227,469 +220,454 @@ class SettingsTab(QWidget):
         app_group.setLayout(app_layout)
         main_layout.addWidget(app_group)
         
-        # Cloud Sync Information
-        cloud_group = QGroupBox("Cloud Sync Information")
+        # Cloud Information
+        cloud_group = QGroupBox("Cloud Information")
         cloud_layout = QVBoxLayout()
         
         cloud_info = QLabel(
-            "Your database is stored in the 'data' folder. To enable cloud sync:\n\n"
-            "1. Create a symbolic link between the 'data' folder and your cloud storage folder.\n"
-            "2. Or, move the 'data' folder to your cloud storage and create a symbolic link.\n\n"
-            "Supported cloud services: OneDrive, Dropbox, Google Drive"
+            "MongoDB Atlas Cloud Features:\n\n"
+            "✓ Automatic cloud backup and redundancy\n"
+            "✓ Global data distribution\n"
+            "✓ Built-in security and monitoring\n"
+            "✓ Automatic scaling and performance optimization\n\n"
+            "Local Backup: Use the backup buttons above for additional local copies."
         )
         cloud_info.setWordWrap(True)
         cloud_layout.addWidget(cloud_info)
         
-        # Sync status
-        self.sync_status_label = QLabel("Sync Status: Not configured")
-        cloud_layout.addWidget(self.sync_status_label)
-        
-        # Setup cloud button
-        self.setup_cloud_btn = QPushButton("Setup Cloud Sync")
-        self.setup_cloud_btn.clicked.connect(self.setupCloudSync)
-        cloud_layout.addWidget(self.setup_cloud_btn)
-        
         cloud_group.setLayout(cloud_layout)
         main_layout.addWidget(cloud_group)
-        
-        # Sync progress bar
-        self.sync_progress = QProgressBar()
-        self.sync_progress.setVisible(False)
-        cloud_layout.addWidget(self.sync_progress)
-
-        # Sync info
-        self.sync_info_label = QLabel("")
-        cloud_layout.addWidget(self.sync_info_label)
-
-        # Manual sync button
-        self.sync_now_btn = QPushButton("Sync Now")
-        self.sync_now_btn.setEnabled(False)
-        self.sync_now_btn.clicked.connect(self.syncNow)
-        cloud_layout.addWidget(self.sync_now_btn)
         
         # About
         about_label = QLabel(
             "Medical Rep Transaction Software\n"
-            "Version 1.0\n"
+            "Version 2.0 - MongoDB Edition\n"
             "© 2025 BSOLS Technologies\n"
         )
         about_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(about_label)
         
         self.setLayout(main_layout)
-    
-    def setupCloudSync(self):
-        """Set up cloud sync"""
-        # Check if sync is already configured
-        if self.sync_manager.sync_enabled:
-            reply = QMessageBox.question(
-                self, "Cloud Sync",
-                f"Cloud sync is already configured to:\n{self.sync_manager.sync_dir}\n\nDo you want to reconfigure it?",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-            )
-            
-            if reply == QMessageBox.No:
-                return
-        
-        # Show folder selection dialog
-        sync_dir = QFileDialog.getExistingDirectory(
-            self, "Select Cloud Sync Folder",
-            self.sync_manager.sync_dir or os.path.expanduser("~"),
-            QFileDialog.ShowDirsOnly
-        )
-        
-        if sync_dir:
-            # Configure sync
-            self.sync_manager.set_sync_directory(sync_dir)
-            
-            # Update UI
-            self.updateSyncStatus()
-            
-            # Ask about auto-sync
-            reply = QMessageBox.question(
-                self, "Auto Sync",
-                "Do you want to enable automatic synchronization?",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes
-            )
-            
-            if reply == QMessageBox.Yes:
-                self.configureAutoSync()
 
-    def configureAutoSync(self):
-        """Configure auto sync settings"""
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Auto Sync Settings")
-        dialog.setMinimumWidth(300)
-        
-        layout = QFormLayout()
-        
-        # Enable checkbox
-        enable_checkbox = QCheckBox("Enable automatic synchronization")
-        enable_checkbox.setChecked(self.sync_manager.auto_sync_enabled)
-        layout.addRow(enable_checkbox)
-        
-        # Interval spinner
-        interval_spinner = QSpinBox()
-        interval_spinner.setMinimum(5)
-        interval_spinner.setMaximum(1440)  # 24 hours
-        interval_spinner.setValue(self.sync_manager.sync_interval)
-        interval_spinner.setSuffix(" minutes")
-        layout.addRow("Sync interval:", interval_spinner)
-        
-        # Buttons
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(dialog.accept)
-        button_box.rejected.connect(dialog.reject)
-        layout.addRow(button_box)
-        
-        dialog.setLayout(layout)
-        
-        if dialog.exec_() == QDialog.Accepted:
-            # Save settings
-            self.sync_manager.set_auto_sync(
-                enable_checkbox.isChecked(),
-                interval_spinner.value()
-            )
+    def checkConnectionStatus(self):
+        """Check MongoDB connection status"""
+        try:
+            if self.db.connected:
+                self.connection_status_label.setText("✓ Connected to MongoDB Atlas")
+                self.connection_status_label.setStyleSheet("color: green; font-weight: bold;")
+            else:
+                self.connection_status_label.setText("✗ Not Connected")
+                self.connection_status_label.setStyleSheet("color: red; font-weight: bold;")
+        except Exception as e:
+            self.connection_status_label.setText(f"✗ Connection Error: {str(e)}")
+            self.connection_status_label.setStyleSheet("color: red; font-weight: bold;")
+
+    def testConnection(self):
+        """Test MongoDB connection"""
+        try:
+            # Test connection by getting collection count
+            customers = self.db.get_customers()
+            products = self.db.get_products()
             
-            # Update UI
-            self.updateSyncStatus()
-
-    def syncNow(self):
-        """Manually trigger synchronization"""
-        if self.sync_manager.sync_enabled:
-            self.sync_manager.sync()
-
-    def onSyncStarted(self):
-        """Handle sync started signal"""
-        self.sync_progress.setVisible(True)
-        self.sync_progress.setValue(0)
-        self.sync_info_label.setText("Synchronization in progress...")
-        self.sync_now_btn.setEnabled(False)
-
-    def onSyncCompleted(self, success, message):
-        """Handle sync completed signal"""
-        self.sync_progress.setVisible(False)
-        self.sync_info_label.setText(message)
-        self.sync_now_btn.setEnabled(True)
-        self.updateSyncStatus()
-
-    def onSyncProgress(self, progress, message):
-        """Handle sync progress signal"""
-        self.sync_progress.setValue(progress)
-        self.sync_info_label.setText(message)
-
-    def onSyncStatusChanged(self, status):
-        """Handle sync status change signal"""
-        self.updateSyncStatus()
-
-    def updateSyncStatus(self):
-        """Update sync status display"""
-        if not self.sync_manager.sync_enabled:
-            self.sync_status_label.setText("Sync Status: Not configured")
-            self.sync_now_btn.setEnabled(False)
-            return
-        
-        status_text = "Unknown"
-        status_color = "black"
-        
-        if self.sync_manager.sync_status == SyncStatus.IDLE:
-            status_text = "Idle"
-            status_color = "black"
-        elif self.sync_manager.sync_status == SyncStatus.SYNCING:
-            status_text = "Syncing..."
-            status_color = "blue"
-        elif self.sync_manager.sync_status == SyncStatus.ERROR:
-            status_text = "Error"
-            status_color = "red"
-        elif self.sync_manager.sync_status == SyncStatus.SUCCESS:
-            status_text = "Synchronized"
-            status_color = "green"
-        
-        # Update sync info
-        sync_info = f"Sync Directory: {self.sync_manager.sync_dir}"
-        
-        if self.sync_manager.auto_sync_enabled:
-            sync_info += f"\nAuto Sync: Every {self.sync_manager.sync_interval} minutes"
-        else:
-            sync_info += "\nAuto Sync: Disabled"
-        
-        if self.sync_manager.last_sync_time:
-            try:
-                last_sync = datetime.datetime.fromisoformat(self.sync_manager.last_sync_time)
-                sync_info += f"\nLast Sync: {last_sync.strftime('%Y-%m-%d %H:%M:%S')}"
-            except:
-                sync_info += f"\nLast Sync: {self.sync_manager.last_sync_time}"
-        else:
-            sync_info += "\nLast Sync: Never"
-            
-        self.sync_status_label.setText(f"Sync Status: <span style='color: {status_color};'>{status_text}</span>")
-        self.sync_status_label.setTextFormat(Qt.RichText)
-        self.sync_info_label.setText(sync_info)
-        self.sync_now_btn.setEnabled(self.sync_manager.sync_enabled and self.sync_manager.sync_status != SyncStatus.SYNCING)
-        
-    def checkForUpdates(self):
-        """Check for application updates"""
-        app_version = "1.0.0"  # Hardcoded for this example
-        updater = AutoUpdater(app_version, "https://example.com/updates", self)
-        
-        # Show checking message
-        checking_dialog = QProgressDialog("Checking for updates...", None, 0, 0, self)
-        checking_dialog.setWindowTitle("Update Check")
-        checking_dialog.setWindowModality(Qt.WindowModal)
-        checking_dialog.show()
-        
-        # Process events to show dialog
-        QApplication.processEvents()
-        
-        # Check for updates
-        update_available, update_info = updater.check_for_updates()
-        
-        # Close checking dialog
-        checking_dialog.cancel()
-        
-        if update_available:
-            # Show update available message
-            reply = QMessageBox.question(
-                self, "Update Available",
-                f"A new version is available: {update_info['version']}\n\n"
-                f"Current version: {app_version}\n\n"
-                f"Changes:\n{update_info.get('changes', 'No change information available.')}\n\n"
-                "Do you want to download and install this update?",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes
-            )
-            
-            if reply == QMessageBox.Yes:
-                # Download update
-                updater.download_update(update_info)
-        else:
             QMessageBox.information(
-                self, "No Updates Available",
-                f"You are using the latest version ({app_version})."
+                self, "Connection Test",
+                f"✓ Connection successful!\n\n"
+                f"Database contains:\n"
+                f"• {len(customers)} customers\n"
+                f"• {len(products)} products"
             )
-        
-    def browseDbPath(self):
-        """Browse for new database path"""
-        options = QFileDialog.Options()
-        db_file, _ = QFileDialog.getSaveFileName(
-            self, "Select Database Location", self.db_path_edit.text(),
-            "SQLite Database (*.db);;All Files (*)", options=options
-        )
-        
-        if db_file:
-            self.db_path_edit.setText(db_file)
-    
+            self.checkConnectionStatus()
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Connection Test Failed",
+                f"✗ Could not connect to MongoDB:\n{str(e)}"
+            )
+            self.checkConnectionStatus()
+
     def browseBackupPath(self):
         """Browse for backup directory"""
-        options = QFileDialog.Options()
         backup_dir = QFileDialog.getExistingDirectory(
-            self, "Select Backup Directory", self.backup_path_edit.text(),
-            options=options
+            self, "Select Backup Directory", self.backup_path_edit.text()
         )
         
         if backup_dir:
             self.backup_path_edit.setText(backup_dir)
     
-    def showDatabaseMaintenance(self):
-        """Show database maintenance dialog"""
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Database Maintenance")
-        dialog.setMinimumWidth(500)
-        
-        layout = QVBoxLayout()
-        
-        # Create database maintenance instance
-        db_maintenance = DatabaseMaintenance(self.db.db_path)
-        
-        # Get database info
-        db_info = db_maintenance.get_database_info()
-        
-        # Info group
-        info_group = QGroupBox("Database Information")
-        info_layout = QFormLayout()
-        
-        if db_info:
-            info_layout.addRow("Database Size:", QLabel(f"{db_info['file_size']:.2f} MB"))
-            info_layout.addRow("Last Modified:", QLabel(db_info['last_modified']))
-            info_layout.addRow("Total Records:", QLabel(str(db_info['total_rows'])))
-            
-            table_info = ""
-            for table in db_info['tables']:
-                table_info += f"{table['name']}: {table['rows']} rows\n"
-            
-            table_label = QLabel(table_info)
-            table_label.setWordWrap(True)
-            info_layout.addRow("Tables:", table_label)
-        else:
-            info_layout.addRow("Status:", QLabel("Failed to retrieve database information"))
-        
-        info_group.setLayout(info_layout)
-        layout.addWidget(info_group)
-        
-        # Actions group
-        actions_group = QGroupBox("Maintenance Actions")
-        actions_layout = QVBoxLayout()
-        
-        # Integrity check button
-        integrity_btn = QPushButton("Check Database Integrity")
-        integrity_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.check_integrity, "Integrity Check"))
-        
-        # Vacuum button
-        vacuum_btn = QPushButton("Vacuum Database")
-        vacuum_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.vacuum_database, "Vacuum"))
-        
-        # Optimize button
-        optimize_btn = QPushButton("Optimize Database")
-        optimize_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.optimize_database, "Optimization"))
-        
-        # Repair button
-        repair_btn = QPushButton("Repair Database")
-        repair_btn.clicked.connect(lambda: self.runMaintenance(db_maintenance.repair_database, "Repair"))
-        
-        actions_layout.addWidget(integrity_btn)
-        actions_layout.addWidget(vacuum_btn)
-        actions_layout.addWidget(optimize_btn)
-        actions_layout.addWidget(repair_btn)
-        
-        actions_group.setLayout(actions_layout)
-        layout.addWidget(actions_group)
-        
-        # Close button
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(dialog.accept)
-        layout.addWidget(close_btn)
-        
-        dialog.setLayout(layout)
-        dialog.exec_()
-
-    def runMaintenance(self, maintenance_func, action_name):
-        """Run a maintenance function with progress dialog"""
-        # Create progress dialog
-        progress = QProgressDialog(f"{action_name} in progress...", "Cancel", 0, 0, self)
-        progress.setWindowTitle(f"Database {action_name}")
-        progress.setWindowModality(Qt.WindowModal)
-        progress.setMinimumDuration(0)
-        progress.setValue(0)
-        progress.show()
-        
-        # Process events to show dialog
-        QApplication.processEvents()
-        
-        # Run maintenance function
-        success, message = maintenance_func()
-        
-        # Close progress dialog
-        progress.cancel()
-        
-        # Show result
-        if success:
-            QMessageBox.information(self, f"{action_name} Completed", message)
-        else:
-            QMessageBox.critical(self, f"{action_name} Failed", message)
-    
     def loadBackupsList(self):
-        """Load list of backups from backup directory"""
+        """Load list of MongoDB backups from backup directory"""
         self.backups_list.clear()
         
         backup_dir = self.backup_path_edit.text()
         if not os.path.exists(backup_dir):
             return
         
-        # Find all .db files in backup directory
-        backup_files = []
-        for file in os.listdir(backup_dir):
-            if file.endswith(".db"):
-                backup_files.append(os.path.join(backup_dir, file))
+        # Find all MongoDB backup directories
+        backup_items = []
+        for item in os.listdir(backup_dir):
+            item_path = os.path.join(backup_dir, item)
+            if os.path.isdir(item_path) and item.startswith("mongodb_backup_"):
+                backup_items.append(item_path)
         
         # Sort by modification time, newest first
-        backup_files.sort(key=os.path.getmtime, reverse=True)
+        backup_items.sort(key=os.path.getmtime, reverse=True)
         
         # Add to list widget
-        for backup_file in backup_files:
-            timestamp = os.path.getmtime(backup_file)
+        for backup_item in backup_items:
+            timestamp = os.path.getmtime(backup_item)
             date_str = QDateTime.fromSecsSinceEpoch(int(timestamp)).toString("yyyy-MM-dd hh:mm:ss")
             
-            filename = os.path.basename(backup_file)
+            filename = os.path.basename(backup_item)
             
-            item = QListWidgetItem(f"{filename} (Created: {date_str})")
-            item.setData(Qt.UserRole, backup_file)
+            item = QListWidgetItem(f"{filename} - Created: {date_str}")
+            item.setData(Qt.UserRole, backup_item)
             self.backups_list.addItem(item)
-    
+
     def createBackup(self):
-        """Create a manual backup of the database"""
+        """Create a manual backup of the MongoDB database"""
         try:
-            # Ensure backup directory exists
             backup_dir = self.backup_path_edit.text()
             os.makedirs(backup_dir, exist_ok=True)
             
             # Create backup filename with timestamp
             timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
-            backup_filename = f"medtran_backup_{timestamp}.db"
+            backup_filename = f"mongodb_backup_{timestamp}"
             backup_path = os.path.join(backup_dir, backup_filename)
+            os.makedirs(backup_path, exist_ok=True)
             
-            # Ensure database is closed
-            self.db.close()
+            # Show progress dialog
+            progress = QProgressDialog("Creating MongoDB backup...", "Cancel", 0, 4, self)
+            progress.setWindowTitle("Backup Progress")
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
             
-            # Copy database file
-            shutil.copy2(self.db.db_path, backup_path)
+            # Export each collection to JSON
+            collections = ['customers', 'products', 'entries', 'transactions']
+            
+            for i, collection in enumerate(collections):
+                if progress.wasCanceled():
+                    return
+                
+                progress.setValue(i)
+                progress.setLabelText(f"Backing up {collection}...")
+                QApplication.processEvents()
+                
+                if collection == 'customers':
+                    data = self.db.get_customers()
+                elif collection == 'products':
+                    data = self.db.get_products()
+                elif collection == 'entries':
+                    data = self.db.get_entries()
+                elif collection == 'transactions':
+                    data = self.db.get_transactions()
+                else:
+                    data = []
+                
+                # Save to JSON file
+                json_file = os.path.join(backup_path, f"{collection}.json")
+                with open(json_file, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2, default=str)
+            
+            progress.setValue(4)
+            progress.close()
             
             QMessageBox.information(
                 self, "Backup Created",
-                f"Database backup created successfully at:\n{backup_path}"
+                f"MongoDB backup created successfully!\n\nLocation: {backup_path}"
             )
             
             # Refresh backups list
             self.loadBackupsList()
             
         except Exception as e:
-            QMessageBox.critical(self, "Backup Error", f"Failed to create backup: {str(e)}")
-    
+            QMessageBox.critical(self, "Backup Error", f"Failed to create backup:\n{str(e)}")
+
     def restoreBackup(self):
-        """Restore database from a backup"""
-        backup_dir = self.backup_path_edit.text()
-        if not os.path.exists(backup_dir):
-            QMessageBox.warning(self, "No Backups", "Backup directory does not exist.")
-            return
-        
-        # Find all .db files in backup directory
-        backup_files = []
-        for file in os.listdir(backup_dir):
-            if file.endswith(".db"):
-                backup_files.append(os.path.join(backup_dir, file))
-        
-        if not backup_files:
-            QMessageBox.warning(self, "No Backups", "No backup files found.")
-            return
-        
-        # Sort by modification time, newest first
-        backup_files.sort(key=os.path.getmtime, reverse=True)
-        
-        # Show restore dialog
-        dialog = RestoreDialog(backup_files, self)
-        if dialog.exec_() == QDialog.Accepted and dialog.selected_backup:
-            try:
-                # Ensure database is closed
-                self.db.close()
-                
-                # Create a backup of current database before restore
-                timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
-                pre_restore_backup = os.path.join(backup_dir, f"medtran_pre_restore_{timestamp}.db")
-                shutil.copy2(self.db.db_path, pre_restore_backup)
-                
-                # Copy backup to current database
-                shutil.copy2(dialog.selected_backup, self.db.db_path)
-                
-                QMessageBox.information(
-                    self, "Restore Complete",
-                    "Database has been restored successfully.\n\n"
-                    f"A backup of your previous database was created at:\n{pre_restore_backup}"
-                )
-                
-                # Refresh backups list
-                self.loadBackupsList()
-                
-            except Exception as e:
-                QMessageBox.critical(self, "Restore Error", f"Failed to restore database: {str(e)}")
+        """Restore MongoDB database from a backup"""
+        try:
+            backup_dir = self.backup_path_edit.text()
+            if not os.path.exists(backup_dir):
+                QMessageBox.warning(self, "No Backups", "No backup directory found.")
+                return
+            
+            # Get list of MongoDB backup folders
+            backup_items = []
+            for item in os.listdir(backup_dir):
+                item_path = os.path.join(backup_dir, item)
+                if os.path.isdir(item_path) and item.startswith("mongodb_backup_"):
+                    backup_items.append(item_path)
+            
+            if not backup_items:
+                QMessageBox.warning(self, "No Backups", "No MongoDB backup files found.")
+                return
+            
+            # Show restore dialog
+            dialog = RestoreDialog(backup_items, self)
+            if dialog.exec_() == QDialog.Accepted:
+                self.restoreMongoDBBackup(dialog.selected_backup)
+                    
+        except Exception as e:
+            QMessageBox.critical(self, "Restore Error", f"Failed to restore backup:\n{str(e)}")
     
+    def restoreMongoDBBackup(self, backup_path):
+        """Restore MongoDB backup from JSON files"""
+        try:
+            # Confirm restore
+            reply = QMessageBox.question(
+                self, "Confirm Restore",
+                "This will replace ALL current data with the backup data.\n\n"
+                "Are you sure you want to continue?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply != QMessageBox.Yes:
+                return
+            
+            # Check if all required files exist
+            required_files = ['customers.json', 'products.json', 'entries.json', 'transactions.json']
+            missing_files = []
+            
+            for file in required_files:
+                file_path = os.path.join(backup_path, file)
+                if not os.path.exists(file_path):
+                    missing_files.append(file)
+            
+            if missing_files:
+                QMessageBox.warning(
+                    self, "Incomplete Backup",
+                    f"Backup is missing files:\n{', '.join(missing_files)}\n\nRestore cancelled."
+                )
+                return
+            
+            # Show progress dialog
+            progress = QProgressDialog("Restoring MongoDB backup...", "Cancel", 0, len(required_files), self)
+            progress.setWindowTitle("Restore Progress")
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
+            
+            # Clear existing data first
+            progress.setLabelText("Clearing existing data...")
+            QApplication.processEvents()
+            
+            if hasattr(self.db, 'clear_all_collections'):
+                self.db.clear_all_collections()
+            
+            # Restore each collection
+            for i, file in enumerate(required_files):
+                if progress.wasCanceled():
+                    return
+                
+                collection_name = file.replace('.json', '')
+                progress.setValue(i)
+                progress.setLabelText(f"Restoring {collection_name}...")
+                QApplication.processEvents()
+                
+                file_path = os.path.join(backup_path, file)
+                
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Insert data using MongoDB adapter methods
+                if data and hasattr(self.db, f'restore_{collection_name}'):
+                    getattr(self.db, f'restore_{collection_name}')(data)
+                elif data:
+                    # Fallback to individual inserts
+                    for item in data:
+                        if collection_name == 'customers':
+                            self.db.add_customer(
+                                item.get('name', ''), 
+                                item.get('contact', ''), 
+                                item.get('address', '')
+                            )
+                        elif collection_name == 'products':
+                            self.db.add_product(
+                                item.get('name', ''), 
+                                item.get('description', ''), 
+                                item.get('unit_price', 0),
+                                item.get('batch_number', ''),
+                                item.get('expiry_date', '')
+                            )
+            
+            progress.setValue(len(required_files))
+            progress.close()
+            
+            QMessageBox.information(
+                self, "Restore Complete",
+                "MongoDB database has been restored successfully from backup!"
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Restore Error", f"Failed to restore MongoDB backup:\n{str(e)}")
+
+    def exportData(self):
+        """Export MongoDB database to CSV files"""
+        try:
+            # Get export directory
+            export_dir = QFileDialog.getExistingDirectory(
+                self, "Select Export Directory", os.path.expanduser("~")
+            )
+            
+            if not export_dir:
+                return
+            
+            # Create timestamp folder
+            timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
+            export_folder = os.path.join(export_dir, f"medtran_export_{timestamp}")
+            os.makedirs(export_folder, exist_ok=True)
+            
+            # Show progress dialog
+            progress = QProgressDialog("Exporting data to CSV...", "Cancel", 0, 4, self)
+            progress.setWindowTitle("Export Progress")
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
+            
+            import csv
+            
+            # Export customers
+            progress.setValue(0)
+            progress.setLabelText("Exporting customers...")
+            QApplication.processEvents()
+            
+            customers = self.db.get_customers()
+            if customers:
+                with open(os.path.join(export_folder, "customers.csv"), 'w', newline='', encoding='utf-8') as f:
+                    writer = csv.DictWriter(f, fieldnames=customers[0].keys())
+                    writer.writeheader()
+                    writer.writerows(customers)
+            
+            # Export products
+            progress.setValue(1)
+            progress.setLabelText("Exporting products...")
+            QApplication.processEvents()
+            
+            products = self.db.get_products()
+            if products:
+                with open(os.path.join(export_folder, "products.csv"), 'w', newline='', encoding='utf-8') as f:
+                    writer = csv.DictWriter(f, fieldnames=products[0].keys())
+                    writer.writeheader()
+                    writer.writerows(products)
+            
+            # Export entries
+            progress.setValue(2)
+            progress.setLabelText("Exporting entries...")
+            QApplication.processEvents()
+            
+            entries = self.db.get_entries()
+            if entries:
+                with open(os.path.join(export_folder, "entries.csv"), 'w', newline='', encoding='utf-8') as f:
+                    writer = csv.DictWriter(f, fieldnames=entries[0].keys())
+                    writer.writeheader()
+                    writer.writerows(entries)
+            
+            # Export transactions
+            progress.setValue(3)
+            progress.setLabelText("Exporting transactions...")
+            QApplication.processEvents()
+            
+            transactions = self.db.get_transactions()
+            if transactions:
+                with open(os.path.join(export_folder, "transactions.csv"), 'w', newline='', encoding='utf-8') as f:
+                    writer = csv.DictWriter(f, fieldnames=transactions[0].keys())
+                    writer.writeheader()
+                    writer.writerows(transactions)
+            
+            progress.setValue(4)
+            progress.close()
+            
+            QMessageBox.information(
+                self, "Export Complete",
+                f"Data exported successfully!\n\nLocation: {export_folder}"
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export data:\n{str(e)}")
+    
+    def importData(self):
+        """Import data from CSV files to MongoDB"""
+        try:
+            import_dir = QFileDialog.getExistingDirectory(
+                self, "Select Import Directory containing CSV files"
+            )
+            
+            if not import_dir:
+                return
+            
+            # Check for required files
+            required_files = ['customers.csv', 'products.csv']
+            available_files = []
+            
+            for file in ['customers.csv', 'products.csv', 'entries.csv', 'transactions.csv']:
+                if os.path.exists(os.path.join(import_dir, file)):
+                    available_files.append(file)
+            
+            if not available_files:
+                QMessageBox.warning(
+                    self, "No CSV Files", 
+                    "No CSV files found in the selected directory."
+                )
+                return
+            
+            # Confirm import
+            reply = QMessageBox.question(
+                self, "Confirm Import",
+                f"This will import data from:\n{', '.join(available_files)}\n\n"
+                "This may add to or modify existing data. Continue?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply != QMessageBox.Yes:
+                return
+            
+            import csv
+            
+            # Show progress dialog
+            progress = QProgressDialog("Importing CSV data...", "Cancel", 0, len(available_files), self)
+            progress.setWindowTitle("Import Progress")
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
+            
+            # Import each available file
+            for i, file in enumerate(available_files):
+                if progress.wasCanceled():
+                    return
+                
+                progress.setValue(i)
+                progress.setLabelText(f"Importing {file}...")
+                QApplication.processEvents()
+                
+                file_path = os.path.join(import_dir, file)
+                
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    
+                    if file == 'customers.csv':
+                        for row in reader:
+                            self.db.add_customer(
+                                row.get('name', ''), 
+                                row.get('contact', ''), 
+                                row.get('address', '')
+                            )
+                    elif file == 'products.csv':
+                        for row in reader:
+                            self.db.add_product(
+                                row.get('name', ''), 
+                                row.get('description', ''), 
+                                float(row.get('unit_price', 0)),
+                                row.get('batch_number', ''),
+                                row.get('expiry_date', '')
+                            )
+            
+            progress.setValue(len(available_files))
+            progress.close()
+            
+            QMessageBox.information(
+                self, "Import Complete", 
+                f"Successfully imported {len(available_files)} CSV files."
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Import Error", f"Failed to import data:\n{str(e)}")
+
     def setLogLevel(self):
         """Update logging level based on selection"""
         level_map = {
@@ -706,279 +684,21 @@ class SettingsTab(QWidget):
     
     def saveSettings(self):
         """Save application settings"""
-        if self.config:
-            # Save settings to config
-            self.config.set('db_path', self.db_path_edit.text())
-            self.config.set('backup_path', self.backup_path_edit.text())
-            self.config.set('currency_format', self.currency_combo.currentText())
-            self.config.set('log_level', self.log_level_combo.currentText())
-            
-            QMessageBox.information(self, "Settings Saved", "Application settings have been saved.")
-        else:
-            # Fallback to showing just a success message if no config is available
-            QMessageBox.information(self, "Settings Saved", "Application settings have been saved.")
-            
-    def setupCloudSync(self):
-        """Provide instructions for cloud sync setup"""
-        instruction = (
-            "Cloud Sync Setup Instructions:\n\n"
-            "1. Manual Setup (Recommended):\n"
-            "   a. Create a folder in your cloud storage (e.g., OneDrive, Dropbox)\n"
-            "   b. Copy your data/medtran.db file to that folder\n"
-            "   c. Update the database path in settings to point to this new location\n\n"
-            "2. Using Symbolic Links (Advanced):\n"
-            "   a. On Windows, use mklink command as Administrator:\n"
-            "      mklink /D \"C:\\Path\\To\\App\\data\" \"C:\\Path\\To\\CloudStorage\\MedRepData\"\n"
-            "   b. On macOS/Linux, use ln command:\n"
-            "      ln -s \"/Path/To/CloudStorage/MedRepData\" \"/Path/To/App/data\"\n\n"
-            "Note: Ensure your cloud service is installed and syncing properly."
-        )
-        
-        QMessageBox.information(self, "Cloud Sync Setup", instruction)
-        
-    def exportData(self):
-        """Export database to CSV files"""
         try:
-            options = QFileDialog.Options()
-            export_dir = QFileDialog.getExistingDirectory(
-                self, "Select Export Directory", "", options=options
-            )
-            
-            if not export_dir:
-                return
-            
-            self.db.connect()
-            
-            # Export customers
-            self.db.cursor.execute("SELECT id, name, contact, address, created_at FROM customers")
-            customers = self.db.cursor.fetchall()
-            
-            with open(os.path.join(export_dir, "customers.csv"), 'w', encoding='utf-8') as f:
-                f.write("id,name,contact,address,created_at\n")
-                for customer in customers:
-                    f.write(','.join(f'"{str(field)}"' for field in customer) + '\n')
-            
-            # Export products
-            self.db.cursor.execute("SELECT id, name, description, unit_price, created_at FROM products")
-            products = self.db.cursor.fetchall()
-            
-            with open(os.path.join(export_dir, "products.csv"), 'w', encoding='utf-8') as f:
-                f.write("id,name,description,unit_price,created_at\n")
-                for product in products:
-                    f.write(','.join(f'"{str(field)}"' for field in product) + '\n')
-            
-            # Export entries
-            self.db.cursor.execute("""
-                SELECT e.id, e.date, c.name, p.name, e.quantity, e.unit_price, 
-                    (e.quantity * e.unit_price) as total, e.is_credit, e.notes, e.created_at
-                FROM entries e
-                JOIN customers c ON e.customer_id = c.id
-                JOIN products p ON e.product_id = p.id
-                ORDER BY e.date, e.id
-            """)
-            entries = self.db.cursor.fetchall()
-            
-            with open(os.path.join(export_dir, "entries.csv"), 'w', encoding='utf-8') as f:
-                f.write("id,date,customer,product,quantity,unit_price,total,is_credit,notes,created_at\n")
-                for entry in entries:
-                    f.write(','.join(f'"{str(field)}"' for field in entry) + '\n')
-            
-            QMessageBox.information(
-                self, "Export Complete", 
-                f"Data has been exported to:\n{export_dir}"
-            )
-            
-        except Exception as e:
-            QMessageBox.critical(self, "Export Error", f"Failed to export data: {str(e)}")
-        finally:
-            self.db.close()
-
-    def importData(self):
-        """Import data from CSV files"""
-        try:
-            options = QFileDialog.Options()
-            import_dir = QFileDialog.getExistingDirectory(
-                self, "Select Import Directory", "", options=options
-            )
-            
-            if not import_dir:
-                return
-            
-            # Check for required files
-            required_files = ['customers.csv', 'products.csv', 'entries.csv']
-            missing_files = []
-            
-            for file in required_files:
-                if not os.path.exists(os.path.join(import_dir, file)):
-                    missing_files.append(file)
-            
-            if missing_files:
-                QMessageBox.warning(
-                    self, "Missing Files", 
-                    f"The following required files are missing:\n{', '.join(missing_files)}"
-                )
-                return
-            
-            # Confirm import
-            reply = QMessageBox.question(
-                self, "Confirm Import",
-                "Importing data will replace all existing data. Continue?",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-            )
-            
-            if reply != QMessageBox.Yes:
-                return
-            
-            self.db.connect()
-            
-            # Start transaction
-            self.db.conn.execute("BEGIN")
-            
-            # Clear existing data
-            self.db.cursor.execute("DELETE FROM transactions")
-            self.db.cursor.execute("DELETE FROM entries")
-            self.db.cursor.execute("DELETE FROM products")
-            self.db.cursor.execute("DELETE FROM customers")
-            
-            # Import customers
-            import csv
-            
-            with open(os.path.join(import_dir, "customers.csv"), 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    self.db.cursor.execute("""
-                        INSERT INTO customers (name, contact, address)
-                        VALUES (?, ?, ?)
-                    """, (row['name'], row['contact'], row['address']))
-            
-            # Import products
-            with open(os.path.join(import_dir, "products.csv"), 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    self.db.cursor.execute("""
-                        INSERT INTO products (name, description, unit_price)
-                        VALUES (?, ?, ?)
-                    """, (row['name'], row['description'], float(row['unit_price'])))
-            
-            # Import entries
-            with open(os.path.join(import_dir, "entries.csv"), 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                
-                # Create a mapping of customer names to IDs
-                self.db.cursor.execute("SELECT id, name FROM customers")
-                customer_map = {name: id for id, name in self.db.cursor.fetchall()}
-                
-                # Create a mapping of product names to IDs
-                self.db.cursor.execute("SELECT id, name FROM products")
-                product_map = {name: id for id, name in self.db.cursor.fetchall()}
-                
-                # Process entries
-                current_balance = 0
-                for row in reader:
-                    customer_id = customer_map.get(row['customer'])
-                    product_id = product_map.get(row['product'])
-                    
-                    if not customer_id or not product_id:
-                        continue
-                    
-                    # Insert entry
-                    self.db.cursor.execute("""
-                        INSERT INTO entries (date, customer_id, product_id, quantity, unit_price, is_credit, notes)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        row['date'], 
-                        customer_id, 
-                        product_id, 
-                        int(row['quantity']), 
-                        float(row['unit_price']), 
-                        int(row['is_credit']), 
-                        row['notes']
-                    ))
-                    
-                    entry_id = self.db.cursor.lastrowid
-                    amount = float(row['total'])
-                    
-                    # Update balance
-                    if int(row['is_credit']):
-                        current_balance += amount
-                    else:
-                        current_balance -= amount
-                    
-                    # Insert transaction
-                    self.db.cursor.execute("""
-                        INSERT INTO transactions (entry_id, amount, balance)
-                        VALUES (?, ?, ?)
-                    """, (entry_id, amount, current_balance))
-            
-            # Commit changes
-            self.db.conn.commit()
-            
-            QMessageBox.information(
-                self, "Import Complete", 
-                "Data has been imported successfully."
-            )
-            
-        except Exception as e:
-            self.db.conn.rollback()
-            QMessageBox.critical(self, "Import Error", f"Failed to import data: {str(e)}")
-        finally:
-            self.db.close()
-            
-    def setupBackupSchedule(self):
-        """Set up scheduled backups"""
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Schedule Backups")
-        dialog.setMinimumWidth(400)
-        
-        layout = QFormLayout()
-        
-        # Enable scheduled backups
-        enable_checkbox = QCheckBox("Enable scheduled backups")
-        layout.addRow(enable_checkbox)
-        
-        # Frequency
-        frequency_combo = QComboBox()
-        frequency_combo.addItems(["Daily", "Weekly", "Monthly"])
-        layout.addRow("Backup frequency:", frequency_combo)
-        
-        # Time
-        time_edit = QTimeEdit()
-        time_edit.setTime(QTime(23, 0))  # Default to 11:00 PM
-        time_edit.setDisplayFormat("hh:mm AP")
-        layout.addRow("Backup time:", time_edit)
-        
-        # Retention
-        retention_spin = QSpinBox()
-        retention_spin.setMinimum(1)
-        retention_spin.setMaximum(100)
-        retention_spin.setValue(10)
-        layout.addRow("Keep last N backups:", retention_spin)
-        
-        # Buttons
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(dialog.accept)
-        button_box.rejected.connect(dialog.reject)
-        layout.addRow(button_box)
-        
-        dialog.setLayout(layout)
-        
-        if dialog.exec_() == QDialog.Accepted:
-            # Save schedule settings
             settings = {
-                'enabled': enable_checkbox.isChecked(),
-                'frequency': frequency_combo.currentText(),
-                'time': time_edit.time().toString("hh:mm"),
-                'retention': retention_spin.value()
+                'currency_format': self.currency_combo.currentText(),
+                'log_level': self.log_level_combo.currentText(),
+                'backup_path': self.backup_path_edit.text()
             }
             
-            # In a real implementation, these would be saved to a config file
-            # and a scheduler would be set up (e.g., with Windows Task Scheduler)
+            # Save to a simple JSON file
+            settings_file = os.path.join(os.getcwd(), "data", "settings.json")
+            os.makedirs(os.path.dirname(settings_file), exist_ok=True)
             
-            QMessageBox.information(
-                self, "Schedule Set",
-                f"Backup schedule configured:\n"
-                f"Enabled: {'Yes' if settings['enabled'] else 'No'}\n"
-                f"Frequency: {settings['frequency']}\n"
-                f"Time: {settings['time']}\n"
-                f"Retention: {settings['retention']} backups"
-            )
+            with open(settings_file, 'w') as f:
+                json.dump(settings, f, indent=2)
+            
+            QMessageBox.information(self, "Settings Saved", "Application settings have been saved successfully!")
+            
+        except Exception as e:
+            QMessageBox.warning(self, "Save Error", f"Could not save settings:\n{str(e)}")

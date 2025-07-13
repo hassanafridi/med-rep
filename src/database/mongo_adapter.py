@@ -1,5 +1,3 @@
-# src/database/mongo_adapter.py
-
 """
 MongoDB adapter that provides a SQLite-compatible interface for existing code.
 This allows gradual migration of your existing codebase to MongoDB.
@@ -19,17 +17,20 @@ class MongoAdapter:
     Translates SQL queries to MongoDB operations where possible.
     """
     
-    def __init__(self, mongo_db_instance=None):
+    def __init__(self, mongo_db_instance=None, connection_string: str = None, database_name: str = "medtran_db"):
         """Initialize the MongoDB adapter"""
         if mongo_db_instance:
             self.mongo_db = mongo_db_instance
         else:
-            self.mongo_db = MongoDB()
+            from .mongo_db import MongoDB
+            self.mongo_db = MongoDB(connection_string, database_name)
         
-        # Add SQLite compatibility attributes
+        self.connected = False
         self.cursor = self  # For SQLite compatibility
         self.conn = self    # For SQLite compatibility
-        self.db_path = None # For SQLite compatibility
+        self._db_path = None # For SQLite compatibility
+        self._lastrowid = None
+        self._last_results = []  # Store results for fetchall/fetchone
         
         self.collections = {
             'customers': 'customers',
@@ -39,43 +40,67 @@ class MongoAdapter:
             'users': 'users'
         }
         
-        # Ensure connection and sample data
+        # Ensure connection and data availability
         self._ensure_data_available()
     
+    @property
+    def db_path(self):
+        return self._db_path
+    
+    @db_path.setter 
+    def db_path(self, value):
+        self._db_path = value
+    
+    @property
+    def lastrowid(self):
+        return self._lastrowid
+    
     def _ensure_data_available(self):
-        """Ensure MongoDB has sample data available"""
+        """Ensure MongoDB connection and data availability"""
         try:
-            # Fix the database connection check
-            if self.mongo_db.connect():
-                customers = self.mongo_db.get_customers()
-                products = self.mongo_db.get_products()
-                entries = self.mongo_db.get_entries()
+            # Connect to MongoDB
+            if not self.connected:
+                self.connect()
+            
+            # Check if we have basic data
+            if not self.connected:
+                logger.warning("MongoDB not connected, cannot ensure data availability")
+                return False
                 
-                logger.info(f"Current data: {len(customers)} customers, {len(products)} products, {len(entries)} entries")
+            # Check if collections have data
+            try:
+                customer_count = self.mongo_db.db.customers.count_documents({})
+                product_count = self.mongo_db.db.products.count_documents({})
+                entry_count = self.mongo_db.db.entries.count_documents({})
                 
-                # Check if we already have sufficient data based on the test output
-                if len(customers) >= 5 and len(products) >= 5:
-                    logger.info("Sufficient sample data already exists")
-                elif not customers or not products:
-                    logger.info("Insufficient data found, but skipping sample data insertion to avoid errors...")
-                    # Don't try to insert sample data here as it causes the boolean evaluation error
-                    # The data already exists according to the test
-                else:
-                    logger.info("Sufficient data already available")
+                logger.info(f"Data availability check: {customer_count} customers, {product_count} products, {entry_count} entries")
+                
+                # If no data exists, try to add sample data
+                if customer_count == 0 and product_count == 0 and entry_count == 0:
+                    logger.info("No data found, attempting to insert sample data")
+                    self.insert_sample_data()
+                
+                return True
+            except Exception as e:
+                logger.error(f"Error checking data availability: {e}")
+                return False
+                
         except Exception as e:
             logger.error(f"Error ensuring data availability: {e}")
-            # Don't fail completely, just log the error
-    
-    def connect(self):
-        """Connect to MongoDB (compatibility method)"""
-        try:
-            result = self.mongo_db.connect()
-            # Ensure we return a boolean
-            return bool(result) if result is not None else False
-        except Exception as e:
-            logger.error(f"MongoDB connection error: {e}")
             return False
     
+    def connect(self) -> bool:
+        """Connect to MongoDB"""
+        if not self.connected:
+            try:
+                result = self.mongo_db.connect()
+                self.connected = bool(result) if result is not None else False
+                return self.connected
+            except Exception as e:
+                logger.error(f"MongoDB connection error: {e}")
+                return False
+        return self.connected
+
     def close(self):
         """Close MongoDB connection (compatibility method)"""
         try:
@@ -88,7 +113,6 @@ class MongoAdapter:
         """Initialize MongoDB collections and indexes (compatibility method)"""
         try:
             result = self.mongo_db.init_db()
-            # Ensure we return a boolean
             return bool(result) if result is not None else False
         except Exception as e:
             logger.error(f"MongoDB init_db error: {e}")
@@ -97,19 +121,292 @@ class MongoAdapter:
     def insert_sample_data(self):
         """Insert sample data (compatibility method)"""
         try:
-            return self.mongo_db.insert_sample_data()
+            # Check if data already exists
+            if (self.mongo_db.db.customers.count_documents({}) > 0 or 
+                self.mongo_db.db.products.count_documents({}) > 0):
+                logger.info("Sample data already exists, skipping insertion")
+                return True
+                
+            # Insert sample customers with pharmaceutical business names
+            sample_customers = [
+                {"name": "Tariq Medical Store", "contact": "0333-99-11-514", "address": "Main Market, Faisalabad\nPunjab, Pakistan"},
+                {"name": "Huzaifa Shopping Mall", "contact": "0300-12-34567", "address": "Johal Road, Addah\nPunjab, Pakistan"},
+                {"name": "City Pharmacy", "contact": "042-12345678", "address": "Liberty Market, Lahore\nPunjab, Pakistan"},
+                {"name": "Medicare Center", "contact": "051-87654321", "address": "F-7 Markaz, Islamabad\nICT, Pakistan"},
+                {"name": "Health Plus Pharmacy", "contact": "021-11223344", "address": "Clifton Block 2, Karachi\nSindh, Pakistan"}
+            ]
+            
+            customer_ids = []
+            for customer in sample_customers:
+                result = self.mongo_db.db.customers.insert_one(customer)
+                customer_ids.append(result.inserted_id)
+                logger.info(f"Inserted customer: {customer['name']}")
+            
+            # Insert sample pharmaceutical products
+            sample_products = [
+                {"name": "G+ cream", "description": "Topical antibiotic cream", "unit_price": 1020, "batch_number": "GP1K24", "expiry_date": "2025-12-31"},
+                {"name": "B+ cream", "description": "Vitamin B complex cream", "unit_price": 1020, "batch_number": "BP2K24", "expiry_date": "2025-11-30"},
+                {"name": "Folicare Shop", "description": "Folic acid supplement", "unit_price": 263.5, "batch_number": "FC3K24", "expiry_date": "2025-10-31"},
+                {"name": "Scarheal", "description": "Scar healing ointment", "unit_price": 1020, "batch_number": "SH4K24", "expiry_date": "2025-09-30"},
+                {"name": "Paracetamol 500mg", "description": "Pain reliever and fever reducer", "unit_price": 150, "batch_number": "PC5K24", "expiry_date": "2026-01-31"}
+            ]
+            
+            product_ids = []
+            for product in sample_products:
+                result = self.mongo_db.db.products.insert_one(product)
+                product_ids.append(result.inserted_id)
+                logger.info(f"Inserted product: {product['name']}")
+            
+            # Insert sample entries (transactions)
+            import random
+            from datetime import datetime, timedelta
+            
+            sample_entries = []
+            current_balance = 0
+            
+            # Generate entries for the last 90 days
+            for i in range(36):  # Increased to 36 entries
+                entry_date = (datetime.now() - timedelta(days=random.randint(0, 90))).strftime('%Y-%m-%d')
+                customer_id = random.choice(customer_ids)
+                product_id = random.choice(product_ids)
+                
+                # Get product info for pricing
+                product_info = next((p for p in sample_products if str(product_ids[sample_products.index(p)]) == str(product_id)), sample_products[0])
+                
+                quantity = random.randint(1, 10)
+                unit_price = product_info['unit_price']
+                is_credit = random.choice([True, False])  # Mix of sales and purchases
+                
+                # Add some realistic notes
+                notes_options = [
+                    "Regular customer order",
+                    "Bulk purchase discount applied",
+                    "Emergency supply",
+                    "Monthly stock replenishment",
+                    "Special order for patient",
+                    ""
+                ]
+                notes = random.choice(notes_options)
+                
+                entry = {
+                    "date": entry_date,
+                    "customer_id": customer_id,
+                    "product_id": product_id,
+                    "quantity": quantity,
+                    "unit_price": unit_price,
+                    "is_credit": is_credit,
+                    "notes": notes,
+                    "created_at": datetime.now()
+                }
+                
+                sample_entries.append(entry)
+                
+                # Calculate running balance
+                amount = quantity * unit_price
+                if is_credit:
+                    current_balance += amount
+                else:
+                    current_balance -= amount
+            
+            # Insert all entries
+            if sample_entries:
+                result = self.mongo_db.db.entries.insert_many(sample_entries)
+                logger.info(f"Inserted {len(result.inserted_ids)} entries")
+                
+                # Create corresponding transactions
+                transactions = []
+                running_balance = 0
+                
+                for i, entry in enumerate(sample_entries):
+                    amount = entry['quantity'] * entry['unit_price']
+                    if entry['is_credit']:
+                        running_balance += amount
+                    else:
+                        running_balance -= amount
+                    
+                    transaction = {
+                        "entry_id": result.inserted_ids[i],
+                        "amount": amount,
+                        "balance": running_balance,
+                        "created_at": datetime.now()
+                    }
+                    transactions.append(transaction)
+                
+                if transactions:
+                    trans_result = self.mongo_db.db.transactions.insert_many(transactions)
+                    logger.info(f"Inserted {len(trans_result.inserted_ids)} transactions")
+            
+            logger.info("Sample pharmaceutical data inserted successfully")
+            return True
+            
         except Exception as e:
-            logger.error(f"MongoDB insert_sample_data error: {e}")
+            logger.error(f"Error inserting sample data: {e}")
             return False
+    
+    # SQLite compatibility methods for cursor
+    def fetchall(self):
+        """SQLite compatibility method - return all results from last execute"""
+        return self._last_results
+    
+    def fetchone(self):
+        """SQLite compatibility method - return first result from last execute"""
+        if self._last_results:
+            return self._last_results[0]
+        return None
+    
+    def commit(self):
+        """SQLite compatibility method (no-op for MongoDB)"""
+        pass
+    
+    def rollback(self):
+        """SQLite compatibility method (no-op for MongoDB)"""
+        pass
+    
+    def execute(self, query: str, params: tuple = None) -> List[List]:
+        """
+        Execute SQL-like queries and convert to MongoDB operations
+        Returns data in SQL-like format for compatibility
+        """
+        try:
+            if not self.connected:
+                self.connect()
+                
+            query_original = query
+            query = query.strip().upper()
+            params = params or ()
+            
+            results = []
+            
+            # Handle different query types
+            if query.startswith('SELECT * FROM CUSTOMERS'):
+                results = self._handle_select_customers()
+            elif query.startswith('SELECT * FROM PRODUCTS'):
+                results = self._handle_select_products()
+            elif query.startswith('SELECT * FROM ENTRIES'):
+                results = self._handle_select_entries()
+            elif query.startswith('SELECT * FROM TRANSACTIONS'):
+                results = self._handle_select_transactions()
+            elif "SUM(QUANTITY * UNIT_PRICE)" in query and "IS_CREDIT = 1" in query:
+                results = self._handle_sales_query(query, params)
+            elif "SUM(QUANTITY * UNIT_PRICE)" in query and "IS_CREDIT = 0" in query:
+                results = self._handle_debits_query(query, params)
+            elif "COUNT(*)" in query and "ENTRIES" in query:
+                results = self._handle_count_query(query, params)
+            elif "MAX(BALANCE)" in query:
+                results = self._handle_balance_query()
+            elif "SELECT P.NAME" in query and "GROUP BY P.NAME" in query:
+                results = self._handle_product_distribution_query()
+            elif "EXPIRED" in query or "EXPIRY_DATE" in query:
+                results = self._handle_expiry_query(query)
+            elif 'COUNT(' in query:
+                results = self._handle_count(query_original, params)
+            elif 'SUM(' in query:
+                results = self._handle_sum(query_original, params)
+            elif 'MAX(' in query:
+                results = self._handle_max(query_original, params)
+            elif query.startswith('INSERT'):
+                results = self._handle_insert(query_original, params)
+            elif query.startswith('SELECT'):
+                results = self._handle_select(query_original, params)
+            else:
+                # Generic query handling
+                results = self._handle_generic_query(query, params)
+            
+            # Store results for fetchall/fetchone compatibility
+            self._last_results = results
+            logger.debug(f"Query executed: {query_original[:50]}... -> {len(results)} results")
+            return results
+                
+        except Exception as e:
+            logger.error(f"Error executing query: {e}")
+            import traceback
+            traceback.print_exc()
+            self._last_results = []
+            return []
+    
+    def _handle_select_customers(self) -> List[List]:
+        """Handle SELECT * FROM customers"""
+        try:
+            customers = self.get_customers()
+            results = []
+            for customer in customers:
+                results.append([
+                    customer.get('id', ''),
+                    customer.get('name', ''),
+                    customer.get('contact', ''),
+                    customer.get('address', '')
+                ])
+            logger.info(f"SELECT customers returned {len(results)} results")
+            return results
+        except Exception as e:
+            logger.error(f"Error in _handle_select_customers: {e}")
+            return []
+    
+    def _handle_select_products(self) -> List[List]:
+        """Handle SELECT * FROM products"""
+        try:
+            products = self.get_products()
+            results = []
+            for product in products:
+                results.append([
+                    product.get('id', ''),
+                    product.get('name', ''),
+                    product.get('description', ''),
+                    float(product.get('unit_price', 0)),
+                    product.get('batch_number', ''),
+                    product.get('expiry_date', '')
+                ])
+            logger.info(f"SELECT products returned {len(results)} results")
+            return results
+        except Exception as e:
+            logger.error(f"Error in _handle_select_products: {e}")
+            return []
+    
+    def _handle_select_entries(self) -> List[List]:
+        """Handle SELECT * FROM entries"""
+        try:
+            entries = self.get_entries()
+            results = []
+            for entry in entries:
+                results.append([
+                    entry.get('id', ''),
+                    entry.get('date', ''),
+                    entry.get('customer_id', ''),
+                    entry.get('product_id', ''),
+                    float(entry.get('quantity', 0)),
+                    float(entry.get('unit_price', 0)),
+                    bool(entry.get('is_credit', False)),
+                    entry.get('notes', '')
+                ])
+            logger.info(f"SELECT entries returned {len(results)} results")
+            return results
+        except Exception as e:
+            logger.error(f"Error in _handle_select_entries: {e}")
+            return []
+    
+    def _handle_select_transactions(self) -> List[List]:
+        """Handle SELECT * FROM transactions"""
+        try:
+            transactions = self.get_transactions()
+            results = []
+            for transaction in transactions:
+                results.append([
+                    transaction.get('id', ''),
+                    transaction.get('entry_id', ''),
+                    float(transaction.get('amount', 0)),
+                    float(transaction.get('balance', 0))
+                ])
+            logger.info(f"SELECT transactions returned {len(results)} results")
+            return results
+        except Exception as e:
+            logger.error(f"Error in _handle_select_transactions: {e}")
+            return []
     
     def get_customers(self):
         """Get all customers (compatibility method)"""
         try:
             # Get raw customers from MongoDB
-            raw_customers = []
-            for customer in self.mongo_db.db.customers.find():
-                raw_customers.append(customer)
-            
+            raw_customers = list(self.mongo_db.db.customers.find())
             logger.info(f"Retrieved {len(raw_customers)} customers directly from MongoDB")
             
             # Ensure proper data types for compatibility
@@ -133,10 +430,7 @@ class MongoAdapter:
         """Get all products (compatibility method)"""
         try:
             # Get raw products from MongoDB
-            raw_products = []
-            for product in self.mongo_db.db.products.find():
-                raw_products.append(product)
-            
+            raw_products = list(self.mongo_db.db.products.find())
             logger.info(f"Retrieved {len(raw_products)} products directly from MongoDB")
             
             # Ensure proper data types for compatibility
@@ -280,150 +574,373 @@ class MongoAdapter:
             logger.error(f"Error adding entry: {e}")
             return None
     
-    def execute_query(self, query, params=None):
-        """Execute query (compatibility method)"""
-        return self.execute(query, params)
-    
-    # SQLite compatibility methods for cursor
-    def execute(self, query: str, params: tuple = None) -> List[Tuple]:
-        """
-        Execute a SQL-like query and return results in SQLite format.
-        This is a simplified implementation for common queries.
-        """
+    def add_transaction(self, entry_id, amount, balance):
+        """Add a new transaction"""
         try:
-            query = query.strip()
-            params = params or ()
+            # Ensure proper data types
+            amount = float(amount) if amount else 0.0
+            balance = float(balance) if balance else 0.0
             
-            # Handle SELECT queries
-            if query.upper().startswith('SELECT'):
-                return self._handle_select(query, params)
+            # Convert entry_id to ObjectId if it's a string
+            from bson import ObjectId
+            if isinstance(entry_id, str):
+                try:
+                    entry_id = ObjectId(entry_id)
+                except:
+                    pass  # Keep as string if conversion fails
             
-            # Handle COUNT queries
-            elif 'COUNT(' in query.upper():
-                return self._handle_count(query, params)
+            return self.mongo_db.add_transaction(entry_id, amount, balance)
+        except Exception as e:
+            logger.error(f"Error adding transaction: {e}")
+            return None
+
+    def clear_all_collections(self):
+        """Clear all collections (for restore functionality)"""
+        try:
+            collections = ['customers', 'products', 'entries', 'transactions']
+            for collection_name in collections:
+                self.mongo_db.db[collection_name].delete_many({})
+            logger.info("All collections cleared successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error clearing collections: {e}")
+            return False
+
+    def restore_customers(self, customers_data):
+        """Restore customers from backup data"""
+        try:
+            for customer in customers_data:
+                self.add_customer(
+                    customer.get('name', ''),
+                    customer.get('contact', ''),
+                    customer.get('address', '')
+                )
+            return True
+        except Exception as e:
+            logger.error(f"Error restoring customers: {e}")
+            return False
+
+    def restore_products(self, products_data):
+        """Restore products from backup data"""
+        try:
+            for product in products_data:
+                self.add_product(
+                    product.get('name', ''),
+                    product.get('description', ''),
+                    product.get('unit_price', 0),
+                    product.get('batch_number', ''),
+                    product.get('expiry_date', '')
+                )
+            return True
+        except Exception as e:
+            logger.error(f"Error restoring products: {e}")
+            return False
+
+    def restore_entries(self, entries_data):
+        """Restore entries from backup data"""
+        try:
+            for entry in entries_data:
+                self.add_entry(
+                    entry.get('date', ''),
+                    entry.get('customer_id', ''),
+                    entry.get('product_id', ''),
+                    entry.get('quantity', 0),
+                    entry.get('unit_price', 0),
+                    entry.get('is_credit', True),
+                    entry.get('notes', '')
+                )
+            return True
+        except Exception as e:
+            logger.error(f"Error restoring entries: {e}")
+            return False
+
+    def restore_transactions(self, transactions_data):
+        """Restore transactions from backup data"""
+        try:
+            for transaction in transactions_data:
+                self.add_transaction(
+                    transaction.get('entry_id', ''),
+                    transaction.get('amount', 0),
+                    transaction.get('balance', 0)
+                )
+            return True
+        except Exception as e:
+            logger.error(f"Error restoring transactions: {e}")
+            return False
+
+    # ...existing code...
+    
+    def _handle_sales_query(self, query: str, params: tuple = None) -> List[List]:
+        """Handle sales/revenue queries"""
+        try:
+            # Build MongoDB aggregation pipeline
+            pipeline = [
+                {"$match": {"is_credit": True}},
+                {
+                    "$addFields": {
+                        "revenue": {
+                            "$multiply": [
+                                {"$toDouble": "$quantity"}, 
+                                {"$toDouble": "$unit_price"}
+                            ]
+                        }
+                    }
+                }
+            ]
             
-            # Handle SUM queries
-            elif 'SUM(' in query.upper():
-                return self._handle_sum(query, params)
+            # Add date filtering if params provided
+            if params and len(params) >= 1:
+                if len(params) == 1:
+                    # Single date - greater than or equal
+                    pipeline[0]["$match"]["date"] = {"$gte": str(params[0])}
+                elif len(params) == 2:
+                    # Date range
+                    pipeline[0]["$match"]["date"] = {"$gte": str(params[0]), "$lte": str(params[1])}
             
-            # Handle MAX queries
-            elif 'MAX(' in query.upper():
-                return self._handle_max(query, params)
+            # Add grouping
+            pipeline.append({
+                "$group": {
+                    "_id": None,
+                    "total": {"$sum": "$revenue"}
+                }
+            })
             
-            # Handle INSERT queries (basic support)
-            elif query.upper().startswith('INSERT'):
-                return self._handle_insert(query, params)
+            result = list(self.mongo_db.db.entries.aggregate(pipeline))
+            if result:
+                return [[float(result[0]["total"])]]
+            return [[0.0]]
             
-            # Handle UPDATE queries (basic support)
-            elif query.upper().startswith('UPDATE'):
-                return self._handle_update(query, params)
+        except Exception as e:
+            logger.error(f"Error in sales query: {e}")
+            return [[0.0]]
+    
+    def _handle_debits_query(self, query: str, params: tuple = None) -> List[List]:
+        """Handle debit/expense queries"""
+        try:
+            pipeline = [
+                {"$match": {"is_credit": False}},
+                {
+                    "$addFields": {
+                        "amount": {
+                            "$multiply": [
+                                {"$toDouble": "$quantity"}, 
+                                {"$toDouble": "$unit_price"}
+                            ]
+                        }
+                    }
+                }
+            ]
             
-            # Handle DELETE queries (basic support)
-            elif query.upper().startswith('DELETE'):
-                return self._handle_delete(query, params)
+            if params and len(params) >= 1:
+                if len(params) == 1:
+                    pipeline[0]["$match"]["date"] = {"$gte": str(params[0])}
+                elif len(params) == 2:
+                    pipeline[0]["$match"]["date"] = {"$gte": str(params[0]), "$lte": str(params[1])}
             
-            # For now, return empty results for unsupported queries
-            else:
-                logger.warning(f"Unsupported query type: {query}")
-                return []
+            pipeline.append({
+                "$group": {
+                    "_id": None,
+                    "total": {"$sum": "$amount"}
+                }
+            })
+            
+            result = list(self.mongo_db.db.entries.aggregate(pipeline))
+            if result:
+                return [[float(result[0]["total"])]]
+            return [[0.0]]
+            
+        except Exception as e:
+            logger.error(f"Error in debits query: {e}")
+            return [[0.0]]
+    
+    def _handle_count_query(self, query: str, params: tuple = None) -> List[List]:
+        """Handle COUNT queries"""
+        try:
+            match_criteria = {}
+            
+            if "IS_CREDIT = 1" in query:
+                match_criteria["is_credit"] = True
+            elif "IS_CREDIT = 0" in query:
+                match_criteria["is_credit"] = False
                 
+            if params and len(params) >= 1:
+                if len(params) == 1:
+                    match_criteria["date"] = {"$gte": str(params[0])}
+                elif len(params) == 2:
+                    match_criteria["date"] = {"$gte": str(params[0]), "$lte": str(params[1])}
+            
+            count = self.mongo_db.db.entries.count_documents(match_criteria)
+            return [[int(count)]]
+            
         except Exception as e:
-            logger.error(f"Error executing query: {e}")
-            return []
+            logger.error(f"Error in count query: {e}")
+            return [[0]]
     
-    def fetchall(self):
-        """SQLite compatibility method"""
-        # This would be called after execute() in SQLite
-        # For MongoDB adapter, results are returned directly from execute()
-        return []
-    
-    def fetchone(self):
-        """SQLite compatibility method"""
-        # This would be called after execute() in SQLite
-        # For MongoDB adapter, results are returned directly from execute()
-        return None
-    
-    def commit(self):
-        """SQLite compatibility method"""
-        # MongoDB doesn't need explicit commits
-        pass
-    
-    @property
-    def lastrowid(self):
-        """SQLite compatibility property"""
-        # Return a dummy value for compatibility
-        return 1
-    
-    def _handle_insert(self, query: str, params: tuple) -> List[Tuple]:
-        """Handle INSERT queries"""
+    def _handle_balance_query(self) -> List[List]:
+        """Handle balance queries"""
         try:
-            query_upper = query.upper()
+            # Get the latest transaction's balance
+            result = list(self.mongo_db.db.transactions.find(
+                {}, {"balance": 1}
+            ).sort("created_at", -1).limit(1))
             
-            if 'INTO CUSTOMERS' in query_upper:
-                if len(params) >= 3:
-                    result = self.mongo_db.add_customer(params[0], params[1], params[2])
-                    return [(result,)] if result else []
-            
-            elif 'INTO PRODUCTS' in query_upper:
-                if len(params) >= 5:
-                    result = self.mongo_db.add_product(
-                        params[0], params[1], params[2], params[3], params[4]
-                    )
-                    return [(result,)] if result else []
-            
-            elif 'INTO ENTRIES' in query_upper:
-                if len(params) >= 7:
-                    result = self.mongo_db.add_entry(
-                        params[0], params[1], params[2], params[3], 
-                        params[4], params[5], params[6]
-                    )
-                    return [(result,)] if result else []
-            
-            return []
+            if result:
+                balance = float(result[0].get("balance", 0))
+                return [[balance]]
+            return [[0.0]]
             
         except Exception as e:
-            logger.error(f"Error in INSERT handler: {e}")
+            logger.error(f"Error in balance query: {e}")
+            return [[0.0]]
+    
+    def _handle_product_distribution_query(self) -> List[List]:
+        """Handle product distribution queries for charts"""
+        try:
+            pipeline = [
+                {
+                    "$lookup": {
+                        "from": "products",
+                        "localField": "product_id",
+                        "foreignField": "_id",
+                        "as": "product"
+                    }
+                },
+                {"$unwind": "$product"},
+                {"$match": {"is_credit": True}},
+                {
+                    "$addFields": {
+                        "revenue": {
+                            "$multiply": [
+                                {"$toDouble": "$quantity"}, 
+                                {"$toDouble": "$unit_price"}
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$product.name",
+                        "total_revenue": {"$sum": "$revenue"},
+                        "batch_count": {"$addToSet": "$product.batch_number"}
+                    }
+                },
+                {
+                    "$addFields": {
+                        "batch_count": {"$size": "$batch_count"}
+                    }
+                },
+                {"$sort": {"total_revenue": -1}},
+                {"$limit": 5}
+            ]
+            
+            results = list(self.mongo_db.db.entries.aggregate(pipeline))
+            
+            # Convert to SQL-like format: [name, total_revenue, batch_count]
+            formatted_results = []
+            for result in results:
+                formatted_results.append([
+                    result["_id"],  # product name
+                    float(result["total_revenue"]),
+                    int(result["batch_count"])
+                ])
+            
+            return formatted_results
+            
+        except Exception as e:
+            logger.error(f"Error in product distribution query: {e}")
             return []
     
-    def _handle_update(self, query: str, params: tuple) -> List[Tuple]:
-        """Handle UPDATE queries"""
+    def _handle_expiry_query(self, query: str) -> List[List]:
+        """Handle expiry-related queries"""
         try:
-            # Basic UPDATE support can be added here
-            logger.warning(f"UPDATE query not fully implemented: {query}")
-            return []
+            from datetime import datetime, date
+            
+            today = date.today().strftime("%Y-%m-%d")
+            
+            # Get products with their sales data
+            pipeline = [
+                {
+                    "$lookup": {
+                        "from": "entries",
+                        "localField": "_id",
+                        "foreignField": "product_id",
+                        "as": "sales"
+                    }
+                },
+                {"$match": {"sales": {"$ne": []}}},  # Only products with sales
+                {
+                    "$addFields": {
+                        "sales_total": {
+                            "$sum": {
+                                "$map": {
+                                    "input": {"$filter": {"input": "$sales", "cond": {"$eq": ["$$this.is_credit", True]}}},
+                                    "as": "sale",
+                                    "in": {"$multiply": ["$$sale.quantity", "$$sale.unit_price"]}
+                                }
+                            }
+                        }
+                    }
+                },
+                {"$match": {"sales_total": {"$gt": 0}}}  # Only products with actual sales
+            ]
+            
+            # Add expiry date filter based on query
+            if "WHERE P.EXPIRY_DATE <" in query.upper():
+                # Expired products
+                pipeline.append({"$match": {"expiry_date": {"$lt": today}}})
+            elif "WHERE P.EXPIRY_DATE >=" in query.upper():
+                # Products expiring soon (within next 30 days)
+                from datetime import timedelta
+                future_date = (date.today() + timedelta(days=30)).strftime("%Y-%m-%d")
+                pipeline.append({
+                    "$match": {
+                        "expiry_date": {"$gte": today, "$lte": future_date}
+                    }
+                })
+            
+            results = list(self.mongo_db.db.products.aggregate(pipeline))
+            
+            # Convert to expected format: [name, batch_number, expiry_date, sales_total]
+            formatted_results = []
+            for result in results:
+                formatted_results.append([
+                    result.get("name", ""),
+                    result.get("batch_number", ""),
+                    result.get("expiry_date", ""),
+                    float(result.get("sales_total", 0))
+                ])
+            
+            return formatted_results
             
         except Exception as e:
-            logger.error(f"Error in UPDATE handler: {e}")
+            logger.error(f"Error in expiry query: {e}")
             return []
     
-    def _handle_delete(self, query: str, params: tuple) -> List[Tuple]:
-        """Handle DELETE queries"""
+    def _handle_generic_query(self, query: str, params: tuple = None) -> List[List]:
+        """Handle other generic queries"""
         try:
-            # Basic DELETE support can be added here
-            logger.warning(f"DELETE query not fully implemented: {query}")
+            logger.warning(f"Generic query handler called for: {query}")
             return []
-            
         except Exception as e:
-            logger.error(f"Error in DELETE handler: {e}")
+            logger.error(f"Error in generic query: {e}")
             return []
     
     def _handle_select(self, query: str, params: tuple) -> List[Tuple]:
         """Handle SELECT queries"""
         try:
-            # Simple implementation for common dashboard queries
             query_upper = query.upper()
             
+            # Handle joined queries for dashboard/UI
+            if 'JOIN CUSTOMERS C' in query_upper and 'JOIN PRODUCTS P' in query_upper:
+                return self._get_transactions_data(query, params)
+            
             # Handle product alerts queries
-            if 'FROM PRODUCTS P' in query_upper and 'EXPIRY_DATE' in query_upper:
+            elif 'FROM PRODUCTS P' in query_upper and 'EXPIRY_DATE' in query_upper:
                 return self._get_product_alerts(query, params)
             
             # Handle sales/entries queries
             elif 'FROM ENTRIES' in query_upper:
                 return self._get_entries_data(query, params)
-            
-            # Handle recent transactions
-            elif 'JOIN CUSTOMERS C' in query_upper and 'JOIN PRODUCTS P' in query_upper:
-                return self._get_transactions_data(query, params)
             
             # Default empty result
             return []
@@ -438,36 +955,11 @@ class MongoAdapter:
             query_upper = query.upper()
             
             if 'FROM PRODUCTS' in query_upper:
-                # Count products with proper filtering
-                if 'WHERE' in query_upper and params:
-                    # Direct MongoDB query
-                    if 'EXPIRY_DATE' in query_upper and len(params) > 0:
-                        target_date = str(params[0])
-                        if '<' in query_upper:
-                            count = self.mongo_db.db.products.count_documents({
-                                "expiry_date": {"$lt": target_date}
-                            })
-                        else:
-                            count = self.mongo_db.db.products.count_documents({
-                                "expiry_date": {"$gte": target_date}
-                            })
-                        return [(count,)]
-                else:
-                    count = self.mongo_db.db.products.count_documents({})
-                    return [(count,)]
-            
+                count = self.mongo_db.db.products.count_documents({})
+                return [(count,)]
             elif 'FROM ENTRIES' in query_upper:
-                # Count entries with date filter
-                if params and len(params) > 0:
-                    target_date = str(params[0]) if params[0] else ""
-                    count = self.mongo_db.db.entries.count_documents({
-                        "date": {"$gte": target_date}
-                    })
-                    return [(count,)]
-                else:
-                    count = self.mongo_db.db.entries.count_documents({})
-                    return [(count,)]
-            
+                count = self.mongo_db.db.entries.count_documents({})
+                return [(count,)]
             elif 'FROM CUSTOMERS' in query_upper:
                 count = self.mongo_db.db.customers.count_documents({})
                 return [(count,)]
@@ -494,11 +986,6 @@ class MongoAdapter:
                     match_conditions["is_credit"] = True
                 elif 'IS_CREDIT = 0' in query_upper:
                     match_conditions["is_credit"] = False
-                
-                # Add date filters if params exist
-                if params and len(params) > 0:
-                    if 'DATE >=' in query_upper:
-                        match_conditions["date"] = {"$gte": str(params[0])}
                 
                 if match_conditions:
                     pipeline.append({"$match": match_conditions})
@@ -551,11 +1038,42 @@ class MongoAdapter:
             logger.error(f"Error in MAX handler: {e}")
             return [(0.0,)]
     
+    def _handle_insert(self, query: str, params: tuple) -> List[Tuple]:
+        """Handle INSERT queries"""
+        try:
+            query_upper = query.upper()
+            
+            if 'INTO CUSTOMERS' in query_upper:
+                if len(params) >= 3:
+                    result = self.mongo_db.add_customer(params[0], params[1], params[2])
+                    return [(result,)] if result else []
+            
+            elif 'INTO PRODUCTS' in query_upper:
+                if len(params) >= 5:
+                    result = self.mongo_db.add_product(
+                        params[0], params[1], params[2], params[3], params[4]
+                    )
+                    return [(result,)] if result else []
+            
+            elif 'INTO ENTRIES' in query_upper:
+                if len(params) >= 7:
+                    result = self.mongo_db.add_entry(
+                        params[0], params[1], params[2], params[3], 
+                        params[4], params[5], params[6]
+                    )
+                    return [(result,)] if result else []
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"Error in INSERT handler: {e}")
+            return []
+    
     def _get_product_alerts(self, query: str, params: tuple) -> List[Tuple]:
         """Get product alerts for expired/expiring products"""
         try:
-            products = self.mongo_db.get_products()
-            entries = self.mongo_db.get_entries()
+            products = self.get_products()
+            entries = self.get_entries()
             
             # Create a mapping of product sales
             product_sales = {}
@@ -601,7 +1119,7 @@ class MongoAdapter:
     def _get_entries_data(self, query: str, params: tuple) -> List[Tuple]:
         """Get entries data based on query"""
         try:
-            entries = self.mongo_db.get_entries()
+            entries = self.get_entries()
             results = []
             
             for entry in entries:
@@ -718,6 +1236,48 @@ class MongoAdapter:
         except Exception as e:
             logger.error(f"Error checking entry filters: {e}")
             return False
+
+    def test_data_retrieval(self):
+        """Test method to verify data retrieval"""
+        try:
+            logger.info("=== Testing MongoDB Data Retrieval ===")
+            
+            # Test customers
+            customers = self.get_customers()
+            logger.info(f"Customers found: {len(customers)}")
+            if customers:
+                logger.info(f"Sample customer: {customers[0]}")
+            
+            # Test products
+            products = self.get_products()
+            logger.info(f"Products found: {len(products)}")
+            if products:
+                logger.info(f"Sample product: {products[0]}")
+            
+            # Test entries
+            entries = self.get_entries()
+            logger.info(f"Entries found: {len(entries)}")
+            if entries:
+                logger.info(f"Sample entry: {entries[0]}")
+            
+            # Test transactions
+            transactions = self.get_transactions()
+            logger.info(f"Transactions found: {len(transactions)}")
+            if transactions:
+                logger.info(f"Sample transaction: {transactions[0]}")
+            
+            logger.info("=== End Data Retrieval Test ===")
+            
+            return {
+                'customers': len(customers),
+                'products': len(products),
+                'entries': len(entries),
+                'transactions': len(transactions)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in test_data_retrieval: {e}")
+            return {'error': str(e)}
 
 # Compatibility alias for easy replacement
 Database = MongoAdapter

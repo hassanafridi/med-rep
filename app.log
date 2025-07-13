@@ -4216,3 +4216,771 @@
 2025-07-13 06:16:03,711 - src.database.mongo_db - INFO - MongoDB connection closed
 2025-07-13 06:16:08,130 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
 2025-07-13 06:16:08,243 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:26:48,663 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:26:48,663 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:26:48,663 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:26:48,663 - root - INFO - MongoDB connection closed
+2025-07-13 06:29:35,587 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:29:35,588 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:29:35,589 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:29:36,905 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:29:36,905 - root - INFO - MongoDB connection successful
+2025-07-13 06:29:37,530 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:29:38,477 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:29:38,477 - root - INFO - MongoDB initialization successful
+2025-07-13 06:29:38,637 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:29:38,637 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:29:38,637 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:29:41,424 - root - INFO - User admin logged in successfully
+2025-07-13 06:29:41,446 - root - ERROR - Error creating dashboard tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:29:41,446 - root - ERROR - Error creating new entry tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:29:41,447 - root - ERROR - Error creating ledger tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:29:41,453 - root - ERROR - Error creating graphs tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:29:41,456 - root - ERROR - Error creating reports tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:29:41,470 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:29:41,471 - database.db - INFO - Database connection closed
+2025-07-13 06:29:41,471 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:29:41,472 - database.db - INFO - Database connection closed
+2025-07-13 06:29:41,472 - root - ERROR - Error creating manage data tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:29:41,472 - root - ERROR - Error creating settings tab: 'MongoAdapter' object has no attribute '_ensure_data_available'
+2025-07-13 06:33:52,727 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:33:52,728 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:33:52,780 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:33:52,781 - root - INFO - MongoDB connection closed
+2025-07-13 06:34:29,433 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:34:29,434 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:34:29,434 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:34:30,038 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:30,038 - root - INFO - MongoDB connection successful
+2025-07-13 06:34:30,637 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:31,589 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:34:31,589 - root - INFO - MongoDB initialization successful
+2025-07-13 06:34:31,748 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:31,749 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:34:31,749 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:34:34,561 - root - INFO - User admin logged in successfully
+2025-07-13 06:34:35,189 - database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:35,352 - database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:36,472 - database.mongo_adapter - ERROR - Error in SELECT handler: 'MongoAdapter' object has no attribute '_get_entries_data'
+2025-07-13 06:34:36,586 - root - ERROR - Error creating dashboard tab: list index out of range
+2025-07-13 06:34:37,178 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:37,341 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:37,962 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:38,940 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:34:44,933 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:45,524 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:45,685 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:46,300 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:46,484 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:47,079 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:48,033 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:34:48,086 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:48,090 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:34:48,090 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:48,694 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:48,853 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:49,443 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:49,603 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:50,197 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:50,356 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:50,407 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:50,407 - root - INFO - Reports tab customers loaded successfully
+2025-07-13 06:34:50,413 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:34:50,414 - database.db - INFO - Database connection closed
+2025-07-13 06:34:50,414 - database.db - INFO - Connected to database: data/medtran.db
+2025-07-13 06:34:50,415 - database.db - INFO - Database connection closed
+2025-07-13 06:34:51,009 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:51,167 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:51,764 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:34:51,923 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:34:51,924 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 06:34:52,053 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:52,053 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 06:34:52,053 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:34:52,053 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:52,053 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 06:34:52,055 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:52,055 - root - INFO - Manage data tab customers loaded successfully
+2025-07-13 06:34:52,055 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:34:52,056 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:34:52,056 - root - INFO - Manage data tab products loaded successfully
+2025-07-13 06:34:58,836 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:34:58,836 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:35:03,111 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:35:03,111 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:35:04,847 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:35:04,847 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:41:05,688 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:41:05,689 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:41:05,689 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:41:05,689 - root - INFO - MongoDB connection closed
+2025-07-13 06:56:37,951 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:56:37,953 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 06:56:37,953 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 06:56:38,589 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:38,589 - root - INFO - MongoDB connection successful
+2025-07-13 06:56:39,222 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:40,222 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:56:40,222 - root - INFO - MongoDB initialization successful
+2025-07-13 06:56:40,393 - root - INFO - Data verification: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:40,393 - root - INFO - Database contains sufficient data for operation
+2025-07-13 06:56:40,393 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 06:56:44,309 - root - INFO - User admin logged in successfully
+2025-07-13 06:56:44,946 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:45,107 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:46,439 - root - ERROR - Error creating dashboard tab: list index out of range
+2025-07-13 06:56:47,038 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:47,199 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:47,796 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:48,731 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:56:50,502 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:56:51,100 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:51,263 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:51,870 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:52,030 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:52,632 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:53,597 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 06:56:53,650 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:56:53,655 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:56:53,655 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:56:54,256 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:54,418 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:55,020 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:55,177 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:55,779 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:55,934 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:55,996 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:56:55,996 - root - INFO - Reports tab customers loaded successfully
+2025-07-13 06:56:56,591 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:56,750 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:56,808 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 06:56:56,808 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 06:56:56,859 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 06:56:56,859 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 06:56:57,456 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:57,618 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:58,237 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 06:56:58,400 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 06:56:58,401 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 06:56:58,538 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:56:58,539 - root - INFO - Ledger tab customers loaded successfully
+2025-07-13 06:56:58,539 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:56:58,539 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:56:58,539 - root - INFO - Ledger tab entries loaded successfully
+2025-07-13 06:56:58,542 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 06:56:58,542 - root - INFO - Manage data tab customers loaded successfully
+2025-07-13 06:56:58,543 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 06:56:58,543 - root - INFO - Manage data tab products loaded successfully
+2025-07-13 06:57:02,022 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:57:02,022 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:57:08,457 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:57:08,457 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:57:17,454 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 06:57:17,454 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:57:22,231 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:57:22,232 - root - INFO - Configuration saved to data\config.json
+2025-07-13 06:57:22,232 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 06:57:22,232 - root - INFO - MongoDB connection closed
+2025-07-13 07:11:01,047 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:11:01,047 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:11:02,751 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:02,751 - root - INFO - MongoDB connection successful
+2025-07-13 07:11:03,346 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:04,298 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:11:04,298 - root - INFO - MongoDB initialization successful
+2025-07-13 07:11:04,298 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:11:08,666 - root - INFO - User admin logged in successfully
+2025-07-13 07:11:09,283 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:09,284 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:10,470 - src.database.mongo_adapter - INFO - Generated 5 transaction results using aggregation
+2025-07-13 07:11:11,100 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:11,100 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:11,718 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:12,700 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:11:13,285 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:13,285 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:13,351 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:13,931 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:13,931 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:14,538 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:15,521 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:11:16,128 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:16,128 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:16,182 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:16,186 - src.database.mongo_adapter - ERROR - Error getting transactions data: Cannot use MongoClient after close
+2025-07-13 07:11:16,186 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:16,767 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:16,767 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:17,372 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:17,372 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:17,424 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:11:17,424 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:11:17,477 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:11:17,477 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:11:18,078 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:18,078 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:18,679 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:18,679 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:19,276 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:11:19,276 - src.database.mongo_adapter - INFO - MongoDB adapter connected successfully
+2025-07-13 07:11:19,277 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 07:11:19,366 - root - INFO - Dashboard data refreshed
+2025-07-13 07:11:19,418 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:19,419 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:11:19,421 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:19,421 - src.database.mongo_adapter - ERROR - Error getting transactions data: Cannot use MongoClient after close
+2025-07-13 07:11:19,422 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:19,422 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:11:19,422 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:11:19,423 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:11:19,423 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:11:43,749 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:11:47,536 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:26,724 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:29:26,725 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:29:27,322 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:27,322 - root - INFO - MongoDB connection successful
+2025-07-13 07:29:27,963 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:28,919 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:29:28,919 - root - INFO - MongoDB initialization successful
+2025-07-13 07:29:28,919 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:29:35,439 - root - INFO - User admin logged in successfully
+2025-07-13 07:29:36,139 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:36,303 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:37,667 - root - ERROR - Error creating dashboard tab: list index out of range
+2025-07-13 07:29:38,263 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:38,422 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:39,065 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:40,024 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:29:46,677 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:47,265 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:47,421 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:48,020 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:48,179 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:48,768 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:49,713 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:29:49,767 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:49,772 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:29:49,772 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:50,358 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:50,517 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:51,107 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:51,266 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:51,324 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:29:51,324 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:29:51,377 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:29:51,377 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:29:51,973 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:52,127 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:52,730 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:52,887 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:53,505 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:53,666 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:54,281 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:29:54,445 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:29:54,448 - root - ERROR - Error creating settings tab: expected str, bytes or os.PathLike object, not NoneType
+2025-07-13 07:29:54,682 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:54,683 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:29:54,683 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:54,683 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:29:54,686 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:29:54,686 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:29:54,687 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:29:56,564 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:29:56,565 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:30:16,583 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:30:16,584 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:30:16,584 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:30:16,584 - root - INFO - MongoDB connection closed
+2025-07-13 07:40:02,477 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:40:02,477 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:40:03,856 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:03,856 - root - INFO - MongoDB connection successful
+2025-07-13 07:40:04,481 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:05,441 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:40:05,441 - root - INFO - MongoDB initialization successful
+2025-07-13 07:40:05,441 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:40:09,574 - root - INFO - User admin logged in successfully
+2025-07-13 07:40:10,207 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:10,368 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:11,605 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:40:11,605 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:40:12,260 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:12,419 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:13,015 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:13,173 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:13,765 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:14,713 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:40:14,884 - root - INFO - Dashboard data refreshed
+2025-07-13 07:40:18,609 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:19,206 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:19,367 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:19,996 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:20,158 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:20,746 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:21,701 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:40:21,754 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:21,758 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:40:21,759 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:22,354 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:22,515 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:23,104 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:23,262 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:23,320 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:40:23,320 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:40:23,373 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:40:23,373 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:40:23,975 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:24,134 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:24,724 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:24,883 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:25,491 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:25,653 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:26,243 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:26,402 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:26,997 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:40:27,160 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:40:27,388 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:27,388 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:40:27,389 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:27,389 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:40:27,391 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:40:27,392 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:40:27,392 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:40:29,668 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:29,669 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:40:46,837 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:40:46,837 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:40:46,838 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:40:46,838 - root - INFO - MongoDB connection closed
+2025-07-13 07:44:13,623 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:44:13,623 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:44:14,933 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:14,933 - root - INFO - MongoDB connection successful
+2025-07-13 07:44:15,535 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:16,496 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:44:16,496 - root - INFO - MongoDB initialization successful
+2025-07-13 07:44:16,497 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:44:20,076 - root - INFO - User admin logged in successfully
+2025-07-13 07:44:20,704 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:20,862 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:20,916 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:44:20,916 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:44:20,970 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:44:20,970 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:44:21,023 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:44:21,023 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:44:21,076 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 07:44:21,076 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 07:44:21,131 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:44:21,131 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:44:21,184 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:44:21,184 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:44:21,241 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:44:21,241 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:44:21,297 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:44:21,297 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:44:21,350 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:44:21,350 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:44:21,405 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:44:21,406 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:44:21,468 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:44:21,469 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:44:21,519 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:44:21,520 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:44:21,573 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:44:21,573 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:44:22,213 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:22,370 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:22,982 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:23,141 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:23,753 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:24,726 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:44:24,924 - root - INFO - Dashboard data refreshed
+2025-07-13 07:44:27,589 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:44:28,176 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:28,334 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:28,934 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:29,092 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:29,681 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:30,602 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:44:30,653 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:44:30,657 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:44:30,658 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:44:31,243 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:31,403 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:32,000 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:32,158 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:32,215 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:44:32,215 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:44:32,268 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:44:32,268 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:44:32,869 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:33,029 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:33,614 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:33,767 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:34,353 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:34,512 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:35,123 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:35,286 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:35,898 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:44:36,059 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:44:36,300 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:44:36,301 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:44:36,301 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:44:36,301 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:44:36,304 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:44:36,304 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:44:36,305 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:44:59,093 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:44:59,093 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:45:23,872 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:45:24,034 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:47:26,835 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:47:26,835 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:47:26,835 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:47:26,836 - root - INFO - MongoDB connection closed
+2025-07-13 07:51:28,390 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:51:28,390 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:51:29,880 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:29,880 - root - INFO - MongoDB connection successful
+2025-07-13 07:51:30,485 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:31,468 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:51:31,468 - root - INFO - MongoDB initialization successful
+2025-07-13 07:51:31,468 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:51:35,903 - root - INFO - User admin logged in successfully
+2025-07-13 07:51:36,549 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:36,707 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:36,759 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:51:36,759 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:51:36,837 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:51:36,837 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:51:36,891 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:51:36,891 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:51:36,942 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 07:51:36,943 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 07:51:36,997 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:51:36,997 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:51:37,051 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:51:37,051 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:51:37,107 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:51:37,107 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:51:37,163 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:51:37,163 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:51:37,215 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:51:37,216 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:51:37,269 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:51:37,269 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:51:37,325 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:51:37,325 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:51:37,376 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:51:37,376 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:51:37,429 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:51:37,430 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:51:38,089 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:38,247 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:38,856 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:39,015 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:39,629 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:40,616 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:51:40,815 - root - INFO - Dashboard data refreshed
+2025-07-13 07:51:42,577 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:51:43,165 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:43,323 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:43,928 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:44,086 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:44,671 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:45,625 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:51:45,677 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:51:45,681 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:51:45,682 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:51:46,266 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:46,421 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:47,010 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:47,169 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:47,225 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:51:47,225 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:51:47,278 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:51:47,278 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:51:47,894 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:48,056 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:48,655 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:48,817 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:49,418 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:49,576 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:50,158 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:50,312 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:50,934 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:51:51,107 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:51:51,339 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:51:51,340 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:51:51,340 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:51:51,340 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:51:51,343 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:51:51,344 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:51:51,344 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:51:56,837 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:51:56,837 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:52:09,306 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:52:09,468 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:52:11,044 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:52:11,045 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:52:11,045 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:52:11,045 - root - INFO - MongoDB connection closed
+2025-07-13 07:53:59,123 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:53:59,123 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:54:00,453 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:00,453 - root - INFO - MongoDB connection successful
+2025-07-13 07:54:01,049 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:01,981 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:54:01,981 - root - INFO - MongoDB initialization successful
+2025-07-13 07:54:01,981 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:54:06,734 - root - INFO - User admin logged in successfully
+2025-07-13 07:54:07,354 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:07,514 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:07,567 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:54:07,568 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:54:07,620 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:54:07,621 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:54:07,674 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:54:07,674 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:54:07,727 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 07:54:07,727 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 07:54:07,781 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:54:07,781 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:54:07,834 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:54:07,834 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:54:07,890 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:54:07,891 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:54:07,947 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:54:07,947 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:54:08,001 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:54:08,001 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:54:08,054 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:54:08,054 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:54:08,110 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:54:08,111 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:54:08,162 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:54:08,162 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:54:08,215 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:54:08,215 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:54:08,861 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:09,017 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:09,637 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:09,801 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:10,412 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:11,394 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:54:11,594 - root - INFO - Dashboard data refreshed
+2025-07-13 07:54:13,575 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:14,188 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:14,350 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:14,966 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:15,130 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:15,739 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:16,708 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:54:16,763 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:16,767 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:54:16,767 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:17,353 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:17,515 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:18,126 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:18,289 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:18,346 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:54:18,346 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:54:18,399 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:54:18,400 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:54:18,992 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:19,147 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:19,737 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:19,894 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:20,497 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:20,666 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:21,266 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:21,427 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:22,028 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:22,189 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:22,429 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:22,430 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:54:22,430 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:22,430 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:54:22,433 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:54:22,433 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:54:22,434 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:54:26,159 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:26,159 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:54:30,637 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:54:30,796 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:54:32,725 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:54:32,725 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:54:32,726 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:54:32,726 - root - INFO - MongoDB connection closed
+2025-07-13 07:58:22,132 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 07:58:22,133 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 07:58:22,742 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:22,742 - root - INFO - MongoDB connection successful
+2025-07-13 07:58:23,343 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:24,312 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:58:24,312 - root - INFO - MongoDB initialization successful
+2025-07-13 07:58:24,312 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 07:58:28,714 - root - INFO - User admin logged in successfully
+2025-07-13 07:58:29,341 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:29,502 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:29,555 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:58:29,556 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:58:29,611 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:58:29,611 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:58:29,666 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:58:29,666 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:58:29,719 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 07:58:29,719 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 07:58:29,774 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:58:29,774 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:58:29,828 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:58:29,828 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:58:29,891 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:58:29,891 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:58:29,950 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:58:29,950 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:58:30,004 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:58:30,004 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:58:30,059 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:58:30,059 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:58:30,115 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 07:58:30,116 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 07:58:30,169 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:58:30,169 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:58:30,223 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:58:30,223 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:58:30,865 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:31,024 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:31,630 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:31,796 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:32,382 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:33,330 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:58:33,531 - root - INFO - Dashboard data refreshed
+2025-07-13 07:58:35,418 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:36,033 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:36,194 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:36,791 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:36,945 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:37,557 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:38,519 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 07:58:38,573 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:38,576 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:58:38,576 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:39,172 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:39,329 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:39,914 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:40,073 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:40,129 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 07:58:40,129 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 07:58:40,182 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 07:58:40,182 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 07:58:40,779 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:40,941 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:41,544 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:41,703 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:42,291 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:42,448 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:43,056 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:43,220 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:44,164 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 07:58:44,319 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 07:58:44,568 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:44,568 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 07:58:44,568 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:44,568 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 07:58:44,571 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 07:58:44,572 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 07:58:44,572 - root - INFO - Manage data tab loaded successfully
+2025-07-13 07:58:45,879 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:45,879 - root - INFO - New entry tab data loaded successfully
+2025-07-13 07:58:53,142 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:58:53,143 - root - INFO - Configuration saved to data\config.json
+2025-07-13 07:58:53,143 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 07:58:53,144 - root - INFO - MongoDB connection closed
+2025-07-13 08:02:55,626 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 08:02:55,627 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 08:02:56,952 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:02:56,953 - root - INFO - MongoDB connection successful
+2025-07-13 08:02:57,544 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:02:58,509 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 08:02:58,509 - root - INFO - MongoDB initialization successful
+2025-07-13 08:02:58,509 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 08:03:01,585 - root - INFO - User admin logged in successfully
+2025-07-13 08:03:02,251 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:02,415 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:02,470 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 08:03:02,470 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 08:03:02,524 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 08:03:02,524 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 08:03:02,579 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 08:03:02,579 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 08:03:02,632 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 08:03:02,632 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 08:03:02,687 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 08:03:02,687 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 08:03:02,744 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 08:03:02,744 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 08:03:02,807 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 08:03:02,808 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 08:03:02,866 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 08:03:02,866 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 08:03:02,921 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 08:03:02,921 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 08:03:02,977 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 08:03:02,977 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 08:03:03,036 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 08:03:03,036 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 08:03:03,089 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 08:03:03,089 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 08:03:03,143 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 08:03:03,143 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 08:03:03,782 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:03,940 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:04,555 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:04,714 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:05,302 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:06,277 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 08:03:06,496 - root - INFO - Dashboard data refreshed
+2025-07-13 08:03:08,547 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:03:09,160 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:09,322 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:09,931 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:10,093 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:10,681 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:11,654 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 08:03:11,708 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:03:11,713 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 08:03:11,713 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:03:12,304 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:12,463 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:13,073 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:13,229 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:13,287 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 08:03:13,287 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 08:03:13,340 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 08:03:13,340 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 08:03:13,963 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:14,122 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:14,701 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:14,854 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:15,464 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:15,625 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:16,214 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:16,377 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:16,976 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 08:03:17,137 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 08:03:17,400 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:03:17,400 - src.database.mongo_adapter - ERROR - Error in expiry query: Cannot use MongoClient after close
+2025-07-13 08:03:17,400 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:03:17,400 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 08:03:17,403 - src.database.mongo_adapter - ERROR - MongoDB get_customers error: Cannot use MongoClient after close
+2025-07-13 08:03:17,404 - src.database.mongo_adapter - ERROR - MongoDB get_products error: Cannot use MongoClient after close
+2025-07-13 08:03:17,404 - root - INFO - Manage data tab loaded successfully
+2025-07-13 08:03:48,030 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:03:48,030 - root - INFO - New entry tab data loaded successfully
+2025-07-13 08:04:30,145 - root - INFO - Configuration saved to data\config.json
+2025-07-13 08:04:30,145 - root - INFO - Configuration saved to data\config.json
+2025-07-13 08:04:30,145 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 08:04:30,145 - root - INFO - MongoDB connection closed

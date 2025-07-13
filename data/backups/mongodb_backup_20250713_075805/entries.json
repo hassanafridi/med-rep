@@ -1,0 +1,362 @@
+[
+  {
+    "id": "6872f70e98dfe7da56eb957d",
+    "customer_id": "6872f70d98dfe7da56eb9574",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 456.0,
+    "unit_price": 12.75,
+    "date": "2025-05-22",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb957e",
+    "customer_id": "6872f70d98dfe7da56eb9574",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 55.0,
+    "unit_price": 12.75,
+    "date": "2025-05-09",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb957f",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 1.0,
+    "unit_price": 12.75,
+    "date": "2025-05-09",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9580",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb957a",
+    "quantity": 1.0,
+    "unit_price": 35.0,
+    "date": "2025-05-09",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9581",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb957a",
+    "quantity": 1.0,
+    "unit_price": 35.0,
+    "date": "2025-05-09",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9582",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb957a",
+    "quantity": 1.0,
+    "unit_price": 23123.0,
+    "date": "2025-05-09",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9583",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 1.0,
+    "unit_price": 46.5,
+    "date": "2025-05-09",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9584",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 1.0,
+    "unit_price": 25.5,
+    "date": "2025-05-09",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9585",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 8.0,
+    "unit_price": 55.5,
+    "date": "2025-05-09",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9586",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 23.0,
+    "unit_price": 44.5,
+    "date": "2025-05-09",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9587",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 33.0,
+    "unit_price": 52.5,
+    "date": "2025-05-09",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9588",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 18.0,
+    "unit_price": 47.5,
+    "date": "2025-03-09",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb9589",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 16.0,
+    "unit_price": 32.5,
+    "date": "2025-05-09",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb958a",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 1.0,
+    "unit_price": 25.5,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70e98dfe7da56eb958b",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 16.0,
+    "unit_price": 32.5,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb958c",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 1.0,
+    "unit_price": 25.5,
+    "date": "2025-05-10",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb958d",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 11.0,
+    "unit_price": 41.5,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb958e",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 1.0,
+    "unit_price": 12.75,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb958f",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 10.0,
+    "unit_price": 17.75,
+    "date": "2025-05-10",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9590",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 11.0,
+    "unit_price": 18.75,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9591",
+    "customer_id": "6872f70d98dfe7da56eb9574",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 7.0,
+    "unit_price": 17.75,
+    "date": "2025-05-10",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9592",
+    "customer_id": "6872f70d98dfe7da56eb9574",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 1.0,
+    "unit_price": 12.75,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9593",
+    "customer_id": "6872f70d98dfe7da56eb9574",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 19.0,
+    "unit_price": 18.75,
+    "date": "2025-05-10",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9594",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 6.0,
+    "unit_price": 20.5,
+    "date": "2025-05-10",
+    "is_credit": true,
+    "notes": "aaaaa"
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9595",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 1.0,
+    "unit_price": 25.5,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9596",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70d98dfe7da56eb957a",
+    "quantity": 29.0,
+    "unit_price": 137.0,
+    "date": "2025-05-10",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9597",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70d98dfe7da56eb9579",
+    "quantity": 36.0,
+    "unit_price": 19.75,
+    "date": "2025-05-10",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9598",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70e98dfe7da56eb957b",
+    "quantity": 18.0,
+    "unit_price": 5.01,
+    "date": "2025-05-27",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb9599",
+    "customer_id": "6872f70d98dfe7da56eb9573",
+    "product_id": "6872f70e98dfe7da56eb957b",
+    "quantity": 8.0,
+    "unit_price": 23.009999999999998,
+    "date": "2025-05-27",
+    "is_credit": true,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb959a",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70e98dfe7da56eb957b",
+    "quantity": 3.0,
+    "unit_price": 44.01,
+    "date": "2025-05-27",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f70f98dfe7da56eb959b",
+    "customer_id": "6872f70d98dfe7da56eb9574",
+    "product_id": "6872f70e98dfe7da56eb957c",
+    "quantity": 12.0,
+    "unit_price": 61.010000000000005,
+    "date": "2025-05-27",
+    "is_credit": true,
+    "notes": " wholesale"
+  },
+  {
+    "id": "6872f70f98dfe7da56eb959c",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 21.0,
+    "unit_price": 28.5,
+    "date": "2025-07-06",
+    "is_credit": false,
+    "notes": "something [Invoice: INV-0001]"
+  },
+  {
+    "id": "6872f70f98dfe7da56eb959d",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 28.0,
+    "unit_price": 25.5,
+    "date": "2025-07-06",
+    "is_credit": false,
+    "notes": "asdasd [Invoice: INV-0001]"
+  },
+  {
+    "id": "6872f71098dfe7da56eb959e",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70d98dfe7da56eb957a",
+    "quantity": 29.0,
+    "unit_price": 35.0,
+    "date": "2025-07-06",
+    "is_credit": false,
+    "notes": "Invoice: INV-0001"
+  },
+  {
+    "id": "6872f71098dfe7da56eb959f",
+    "customer_id": "6872f70d98dfe7da56eb9575",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 28.0,
+    "unit_price": 25.5,
+    "date": "2025-07-06",
+    "is_credit": false,
+    "notes": ""
+  },
+  {
+    "id": "6872f71098dfe7da56eb95a0",
+    "customer_id": "6872f70d98dfe7da56eb9576",
+    "product_id": "6872f70d98dfe7da56eb9578",
+    "quantity": 18.0,
+    "unit_price": 61.5,
+    "date": "2025-07-06",
+    "is_credit": false,
+    "notes": "Invoice: INV-0001"
+  }
+]

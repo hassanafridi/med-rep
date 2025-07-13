@@ -8,12 +8,53 @@ from PyQt5.QtGui import QIcon, QPixmap
 import os
 import sys
 
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.database.mongo_adapter import MongoAdapter
+
 class HelpBrowser(QWidget):
-    def __init__(self):
+    def __init__(self, mongo_adapter=None):
         super().__init__()
-        self.setWindowTitle("Medical Rep Transaction Software - Help")
-        self.setMinimumSize(900, 600)
-        self.initUI()
+        try:
+            self.mongo_adapter = mongo_adapter or MongoAdapter()
+            self.setWindowTitle("Medical Rep Transaction Software - Help")
+            self.setMinimumSize(900, 600)
+            self.initUI()
+        except Exception as e:
+            print(f"Error initializing Help Browser: {e}")
+            self.createErrorUI(str(e))
+    
+    def createErrorUI(self, error_message):
+        """Create a minimal error UI when initialization fails"""
+        layout = QVBoxLayout()
+        
+        error_label = QLabel(f"Help system temporarily unavailable\n\nError: {error_message}")
+        error_label.setAlignment(Qt.AlignCenter)
+        error_label.setStyleSheet("color: #e74c3c; font-weight: bold; padding: 20px;")
+        
+        retry_btn = QPushButton("Retry Initialization")
+        retry_btn.clicked.connect(self.retryInitialization)
+        
+        layout.addWidget(error_label)
+        layout.addWidget(retry_btn)
+        layout.addStretch()
+        
+        self.setLayout(layout)
+    
+    def retryInitialization(self):
+        """Retry initializing the help browser"""
+        try:
+            # Clear current layout
+            if self.layout():
+                QWidget().setLayout(self.layout())
+            
+            # Retry initialization
+            self.__init__(self.mongo_adapter)
+            
+        except Exception as e:
+            print(f"Retry failed: {e}")
+            QMessageBox.critical(self, "Initialization Failed", 
+                               f"Failed to initialize Help Browser: {str(e)}")
         
     def initUI(self):
         """Initialize the UI components"""
@@ -22,12 +63,20 @@ class HelpBrowser(QWidget):
         # Header
         header_layout = QHBoxLayout()
         
-        header_label = QLabel("Medical Rep Transaction Software - Help & Documentation")
-        header_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        header_label = QLabel("Medical Rep Transaction Software - Help & Documentation (MongoDB Edition)")
+        header_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4B0082;")
         
         search_box = QLineEdit()
         search_box.setPlaceholderText("Search help topics...")
         search_box.textChanged.connect(self.searchHelp)
+        search_box.setStyleSheet("""
+            QLineEdit {
+                padding: 8px;
+                border: 2px solid #4B0082;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+        """)
         
         header_layout.addWidget(header_label)
         header_layout.addWidget(search_box)
@@ -42,10 +91,27 @@ class HelpBrowser(QWidget):
         self.topics_tree.setHeaderLabel("Help Topics")
         self.topics_tree.setMinimumWidth(200)
         self.topics_tree.itemClicked.connect(self.topicSelected)
+        self.topics_tree.setStyleSheet("""
+            QTreeWidget {
+                border: 1px solid #4B0082;
+                border-radius: 5px;
+            }
+            QTreeWidget::item:selected {
+                background-color: #4B0082;
+                color: white;
+            }
+        """)
         
         # Help content
         self.help_content = QTextBrowser()
         self.help_content.setOpenExternalLinks(True)
+        self.help_content.setStyleSheet("""
+            QTextBrowser {
+                border: 1px solid #4B0082;
+                border-radius: 5px;
+                padding: 10px;
+            }
+        """)
         
         splitter.addWidget(self.topics_tree)
         splitter.addWidget(self.help_content)
@@ -72,6 +138,13 @@ class HelpBrowser(QWidget):
         QTreeWidgetItem(getting_started, ["Installation"])
         QTreeWidgetItem(getting_started, ["First Time Setup"])
         
+        # MongoDB Features
+        mongodb_features = QTreeWidgetItem(self.topics_tree, ["MongoDB Features"])
+        QTreeWidgetItem(mongodb_features, ["MongoDB Connection"])
+        QTreeWidgetItem(mongodb_features, ["Data Migration"])
+        QTreeWidgetItem(mongodb_features, ["Cloud Database"])
+        QTreeWidgetItem(mongodb_features, ["Performance Benefits"])
+        
         # Basic Features
         basic_features = QTreeWidgetItem(self.topics_tree, ["Basic Features"])
         QTreeWidgetItem(basic_features, ["Adding New Entries"])
@@ -84,24 +157,27 @@ class HelpBrowser(QWidget):
         QTreeWidgetItem(advanced_features, ["Customer Management"])
         QTreeWidgetItem(advanced_features, ["Product Management"])
         QTreeWidgetItem(advanced_features, ["Invoice Generation"])
+        QTreeWidgetItem(advanced_features, ["Enhanced Analytics"])
         QTreeWidgetItem(advanced_features, ["Data Import/Export"])
-        QTreeWidgetItem(advanced_features, ["Audit Trail"])
         
         # Data Management
         data_management = QTreeWidgetItem(self.topics_tree, ["Data Management"])
-        QTreeWidgetItem(data_management, ["Backup and Restore"])
+        QTreeWidgetItem(data_management, ["MongoDB Backup"])
         QTreeWidgetItem(data_management, ["Cloud Synchronization"])
         QTreeWidgetItem(data_management, ["Database Maintenance"])
+        QTreeWidgetItem(data_management, ["Data Security"])
         
         # Troubleshooting
         troubleshooting = QTreeWidgetItem(self.topics_tree, ["Troubleshooting"])
         QTreeWidgetItem(troubleshooting, ["Common Issues"])
+        QTreeWidgetItem(troubleshooting, ["MongoDB Connection Issues"])
         QTreeWidgetItem(troubleshooting, ["Error Messages"])
         QTreeWidgetItem(troubleshooting, ["Data Recovery"])
         
         # Expand the first level
         self.topics_tree.expandItem(getting_started)
-    
+        self.topics_tree.expandItem(mongodb_features)
+
     def topicSelected(self, item, column):
         """Show help content for the selected topic"""
         # Get the full path to the topic
@@ -126,6 +202,8 @@ class HelpBrowser(QWidget):
         """Show an overview of the category"""
         if category == "Getting Started":
             self.help_content.setHtml(self.getGettingStartedOverview())
+        elif category == "MongoDB Features":
+            self.help_content.setHtml(self.getMongoDBFeaturesOverview())
         elif category == "Basic Features":
             self.help_content.setHtml(self.getBasicFeaturesOverview())
         elif category == "Advanced Features":
@@ -137,15 +215,25 @@ class HelpBrowser(QWidget):
     
     def showTopicHelp(self, category, topic):
         """Show help for a specific topic"""
-        # Implement topic-specific help content
-        if category == "Basic Features" and topic == "Adding New Entries":
+        # MongoDB-specific topics
+        if category == "MongoDB Features" and topic == "MongoDB Connection":
+            self.help_content.setHtml(self.getMongoDBConnectionHelp())
+        elif category == "MongoDB Features" and topic == "Data Migration":
+            self.help_content.setHtml(self.getDataMigrationHelp())
+        elif category == "MongoDB Features" and topic == "Cloud Database":
+            self.help_content.setHtml(self.getCloudDatabaseHelp())
+        elif category == "MongoDB Features" and topic == "Performance Benefits":
+            self.help_content.setHtml(self.getPerformanceBenefitsHelp())
+        elif category == "Basic Features" and topic == "Adding New Entries":
             self.help_content.setHtml(self.getNewEntriesHelp())
         elif category == "Basic Features" and topic == "Managing the Ledger":
             self.help_content.setHtml(self.getLedgerHelp())
-        elif category == "Advanced Features" and topic == "Invoice Generation":
-            self.help_content.setHtml(self.getInvoiceGenerationHelp())
-        elif category == "Data Management" and topic == "Backup and Restore":
-            self.help_content.setHtml(self.getBackupRestoreHelp())
+        elif category == "Advanced Features" and topic == "Enhanced Analytics":
+            self.help_content.setHtml(self.getEnhancedAnalyticsHelp())
+        elif category == "Data Management" and topic == "MongoDB Backup":
+            self.help_content.setHtml(self.getMongoDBBackupHelp())
+        elif category == "Troubleshooting" and topic == "MongoDB Connection Issues":
+            self.help_content.setHtml(self.getMongoDBTroubleshootingHelp())
         else:
             # For topics not yet implemented, show a placeholder
             self.help_content.setHtml(f"""
@@ -200,23 +288,33 @@ class HelpBrowser(QWidget):
     def getWelcomeHelp(self):
         """Get the welcome help content"""
         return """
-        <h1>Welcome to Medical Rep Transaction Software</h1>
-        <p>This help system will guide you through using the Medical Rep Transaction Software efficiently.</p>
+        <h1>Welcome to Medical Rep Transaction Software (MongoDB Edition)</h1>
+        <p>This help system will guide you through using the Medical Rep Transaction Software with MongoDB database integration.</p>
         
         <h2>About the Software</h2>
-        <p>Medical Rep Transaction Software is designed to help medical representatives track their sales, manage customer relationships, and generate reports and invoices. The software provides a comprehensive solution for managing the day-to-day business operations of medical representatives.</p>
+        <p>Medical Rep Transaction Software is designed to help medical representatives track their sales, manage customer relationships, and generate reports and invoices. This MongoDB edition provides enhanced performance, scalability, and cloud integration capabilities.</p>
+        
+        <h2>MongoDB Benefits</h2>
+        <ul>
+            <li>🚀 <strong>Enhanced Performance</strong> - Faster data processing and retrieval</li>
+            <li>☁️ <strong>Cloud Integration</strong> - Seamless cloud database connectivity</li>
+            <li>📊 <strong>Advanced Analytics</strong> - Powerful aggregation and reporting capabilities</li>
+            <li>🔒 <strong>Data Security</strong> - Enterprise-grade security features</li>
+            <li>📈 <strong>Scalability</strong> - Grows with your business needs</li>
+        </ul>
         
         <h2>Getting Help</h2>
         <p>To get help on a specific topic, browse the topics in the tree on the left side of this window, or use the search box at the top to find specific information.</p>
         
         <h2>Key Features</h2>
         <ul>
-            <li>Recording sales transactions</li>
-            <li>Tracking customer information</li>
-            <li>Managing product data</li>
-            <li>Generating reports and graphs</li>
-            <li>Creating professional invoices</li>
-            <li>Backing up and securing your data</li>
+            <li>Recording sales transactions with MongoDB backend</li>
+            <li>Advanced customer relationship management</li>
+            <li>Comprehensive product data management</li>
+            <li>Enhanced reports and interactive graphs</li>
+            <li>Professional invoice generation</li>
+            <li>Cloud-based backup and synchronization</li>
+            <li>Real-time analytics dashboard</li>
         </ul>
         
         <p>Select a topic from the tree on the left to get more detailed information.</p>
@@ -235,6 +333,24 @@ class HelpBrowser(QWidget):
             <li><strong>System Requirements</strong> - Hardware and software requirements</li>
             <li><strong>Installation</strong> - Step-by-step installation guide</li>
             <li><strong>First Time Setup</strong> - Initial configuration of the software</li>
+        </ul>
+        
+        <p>Select a specific topic from the tree on the left to view detailed information.</p>
+        """
+    
+    def getMongoDBFeaturesOverview(self):
+        """Get the MongoDB Features overview content"""
+        return """
+        <h1>MongoDB Features</h1>
+        
+        <p>This section covers the powerful MongoDB features integrated into the Medical Rep Transaction Software.</p>
+        
+        <h2>Topics in this Section</h2>
+        <ul>
+            <li><strong>MongoDB Connection</strong> - Setting up and testing your MongoDB connection</li>
+            <li><strong>Data Migration</strong> - Migrating existing data to MongoDB</li>
+            <li><strong>Cloud Database</strong> - Using MongoDB Atlas for cloud database solutions</li>
+            <li><strong>Performance Benefits</strong> - Advantages of using MongoDB for data management</li>
         </ul>
         
         <p>Select a specific topic from the tree on the left to view detailed information.</p>
@@ -270,8 +386,8 @@ class HelpBrowser(QWidget):
             <li><strong>Customer Management</strong> - Managing customer information and relationships</li>
             <li><strong>Product Management</strong> - Managing product data and pricing</li>
             <li><strong>Invoice Generation</strong> - Creating professional invoices from your transaction data</li>
+            <li><strong>Enhanced Analytics</strong> - Advanced reporting and data analysis tools</li>
             <li><strong>Data Import/Export</strong> - Importing and exporting data to and from other systems</li>
-            <li><strong>Audit Trail</strong> - Tracking changes and activities in the system</li>
         </ul>
         
         <p>Select a specific topic from the tree on the left to view detailed information.</p>
@@ -286,9 +402,10 @@ class HelpBrowser(QWidget):
         
         <h2>Topics in this Section</h2>
         <ul>
-            <li><strong>Backup and Restore<li><strong>Backup and Restore</strong> - How to back up and restore your data</li>
+            <li><strong>MongoDB Backup</strong> - How to back up your MongoDB data</li>
             <li><strong>Cloud Synchronization</strong> - Keeping your data synchronized across multiple devices</li>
             <li><strong>Database Maintenance</strong> - Maintaining database performance and integrity</li>
+            <li><strong>Data Security</strong> - Ensuring the security of your data in MongoDB</li>
         </ul>
         
         <p>Select a specific topic from the tree on the left to view detailed information.</p>
@@ -304,6 +421,7 @@ class HelpBrowser(QWidget):
         <h2>Topics in this Section</h2>
         <ul>
             <li><strong>Common Issues</strong> - Solutions to frequently encountered problems</li>
+            <li><strong>MongoDB Connection Issues</strong> - Troubleshooting MongoDB connection problems</li>
             <li><strong>Error Messages</strong> - Explanations of error messages and how to resolve them</li>
             <li><strong>Data Recovery</strong> - How to recover data in case of corruption or loss</li>
         </ul>
@@ -567,5 +685,442 @@ class HelpBrowser(QWidget):
             <li>Keep backup files in multiple locations, including cloud storage.</li>
             <li>Regularly test the restoration process to ensure your backups are valid.</li>
             <li>Keep track of what changes were made since your last backup.</li>
+        </ul>
+        """
+    
+    def getMongoDBConnectionHelp(self):
+        """Get MongoDB connection help content"""
+        return """
+        <h1>MongoDB Connection</h1>
+        
+        <p>The Medical Rep Transaction Software uses MongoDB as its database backend, providing enhanced performance and scalability.</p>
+        
+        <h2>Connection Setup</h2>
+        
+        <h3>Local MongoDB Installation</h3>
+        <ol>
+            <li>Download and install MongoDB Community Edition from the official MongoDB website.</li>
+            <li>Start the MongoDB service on your computer.</li>
+            <li>The software will automatically connect to the local MongoDB instance on the default port (27017).</li>
+        </ol>
+        
+        <h3>Cloud MongoDB (MongoDB Atlas)</h3>
+        <ol>
+            <li>Create a free account at <a href="https://www.mongodb.com/cloud/atlas">MongoDB Atlas</a>.</li>
+            <li>Create a new cluster and database.</li>
+            <li>Get your connection string from the MongoDB Atlas dashboard.</li>
+            <li>In the software settings, enter your MongoDB connection string.</li>
+            <li>Test the connection to ensure it's working properly.</li>
+        </ol>
+        
+        <h2>Connection Configuration</h2>
+        <p>You can configure the MongoDB connection in the application settings:</p>
+        <ul>
+            <li><strong>Connection String</strong>: The MongoDB connection URI</li>
+            <li><strong>Database Name</strong>: The name of your database (default: medtran_db)</li>
+            <li><strong>Connection Timeout</strong>: Maximum time to wait for connection</li>
+            <li><strong>Auto-Retry</strong>: Automatically retry failed connections</li>
+        </ul>
+        
+        <h2>Connection Status</h2>
+        <p>The application shows the connection status in the status bar:</p>
+        <ul>
+            <li>🟢 <strong>Connected</strong>: Successfully connected to MongoDB</li>
+            <li>🟡 <strong>Connecting</strong>: Attempting to establish connection</li>
+            <li>🔴 <strong>Disconnected</strong>: No connection to MongoDB</li>
+        </ul>
+        
+        <h2>Benefits of MongoDB Integration</h2>
+        <ul>
+            <li><strong>Flexible Schema</strong>: Easily adapt to changing business requirements</li>
+            <li><strong>Horizontal Scaling</strong>: Scale across multiple servers as needed</li>
+            <li><strong>Rich Queries</strong>: Advanced querying and aggregation capabilities</li>
+            <li><strong>High Availability</strong>: Built-in replication and failover</li>
+            <li><strong>Cloud Ready</strong>: Native cloud integration and deployment</li>
+        </ul>
+        
+        <h2>Troubleshooting Connection Issues</h2>
+        <p>If you're experiencing connection problems:</p>
+        <ol>
+            <li>Check that MongoDB service is running</li>
+            <li>Verify your connection string is correct</li>
+            <li>Ensure your firewall allows MongoDB connections</li>
+            <li>Check your network connectivity</li>
+            <li>Review the application logs for detailed error messages</li>
+        </ol>
+        """
+    
+    def getDataMigrationHelp(self):
+        """Get data migration help content"""
+        return """
+        <h1>Data Migration to MongoDB</h1>
+        
+        <p>If you're upgrading from a previous version with SQLite, the software provides tools to migrate your existing data to MongoDB.</p>
+        
+        <h2>Automatic Migration</h2>
+        <p>When you first run the MongoDB edition with existing SQLite data:</p>
+        <ol>
+            <li>The software will detect your existing SQLite database</li>
+            <li>A migration wizard will appear automatically</li>
+            <li>Follow the on-screen instructions to migrate your data</li>
+            <li>Your original SQLite data will be preserved as a backup</li>
+        </ol>
+        
+        <h2>Manual Migration</h2>
+        <p>You can also perform manual migration:</p>
+        <ol>
+            <li>Go to <strong>Settings</strong> → <strong>Data Migration</strong></li>
+            <li>Select your SQLite database file</li>
+            <li>Choose the MongoDB connection settings</li>
+            <li>Click <strong>Start Migration</strong></li>
+            <li>Wait for the migration to complete</li>
+        </ol>
+        
+        <h2>Migration Process</h2>
+        <p>The migration process includes:</p>
+        <ul>
+            <li><strong>Data Validation</strong>: Ensures data integrity before migration</li>
+            <li><strong>Schema Mapping</strong>: Converts SQLite schema to MongoDB collections</li>
+            <li><strong>Data Transfer</strong>: Moves all records with progress tracking</li>
+            <li><strong>Verification</strong>: Confirms all data was migrated successfully</li>
+            <li><strong>Backup Creation</strong>: Creates backups of both old and new data</li>
+        </ul>
+        
+        <h2>What Gets Migrated</h2>
+        <ul>
+            <li>All customer records</li>
+            <li>Complete product catalog</li>
+            <li>Transaction history</li>
+            <li>Entry records</li>
+            <li>User settings and preferences</li>
+        </ul>
+        
+        <h2>Post-Migration</h2>
+        <p>After successful migration:</p>
+        <ul>
+            <li>Verify your data appears correctly in the application</li>
+            <li>Test all major functions (adding entries, generating reports)</li>
+            <li>Create a backup of your new MongoDB database</li>
+            <li>Update any external integrations to use the new database</li>
+        </ul>
+        
+        <h2>Rollback Options</h2>
+        <p>If you need to rollback:</p>
+        <ul>
+            <li>Your original SQLite database is preserved</li>
+            <li>You can switch back to SQLite mode in settings</li>
+            <li>Contact support if you need assistance with rollback</li>
+        </ul>
+        """
+    
+    def getEnhancedAnalyticsHelp(self):
+        """Get enhanced analytics help content"""
+        return """
+        <h1>Enhanced Analytics (MongoDB Edition)</h1>
+        
+        <p>The MongoDB edition provides powerful analytics capabilities through the Enhanced Reports tab, offering deep insights into your business data.</p>
+        
+        <h2>Available Analytics</h2>
+        
+        <h3>Customer Analytics</h3>
+        <ul>
+            <li><strong>Top Customers by Revenue</strong>: Identify your most valuable customers</li>
+            <li><strong>Customer Segmentation</strong>: Categorize customers by value and activity</li>
+            <li><strong>Customer Lifetime Value</strong>: Track long-term customer relationships</li>
+            <li><strong>Purchase Patterns</strong>: Analyze buying behavior and trends</li>
+        </ul>
+        
+        <h3>Product Performance</h3>
+        <ul>
+            <li><strong>Best-Selling Products</strong>: Track top performers by sales volume</li>
+            <li><strong>Revenue by Product</strong>: Analyze profitability across your catalog</li>
+            <li><strong>Batch Analysis</strong>: Monitor performance by product batches</li>
+            <li><strong>Seasonal Trends</strong>: Identify seasonal demand patterns</li>
+        </ul>
+        
+        <h3>Sales Trends</h3>
+        <ul>
+            <li><strong>Time-Series Analysis</strong>: Track sales over daily, weekly, monthly periods</li>
+            <li><strong>Growth Rate Calculations</strong>: Measure business growth metrics</li>
+            <li><strong>Forecasting</strong>: Predict future sales based on historical data</li>
+            <li><strong>Comparative Analysis</strong>: Compare performance across time periods</li>
+        </ul>
+        
+        <h3>Financial Analysis</h3>
+        <ul>
+            <li><strong>Credit vs Debit Analysis</strong>: Track money flow in your business</li>
+            <li><strong>Outstanding Balances</strong>: Monitor customer payment status</li>
+            <li><strong>Profit Margins</strong>: Calculate profitability by product/customer</li>
+            <li><strong>Cash Flow Analysis</strong>: Track financial health over time</li>
+        </ul>
+        
+        <h3>Inventory Management</h3>
+        <ul>
+            <li><strong>Expiry Tracking</strong>: Monitor products approaching expiry dates</li>
+            <li><strong>Stock Movement</strong>: Track inventory turnover rates</li>
+            <li><strong>Reorder Alerts</strong>: Get notified when stock is low</li>
+            <li><strong>Waste Analysis</strong>: Identify expired or slow-moving inventory</li>
+        </ul>
+        
+        <h2>Using the Analytics Dashboard</h2>
+        <ol>
+            <li>Navigate to the <strong>Enhanced Reports</strong> tab</li>
+            <li>Select the type of analysis you want to perform</li>
+            <li>Set your date range and filters</li>
+            <li>Click <strong>Generate Report</strong> to create the analysis</li>
+            <li>Use the interactive charts and tables to explore your data</li>
+        </ol>
+        
+        <h2>Export and Sharing</h2>
+        <p>Analytics reports can be:</p>
+        <ul>
+            <li><strong>Exported to CSV</strong>: For further analysis in Excel or other tools</li>
+            <li><strong>Saved as PDF</strong>: For sharing with stakeholders</li>
+            <li><strong>Printed</strong>: For physical documentation</li>
+            <li><strong>Scheduled</strong>: Set up automatic report generation</li>
+        </ul>
+        
+        <h2>MongoDB Advantages for Analytics</h2>
+        <ul>
+            <li><strong>Aggregation Pipeline</strong>: Complex data processing in the database</li>
+            <li><strong>Real-time Calculations</strong>: Fast computation of metrics and KPIs</li>
+            <li><strong>Flexible Queries</strong>: Ad-hoc analysis without predefined schemas</li>
+            <li><strong>Large Dataset Handling</strong>: Process millions of records efficiently</li>
+        </ul>
+        
+        <h2>Best Practices</h2>
+        <ul>
+            <li>Regular review of key metrics to identify trends</li>
+            <li>Use filters to focus on specific time periods or segments</li>
+            <li>Export important analyses for historical comparison</li>
+            <li>Set up alerts for critical business metrics</li>
+            <li>Share insights with your team for collaborative decision-making</li>
+        </ul>
+        """
+    
+    def getMongoDBBackupHelp(self):
+        """Get MongoDB backup help content"""
+        return """
+        <h1>MongoDB Backup and Recovery</h1>
+        
+        <p>Protecting your data with regular backups is crucial. The MongoDB edition provides comprehensive backup and recovery options.</p>
+        
+        <h2>Backup Types</h2>
+        
+        <h3>Application-Level Backup</h3>
+        <p>The software provides built-in backup functionality:</p>
+        <ol>
+            <li>Go to <strong>Settings</strong> → <strong>Backup & Restore</strong></li>
+            <li>Click <strong>Create Backup</strong></li>
+            <li>Choose backup location and format</li>
+            <li>The backup will include all collections and data</li>
+        </ol>
+        
+        <h3>MongoDB Native Backup</h3>
+        <p>For advanced users, MongoDB provides native backup tools:</p>
+        <ul>
+            <li><strong>mongodump</strong>: Create binary backups of your database</li>
+            <li><strong>mongoexport</strong>: Export data in JSON or CSV format</li>
+            <li><strong>Atlas Backup</strong>: Automated cloud backups for Atlas users</li>
+        </ul>
+        
+        <h2>Scheduled Backups</h2>
+        <p>Set up automatic backups:</p>
+        <ol>
+            <li>Go to <strong>Settings</strong> → <strong>Backup Schedule</strong></li>
+            <li>Enable automatic backups</li>
+            <li>Set frequency (daily, weekly, monthly)</li>
+            <li>Choose backup retention period</li>
+            <li>Configure notification preferences</li>
+        </ol>
+        
+        <h2>Cloud Backup Integration</h2>
+        <p>Integrate with cloud storage services:</p>
+        <ul>
+            <li><strong>MongoDB Atlas</strong>: Automatic cloud backups</li>
+            <li><strong>Google Drive</strong>: Sync backups to Google Drive</li>
+            <li><strong>Dropbox</strong>: Store backups in Dropbox</li>
+            <li><strong>OneDrive</strong>: Microsoft cloud storage integration</li>
+        </ul>
+        
+        <h2>Backup Verification</h2>
+        <p>Ensure backup integrity:</p>
+        <ul>
+            <li>Regular test restores to verify backup validity</li>
+            <li>Checksum verification for data integrity</li>
+            <li>Monitor backup logs for errors or warnings</li>
+            <li>Validate backup completeness against source data</li>
+        </ul>
+        
+        <h2>Restore Process</h2>
+        <ol>
+            <li>Go to <strong>Settings</strong> → <strong>Restore</strong></li>
+            <li>Select the backup file to restore from</li>
+            <li>Choose restore options (full or partial)</li>
+            <li>Confirm the restore operation</li>
+            <li>Wait for the restore process to complete</li>
+        </ol>
+        
+        <h2>Disaster Recovery</h2>
+        <p>Prepare for disaster scenarios:</p>
+        <ul>
+            <li>Maintain multiple backup copies in different locations</li>
+            <li>Document recovery procedures and contact information</li>
+            <li>Test disaster recovery scenarios regularly</li>
+            <li>Keep backup media secure and accessible</li>
+            <li>Plan for both local and cloud recovery options</li>
+        </ul>
+        
+        <h2>Best Practices</h2>
+        <ul>
+            <li><strong>3-2-1 Rule</strong>: 3 copies, 2 different media, 1 offsite</li>
+            <li><strong>Regular Testing</strong>: Test restore procedures monthly</li>
+            <li><strong>Documentation</strong>: Keep detailed backup and recovery procedures</li>
+            <li><strong>Monitoring</strong>: Set up alerts for backup failures</li>
+            <li><strong>Security</strong>: Encrypt backups and secure access</li>
+        </ul>
+        
+        <h2>Recovery Time Objectives</h2>
+        <p>Plan for different recovery scenarios:</p>
+        <ul>
+            <li><strong>Point-in-time Recovery</strong>: Restore to specific timestamp</li>
+            <li><strong>Full Recovery</strong>: Complete database restoration</li>
+            <li><strong>Partial Recovery</strong>: Restore specific collections or data</li>
+            <li><strong>Cross-platform Recovery</strong>: Restore across different environments</li>
+        </ul>
+        """
+    
+    def getMongoDBTroubleshootingHelp(self):
+        """Get MongoDB troubleshooting help content"""
+        return """
+        <h1>MongoDB Connection Troubleshooting</h1>
+        
+        <p>This guide helps you resolve common MongoDB connection and performance issues.</p>
+        
+        <h2>Common Connection Issues</h2>
+        
+        <h3>Connection Refused</h3>
+        <p><strong>Symptoms:</strong> "Connection refused" or "Unable to connect to MongoDB"</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Verify MongoDB service is running: <code>systemctl status mongod</code> (Linux) or check Services (Windows)</li>
+            <li>Check if MongoDB is listening on the correct port (default: 27017)</li>
+            <li>Verify firewall settings allow connections to MongoDB port</li>
+            <li>Ensure MongoDB configuration file allows connections from your IP</li>
+        </ul>
+        
+        <h3>Authentication Failed</h3>
+        <p><strong>Symptoms:</strong> "Authentication failed" or "Invalid credentials"</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Verify username and password are correct</li>
+            <li>Check authentication database is specified correctly</li>
+            <li>Ensure user has proper permissions for the database</li>
+            <li>For Atlas: verify connection string includes correct credentials</li>
+        </ul>
+        
+        <h3>Network Timeout</h3>
+        <p><strong>Symptoms:</strong> "Connection timeout" or "Network unreachable"</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Check internet connectivity for cloud databases</li>
+            <li>Verify DNS resolution for MongoDB hostname</li>
+            <li>Test connection with MongoDB shell or compass</li>
+            <li>Increase connection timeout in application settings</li>
+        </ul>
+        
+        <h2>Performance Issues</h2>
+        
+        <h3>Slow Query Performance</h3>
+        <p><strong>Symptoms:</strong> Reports and charts take long time to load</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Check database indexes are properly configured</li>
+            <li>Monitor MongoDB performance with built-in profiler</li>
+            <li>Optimize aggregation pipelines in analytics queries</li>
+            <li>Consider upgrading MongoDB server resources</li>
+        </ul>
+        
+        <h3>Memory Usage Issues</h3>
+        <p><strong>Symptoms:</strong> High memory usage or out-of-memory errors</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Adjust MongoDB cache size settings</li>
+            <li>Implement data archiving for old records</li>
+            <li>Use projection to limit returned fields</li>
+            <li>Consider database sharding for large datasets</li>
+        </ul>
+        
+        <h2>Data Issues</h2>
+        
+        <h3>Missing or Corrupted Data</h3>
+        <p><strong>Symptoms:</strong> Data appears incomplete or incorrect</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Run database consistency checks</li>
+            <li>Restore from a known good backup</li>
+            <li>Check application logs for error messages</li>
+            <li>Verify data migration completed successfully</li>
+        </ul>
+        
+        <h3>Schema Validation Errors</h3>
+        <p><strong>Symptoms:</strong> Cannot save new records or updates fail</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Check MongoDB schema validation rules</li>
+            <li>Verify data types match expected formats</li>
+            <li>Review application validation logic</li>
+            <li>Check for required field violations</li>
+        </ul>
+        
+        <h2>Cloud-Specific Issues (Atlas)</h2>
+        
+        <h3>IP Whitelist Problems</h3>
+        <p><strong>Symptoms:</strong> Connection works from some locations but not others</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Add your current IP address to Atlas whitelist</li>
+            <li>Use 0.0.0.0/0 for testing (not recommended for production)</li>
+            <li>Check if your IP address has changed</li>
+            <li>Consider using VPN if IP changes frequently</li>
+        </ul>
+        
+        <h3>Atlas Cluster Paused</h3>
+        <p><strong>Symptoms:</strong> Cannot connect to Atlas cluster</p>
+        <p><strong>Solutions:</strong></p>
+        <ul>
+            <li>Check Atlas dashboard for cluster status</li>
+            <li>Resume paused clusters manually</li>
+            <li>Verify billing information is up to date</li>
+            <li>Check for service maintenance notifications</li>
+        </ul>
+        
+        <h2>Diagnostic Tools</h2>
+        
+        <h3>Built-in Diagnostics</h3>
+        <p>The application provides diagnostic tools:</p>
+        <ul>
+            <li><strong>Connection Test</strong>: Test MongoDB connection from settings</li>
+            <li><strong>Performance Monitor</strong>: View query performance metrics</li>
+            <li><strong>Data Validation</strong>: Check data integrity and consistency</li>
+            <li><strong>Error Logs</strong>: Review detailed error messages and stack traces</li>
+        </ul>
+        
+        <h3>External Tools</h3>
+        <ul>
+            <li><strong>MongoDB Compass</strong>: Visual database explorer and query tool</li>
+            <li><strong>MongoDB Shell</strong>: Command-line interface for database operations</li>
+            <li><strong>MongoDB Profiler</strong>: Analyze query performance and optimization</li>
+            <li><strong>Atlas Monitoring</strong>: Cloud-based monitoring for Atlas clusters</li>
+        </ul>
+        
+        <h2>Getting Help</h2>
+        <p>If you continue to experience issues:</p>
+        <ul>
+            <li>Check the application error logs for detailed messages</li>
+            <li>Consult MongoDB documentation for specific error codes</li>
+            <li>Contact support with detailed error information</li>
+            <li>Include connection strings (without passwords) and error logs</li>
+            <li>Provide information about your MongoDB setup and environment</li>
         </ul>
         """
