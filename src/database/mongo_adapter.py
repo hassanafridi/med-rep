@@ -93,6 +93,7 @@ class MongoAdapter:
         """Connect to MongoDB"""
         if not self.connected:
             try:
+                # Connect through mongo_db, not user_auth
                 result = self.mongo_db.connect()
                 self.connected = bool(result) if result is not None else False
                 return self.connected
@@ -667,6 +668,70 @@ class MongoAdapter:
         except Exception as e:
             logger.error(f"Error restoring transactions: {e}")
             return False
+
+    def update_entry_notes(self, entry_id, new_notes):
+        """Update the notes field of an existing entry"""
+        try:
+            from bson import ObjectId
+            
+            # Convert entry_id to ObjectId if it's a string
+            if isinstance(entry_id, str):
+                try:
+                    entry_id = ObjectId(entry_id)
+                except:
+                    pass  # Keep as string if conversion fails
+            
+            # Update the entry
+            result = self.mongo_db.db.entries.update_one(
+                {"_id": entry_id},
+                {"$set": {"notes": new_notes}}
+            )
+            
+            if result.modified_count > 0:
+                logger.info(f"Updated entry {entry_id} with new notes")
+                return True
+            else:
+                logger.warning(f"No entry found with ID {entry_id} to update")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error updating entry notes: {e}")
+            return False
+    
+    def get_entry_by_id(self, entry_id):
+        """Get a specific entry by ID"""
+        try:
+            from bson import ObjectId
+            
+            # Convert entry_id to ObjectId if it's a string
+            if isinstance(entry_id, str):
+                try:
+                    entry_id = ObjectId(entry_id)
+                except:
+                    pass  # Keep as string if conversion fails
+            
+            # Get the entry
+            entry = self.mongo_db.db.entries.find_one({"_id": entry_id})
+            
+            if entry:
+                # Format the entry similar to get_entries()
+                formatted_entry = {
+                    'id': str(entry.get('_id', '')),
+                    'date': str(entry.get('date', '')),
+                    'customer_id': str(entry.get('customer_id', '')),
+                    'product_id': str(entry.get('product_id', '')),
+                    'quantity': float(entry.get('quantity', 0)),
+                    'unit_price': float(entry.get('unit_price', 0)),
+                    'is_credit': bool(entry.get('is_credit', False)),
+                    'notes': str(entry.get('notes', ''))
+                }
+                return formatted_entry
+            else:
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error getting entry by ID: {e}")
+            return None
 
     # ...existing code...
     
@@ -1278,6 +1343,161 @@ class MongoAdapter:
         except Exception as e:
             logger.error(f"Error in test_data_retrieval: {e}")
             return {'error': str(e)}
+
+    def get_customer_balance(self, customer_id):
+        """Calculate balance for a specific customer (Credit - Debit), return 0 if negative"""
+        try:
+            entries = self.get_entries()
+            balance = 0
+            
+            for entry in entries:
+                if str(entry.get('customer_id')) == str(customer_id):
+                    amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    if entry.get('is_credit', False):
+                        balance += amount  # Credit increases balance
+                    else:
+                        balance -= amount  # Debit decreases balance
+            
+            # Return 0 if balance is negative
+            return max(0, balance)
+        except Exception as e:
+            print(f"Error calculating customer balance: {e}")
+            return 0
+    
+    def get_all_customer_balances(self):
+        """Get balances for all customers"""
+        try:
+            customers = self.get_customers()
+            entries = self.get_entries()
+            
+            # Create customer lookup
+            customer_lookup = {}
+            for customer in customers:
+                customer_id = str(customer.get('id'))
+                customer_lookup[customer_id] = {
+                    'id': customer_id,
+                    'name': customer.get('name', ''),
+                    'contact': customer.get('contact', ''),
+                    'address': customer.get('address', ''),
+                    'credit_total': 0,
+                    'debit_total': 0,
+                    'raw_balance': 0,
+                    'balance': 0
+                }
+            
+            # Calculate totals for each customer
+            for entry in entries:
+                customer_id = str(entry.get('customer_id'))
+                if customer_id in customer_lookup:
+                    amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                    
+                    if entry.get('is_credit', False):
+                        customer_lookup[customer_id]['credit_total'] += amount
+                    else:
+                        customer_lookup[customer_id]['debit_total'] += amount
+            
+            # Calculate final balances (Credit - Debit, but show 0 if negative)
+            for customer_data in customer_lookup.values():
+                raw_balance = customer_data['credit_total'] - customer_data['debit_total']
+                customer_data['raw_balance'] = raw_balance
+                customer_data['balance'] = max(0, raw_balance)  # Show 0 if negative
+        
+            return list(customer_lookup.values())
+            
+        except Exception as e:
+            print(f"Error getting customer balances: {e}")
+            return []
+
+    def get_entries_with_balance(self, filters=None):
+        """Get entries with running balance calculation"""
+        try:
+            entries = self.get_entries()
+            customers = self.get_customers()
+            products = self.get_products()
+            
+            # Create lookups
+            customer_lookup = {str(c.get('id')): c for c in customers}
+            product_lookup = {str(p.get('id')): p for p in products}
+            
+            # Apply filters if provided
+            if filters:
+                filtered_entries = []
+                for entry in entries:
+                    include_entry = True
+                    
+                    # Date range filter
+                    if filters.get('from_date') and filters.get('to_date'):
+                        entry_date = entry.get('date', '')
+                        if not (filters['from_date'] <= entry_date <= filters['to_date']):
+                            include_entry = False
+                    
+                    # Customer filter
+                    if filters.get('customer_id') and str(entry.get('customer_id')) != str(filters['customer_id']):
+                        include_entry = False
+                    
+                    # Entry type filter
+                    if filters.get('entry_type'):
+                        if filters['entry_type'] == 'credit' and not entry.get('is_credit'):
+                            include_entry = False
+                        elif filters['entry_type'] == 'debit' and entry.get('is_credit'):
+                            include_entry = False
+                    
+                    # Notes search
+                    if filters.get('notes_search'):
+                        notes = entry.get('notes', '').lower()
+                        if filters['notes_search'].lower() not in notes:
+                            include_entry = False
+                    
+                    if include_entry:
+                        filtered_entries.append(entry)
+                
+                entries = filtered_entries
+            
+            # Sort by date
+            entries.sort(key=lambda x: x.get('date', ''))
+            
+            # Calculate running balance and add customer/product info
+            running_balance = 0
+            enriched_entries = []
+            
+            for entry in entries:
+                customer_id = str(entry.get('customer_id'))
+                product_id = str(entry.get('product_id'))
+                
+                customer_info = customer_lookup.get(customer_id, {})
+                product_info = product_lookup.get(product_id, {})
+                
+                amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                
+                # Update running balance
+                if entry.get('is_credit'):
+                    running_balance += amount
+                else:
+                    running_balance -= amount
+                
+                enriched_entry = {
+                    'id': entry.get('id'),
+                    'date': entry.get('date'),
+                    'customer_id': customer_id,
+                    'customer_name': customer_info.get('name', 'Unknown'),
+                    'product_id': product_id,
+                    'product_name': product_info.get('name', 'Unknown'),
+                    'quantity': entry.get('quantity'),
+                    'unit_price': entry.get('unit_price'),
+                    'amount': amount,
+                    'is_credit': entry.get('is_credit'),
+                    'type': 'Credit' if entry.get('is_credit') else 'Debit',
+                    'notes': entry.get('notes', ''),
+                    'running_balance': max(0, running_balance)  # Show 0 if negative
+                }
+                
+                enriched_entries.append(enriched_entry)
+            
+            return enriched_entries
+            
+        except Exception as e:
+            print(f"Error getting entries with balance: {e}")
+            return []
 
 # Compatibility alias for easy replacement
 Database = MongoAdapter

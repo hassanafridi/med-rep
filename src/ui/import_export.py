@@ -283,7 +283,7 @@ class ImportDialog(QDialog):
             self.csv_headers = []
             self.import_thread = None
             
-            self.setWindowTitle("Import Data - MongoDB Edition")
+            self.setWindowTitle("Import Data - ")
             self.setMinimumSize(600, 500)
             self.initUI()
         except Exception as e:
@@ -679,7 +679,7 @@ class ExportDialog(QDialog):
             self.mongo_adapter = mongo_adapter or MongoAdapter()
             self.export_thread = None
             
-            self.setWindowTitle("Export Data - MongoDB Edition")
+            self.setWindowTitle("Export Data - ")
             self.setMinimumSize(400, 300)
             self.initUI()
         except Exception as e:

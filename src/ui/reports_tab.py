@@ -15,6 +15,7 @@ import csv
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.database.mongo_adapter import MongoAdapter
+from src.utils.pdf_generator import PDFGenerator
 
 class ReportsTab(QWidget):
     def __init__(self, mongo_adapter=None):
@@ -63,7 +64,7 @@ class ReportsTab(QWidget):
         main_layout = QVBoxLayout()
         
         # Title
-        title_label = QLabel("Reports & Analytics - MongoDB Edition")
+        title_label = QLabel("Reports & Analytics - ")
         title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #4B0082; margin-bottom: 10px;")
         main_layout.addWidget(title_label)
         
@@ -430,14 +431,14 @@ class ReportsTab(QWidget):
                         daily_summary[date]['credit'] += total
                     else:
                         daily_summary[date]['debit'] += total
-                    
-                    daily_summary[date]['net'] = daily_summary[date]['credit'] - daily_summary[date]['debit']
+                    # Net = Debit - Credit
+                    daily_summary[date]['net'] = daily_summary[date]['debit'] - daily_summary[date]['credit']
                 
                 # Set up table
                 self.report_table.clear()
                 self.report_table.setRowCount(0)
                 self.report_table.setColumnCount(4)
-                self.report_table.setHorizontalHeaderLabels(["Date", "Credit", "Debit", "Net"])
+                self.report_table.setHorizontalHeaderLabels(["Date", "Debit", "Credit", "Net"])
                 
                 # Sort dates and fill table
                 sorted_dates = sorted(daily_summary.keys())
@@ -451,9 +452,15 @@ class ReportsTab(QWidget):
                     summary = daily_summary[date]
                     
                     self.report_table.setItem(row, 0, QTableWidgetItem(date))
-                    self.report_table.setItem(row, 1, QTableWidgetItem(f"PKR{summary['credit']:.2f}"))
-                    self.report_table.setItem(row, 2, QTableWidgetItem(f"PKR{summary['debit']:.2f}"))
-                    
+                    # Debit (Green)
+                    debit_item = QTableWidgetItem(f"PKR{summary['debit']:.2f}")
+                    debit_item.setForeground(Qt.green)
+                    self.report_table.setItem(row, 1, debit_item)
+                    # Credit (Red)
+                    credit_item = QTableWidgetItem(f"PKR{summary['credit']:.2f}")
+                    credit_item.setForeground(Qt.red)
+                    self.report_table.setItem(row, 2, credit_item)
+                    # Net (Green if positive, Red if negative)
                     net_item = QTableWidgetItem(f"PKR{summary['net']:.2f}")
                     net_item.setForeground(Qt.green if summary['net'] >= 0 else Qt.red)
                     self.report_table.setItem(row, 3, net_item)
@@ -466,9 +473,12 @@ class ReportsTab(QWidget):
                 total_row = self.report_table.rowCount()
                 self.report_table.insertRow(total_row)
                 self.report_table.setItem(total_row, 0, QTableWidgetItem("TOTAL"))
-                self.report_table.setItem(total_row, 1, QTableWidgetItem(f"PKR{total_credit:.2f}"))
-                self.report_table.setItem(total_row, 2, QTableWidgetItem(f"PKR{total_debit:.2f}"))
-                
+                debit_item = QTableWidgetItem(f"PKR{total_debit:.2f}")
+                debit_item.setForeground(Qt.green)
+                self.report_table.setItem(total_row, 1, debit_item)
+                credit_item = QTableWidgetItem(f"PKR{total_credit:.2f}")
+                credit_item.setForeground(Qt.red)
+                self.report_table.setItem(total_row, 2, credit_item)
                 net_item = QTableWidgetItem(f"PKR{total_net:.2f}")
                 net_item.setForeground(Qt.green if total_net >= 0 else Qt.red)
                 self.report_table.setItem(total_row, 3, net_item)
@@ -479,7 +489,6 @@ class ReportsTab(QWidget):
                     font = item.font()
                     font.setBold(True)
                     item.setFont(font)
-                
             else:  # Detailed report
                 # Set up table
                 self.report_table.clear()
@@ -539,8 +548,9 @@ class ReportsTab(QWidget):
                     self.report_table.setItem(row, 7, QTableWidgetItem(f"PKR{unit_price:.2f}"))
                     self.report_table.setItem(row, 8, QTableWidgetItem(f"PKR{total:.2f}"))
                     
-                    type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
-                    type_item.setForeground(Qt.green if is_credit else Qt.red)
+                    # Type
+                    type_item = QTableWidgetItem("Debit" if not is_credit else "Credit")
+                    type_item.setForeground(Qt.green if not is_credit else Qt.red)
                     self.report_table.setItem(row, 9, type_item)
                     
                     if is_credit:
@@ -552,8 +562,11 @@ class ReportsTab(QWidget):
                 total_row = self.report_table.rowCount()
                 self.report_table.insertRow(total_row)
                 self.report_table.setItem(total_row, 0, QTableWidgetItem("TOTAL"))
-                self.report_table.setItem(total_row, 8, QTableWidgetItem(f"Credit: PKR{total_credit:.2f} / Debit: PKR{total_debit:.2f}"))
-                self.report_table.setItem(total_row, 9, QTableWidgetItem(f"Net: PKR{total_credit - total_debit:.2f}"))
+                self.report_table.setItem(total_row, 8, QTableWidgetItem(f"Debit: PKR{total_debit:.2f} / Credit: PKR{total_credit:.2f}"))
+                net_val = total_debit - total_credit
+                net_item = QTableWidgetItem(f"Net: PKR{net_val:.2f}")
+                net_item.setForeground(Qt.green if net_val >= 0 else Qt.red)
+                self.report_table.setItem(total_row, 9, net_item)
                 
                 # Format total row
                 for col in range(self.report_table.columnCount()):
@@ -562,7 +575,6 @@ class ReportsTab(QWidget):
                         font = item.font()
                         font.setBold(True)
                         item.setFont(font)
-            
         except Exception as e:
             raise Exception(f"Error generating sales by period report: {str(e)}")
 
@@ -623,8 +635,8 @@ class ReportsTab(QWidget):
                         customer_summary[customer_id]['credit'] += total
                     else:
                         customer_summary[customer_id]['debit'] += total
-                    
-                    customer_summary[customer_id]['net'] = customer_summary[customer_id]['credit'] - customer_summary[customer_id]['debit']
+                    # Net = Debit - Credit
+                    customer_summary[customer_id]['net'] = customer_summary[customer_id]['debit'] - customer_summary[customer_id]['credit']
                     customer_summary[customer_id]['transaction_count'] += 1
                 
                 # Set up table
@@ -632,7 +644,7 @@ class ReportsTab(QWidget):
                 self.report_table.setRowCount(0)
                 self.report_table.setColumnCount(6)
                 self.report_table.setHorizontalHeaderLabels([
-                    "ID", "Customer", "Credit", "Debit", "Net", "Transaction Count"
+                    "ID", "Customer", "Debit", "Credit", "Net", "Transaction Count"
                 ])
                 
                 # Sort by net amount and fill table
@@ -647,13 +659,18 @@ class ReportsTab(QWidget):
                 for row, (customer_id, summary) in enumerate(sorted_customers):
                     self.report_table.setItem(row, 0, QTableWidgetItem(customer_id))
                     self.report_table.setItem(row, 1, QTableWidgetItem(summary['name']))
-                    self.report_table.setItem(row, 2, QTableWidgetItem(f"PKR{summary['credit']:.2f}"))
-                    self.report_table.setItem(row, 3, QTableWidgetItem(f"PKR{summary['debit']:.2f}"))
-                    
+                    # Debit (Green)
+                    debit_item = QTableWidgetItem(f"PKR{summary['debit']:.2f}")
+                    debit_item.setForeground(Qt.green)
+                    self.report_table.setItem(row, 2, debit_item)
+                    # Credit (Red)
+                    credit_item = QTableWidgetItem(f"PKR{summary['credit']:.2f}")
+                    credit_item.setForeground(Qt.red)
+                    self.report_table.setItem(row, 3, credit_item)
+                    # Net (Green if positive, Red if negative)
                     net_item = QTableWidgetItem(f"PKR{summary['net']:.2f}")
                     net_item.setForeground(Qt.green if summary['net'] >= 0 else Qt.red)
                     self.report_table.setItem(row, 4, net_item)
-                    
                     self.report_table.setItem(row, 5, QTableWidgetItem(str(summary['transaction_count'])))
                     
                     total_credit += summary['credit']
@@ -665,13 +682,15 @@ class ReportsTab(QWidget):
                 total_row = self.report_table.rowCount()
                 self.report_table.insertRow(total_row)
                 self.report_table.setItem(total_row, 1, QTableWidgetItem("TOTAL"))
-                self.report_table.setItem(total_row, 2, QTableWidgetItem(f"PKR{total_credit:.2f}"))
-                self.report_table.setItem(total_row, 3, QTableWidgetItem(f"PKR{total_debit:.2f}"))
-                
+                debit_item = QTableWidgetItem(f"PKR{total_debit:.2f}")
+                debit_item.setForeground(Qt.green)
+                self.report_table.setItem(total_row, 2, debit_item)
+                credit_item = QTableWidgetItem(f"PKR{total_credit:.2f}")
+                credit_item.setForeground(Qt.red)
+                self.report_table.setItem(total_row, 3, credit_item)
                 net_item = QTableWidgetItem(f"PKR{total_net:.2f}")
                 net_item.setForeground(Qt.green if total_net >= 0 else Qt.red)
                 self.report_table.setItem(total_row, 4, net_item)
-                
                 self.report_table.setItem(total_row, 5, QTableWidgetItem(str(total_transactions)))
                 
                 # Format total row
@@ -681,7 +700,6 @@ class ReportsTab(QWidget):
                         font = item.font()
                         font.setBold(True)
                         item.setFont(font)
-                        
             else:  # Detailed report
                 # Set up table
                 self.report_table.clear()
@@ -700,6 +718,7 @@ class ReportsTab(QWidget):
                 
                 # Fill table
                 self.report_table.setRowCount(len(sorted_entries))
+                current_date = QDate.currentDate()
                 
                 for row, entry in enumerate(sorted_entries):
                     entry_id = str(entry.get('id', ''))
@@ -743,8 +762,9 @@ class ReportsTab(QWidget):
                     self.report_table.setItem(row, 7, QTableWidgetItem(f"PKR{unit_price:.2f}"))
                     self.report_table.setItem(row, 8, QTableWidgetItem(f"PKR{total:.2f}"))
                     
-                    type_item = QTableWidgetItem("Credit" if is_credit else "Debit")
-                    type_item.setForeground(Qt.green if is_credit else Qt.red)
+                    # Type
+                    type_item = QTableWidgetItem("Debit" if not is_credit else "Credit")
+                    type_item.setForeground(Qt.green if not is_credit else Qt.red)
                     self.report_table.setItem(row, 9, type_item)
                 
         except Exception as e:
@@ -1268,7 +1288,7 @@ class ReportsTab(QWidget):
                 writer.writerow([f"Report Type: {self.report_type.currentText()}"])
                 writer.writerow([f"Date Range: {self.from_date.date().toString('yyyy-MM-dd')} to {self.to_date.date().toString('yyyy-MM-dd')}"])
                 writer.writerow([f"Generated on: {QDate.currentDate().toString('yyyy-MM-dd')}"])
-                writer.writerow([f"Generated using: MongoDB Edition"])
+                writer.writerow([f"Generated using: "])
                 writer.writerow([])  # Empty row
                 
                 # Write header row
@@ -1292,11 +1312,8 @@ class ReportsTab(QWidget):
             QMessageBox.critical(self, "Export Error", f"Failed to export report: {str(e)}")
     
     def exportToPdf(self):
-        """Export report to PDF file"""
+        """Export report to PDF file using reportlab"""
         try:
-            from PyQt5.QtPrintSupport import QPrinter
-            from PyQt5.QtGui import QTextDocument
-            
             if self.report_table.rowCount() == 0:
                 QMessageBox.warning(self, "No Data", "No data to export to PDF!")
                 return
@@ -1315,169 +1332,138 @@ class ReportsTab(QWidget):
             if not file_name.endswith('.pdf'):
                 file_name += '.pdf'
             
-            # Create HTML content for PDF
-            html_content = self._generateHtmlReport()
+            # Prepare report data
+            report_data = self._prepareReportData()
             
-            # Create document and printer
-            doc = QTextDocument()
-            doc.setHtml(html_content)
+            # Generate PDF using reportlab
+            pdf_generator = PDFGenerator()
+            success = pdf_generator.generate_report_pdf(report_data, file_name)
             
-            printer = QPrinter(QPrinter.HighResolution)
-            printer.setOutputFormat(QPrinter.PdfFormat)
-            printer.setOutputFileName(file_name)
-            printer.setPageSize(QPrinter.A4)
-            printer.setPageMargins(20, 20, 20, 20, QPrinter.Millimeter)
+            if success:
+                QMessageBox.information(self, "Export Successful", 
+                                      f"Report exported to PDF:\n{file_name}")
+            else:
+                QMessageBox.critical(self, "Export Error", 
+                                   "Failed to generate PDF report.")
             
-            # Print document to PDF
-            doc.print_(printer)
-            
-            QMessageBox.information(self, "Export Successful", 
-                                f"Report exported to PDF:\n{file_name}")
-            
+        except ImportError:
+            QMessageBox.critical(
+                self, "Missing Library",
+                "ReportLab library is required for PDF generation.\n"
+                "Please install it using: pip install reportlab"
+            )
         except Exception as e:
             QMessageBox.critical(self, "Export Error", f"Failed to export to PDF: {str(e)}")
     
+    def _prepareReportData(self):
+        """Prepare report data for PDF generation"""
+        # Get table headers
+        headers = []
+        for col in range(self.report_table.columnCount()):
+            header_item = self.report_table.horizontalHeaderItem(col)
+            headers.append(header_item.text() if header_item else f"Column {col+1}")
+        
+        # Get table data
+        table_data = [headers]
+        for row in range(self.report_table.rowCount()):
+            row_data = []
+            for col in range(self.report_table.columnCount()):
+                item = self.report_table.item(row, col)
+                row_data.append(item.text() if item else "")
+            table_data.append(row_data)
+        
+        return {
+            'report_type': self.report_type.currentText(),
+            'from_date': self.from_date.date().toString("yyyy-MM-dd"),
+            'to_date': self.to_date.date().toString("yyyy-MM-dd"),
+            'detail_level': self.detail_level.currentText(),
+            'table_data': table_data
+        }
+
     def printReport(self):
-        """Print the current report"""
+        """Print the current report using reportlab PDF"""
         try:
-            from PyQt5.QtPrintSupport import QPrintDialog
-            from PyQt5.QtGui import QTextDocument
-            
             if self.report_table.rowCount() == 0:
                 QMessageBox.warning(self, "No Data", "No data to print!")
                 return
             
-            # Create HTML content for printing
-            html_content = self._generateHtmlReport()
+            # Create temporary PDF
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            temp_pdf = os.path.join(temp_dir, f"temp_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
             
-            # Create document
-            doc = QTextDocument()
-            doc.setHtml(html_content)
+            # Prepare report data
+            report_data = self._prepareReportData()
             
-            # Create printer and show print dialog
-            printer = QPrinter(QPrinter.HighResolution)
-            print_dialog = QPrintDialog(printer, self)
+            # Generate PDF
+            pdf_generator = PDFGenerator()
+            success = pdf_generator.generate_report_pdf(report_data, temp_pdf)
             
-            if print_dialog.exec_() == QPrintDialog.Accepted:
-                doc.print_(printer)
-                QMessageBox.information(self, "Print Successful", "Report printed successfully!")
+            if success:
+                # Open PDF for printing
+                import subprocess
+                if sys.platform == "win32":
+                    os.startfile(temp_pdf)
+                elif sys.platform == "darwin":
+                    subprocess.call(["open", temp_pdf])
+                else:
+                    subprocess.call(["xdg-open", temp_pdf])
+                
+                QMessageBox.information(self, "Print Ready", 
+                                      f"PDF generated and opened for printing:\n{temp_pdf}")
+            else:
+                QMessageBox.critical(self, "Print Error", 
+                                   "Failed to generate PDF for printing.")
             
+        except ImportError:
+            QMessageBox.critical(
+                self, "Missing Library",
+                "ReportLab library is required for PDF generation.\n"
+                "Please install it using: pip install reportlab"
+            )
         except Exception as e:
             QMessageBox.critical(self, "Print Error", f"Failed to print report: {str(e)}")
     
     def printPreview(self):
-        """Show print preview for the current report"""
+        """Show print preview by opening the temporary PDF"""
         try:
-            from PyQt5.QtPrintSupport import QPrintPreviewDialog
-            from PyQt5.QtGui import QTextDocument
-            
             if self.report_table.rowCount() == 0:
                 QMessageBox.warning(self, "No Data", "No data to preview!")
                 return
             
-            # Create HTML content for preview
-            html_content = self._generateHtmlReport()
+            # Create temporary PDF
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            temp_pdf = os.path.join(temp_dir, f"preview_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
             
-            # Create document
-            doc = QTextDocument()
-            doc.setHtml(html_content)
+            # Prepare report data
+            report_data = self._prepareReportData()
             
-            # Create print preview dialog
-            preview_dialog = QPrintPreviewDialog(self)
-            preview_dialog.paintRequested.connect(lambda printer: doc.print_(printer))
-            preview_dialog.exec_()
+            # Generate PDF
+            pdf_generator = PDFGenerator()
+            success = pdf_generator.generate_report_pdf(report_data, temp_pdf)
             
+            if success:
+                # Open PDF for preview
+                import subprocess
+                if sys.platform == "win32":
+                    os.startfile(temp_pdf)
+                elif sys.platform == "darwin":
+                    subprocess.call(["open", temp_pdf])
+                else:
+                    subprocess.call(["xdg-open", temp_pdf])
+                
+                QMessageBox.information(self, "Preview Ready", 
+                                      f"PDF preview opened:\n{temp_pdf}")
+            else:
+                QMessageBox.critical(self, "Preview Error", 
+                                   "Failed to generate PDF preview.")
+            
+        except ImportError:
+            QMessageBox.critical(
+                self, "Missing Library",
+                "ReportLab library is required for PDF generation.\n"
+                "Please install it using: pip install reportlab"
+            )
         except Exception as e:
             QMessageBox.critical(self, "Print Preview Error", f"Failed to show print preview: {str(e)}")
-    
-    def _generateHtmlReport(self):
-        """Generate HTML content for PDF/Print"""
-        try:
-            # Report header
-            html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                    .header {{ text-align: center; margin-bottom: 30px; }}
-                    .title {{ font-size: 24px; font-weight: bold; color: #4B0082; }}
-                    .subtitle {{ font-size: 14px; color: #666; }}
-                    .metadata {{ margin: 20px 0; }}
-                    table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                    th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                    th {{ background-color: #4B0082; color: white; font-weight: bold; }}
-                    tr:nth-child(even) {{ background-color: #f2f2f2; }}
-                    .total-row {{ font-weight: bold; background-color: #e8e8e8; }}
-                    .footer {{ margin-top: 30px; text-align: center; font-size: 12px; color: #666; }}
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="title">Medical Rep Transaction System</div>
-                    <div class="subtitle">MongoDB Edition - Report</div>
-                </div>
-                
-                <div class="metadata">
-                    <strong>Report Type:</strong> {self.report_type.currentText()}<br>
-                    <strong>Date Range:</strong> {self.from_date.date().toString('yyyy-MM-dd')} to {self.to_date.date().toString('yyyy-MM-dd')}<br>
-                    <strong>Detail Level:</strong> {self.detail_level.currentText()}<br>
-                    <strong>Generated:</strong> {QDate.currentDate().toString('yyyy-MM-dd')} at {datetime.datetime.now().strftime('%H:%M:%S')}
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-            """
-            
-            # Add table headers
-            for col in range(self.report_table.columnCount()):
-                header = self.report_table.horizontalHeaderItem(col)
-                if header:
-                    html += f"<th>{header.text()}</th>"
-            
-            html += """
-                        </tr>
-                    </thead>
-                    <tbody>
-            """
-            
-            # Add table data
-            for row in range(self.report_table.rowCount()):
-                # Check if this is a total row
-                first_item = self.report_table.item(row, 0)
-                is_total_row = first_item and ("TOTAL" in first_item.text().upper() or "SUMMARY" in first_item.text().upper())
-                
-                row_class = ' class="total-row"' if is_total_row else ''
-                html += f"<tr{row_class}>"
-                
-                for col in range(self.report_table.columnCount()):
-                    item = self.report_table.item(row, col)
-                    cell_text = item.text() if item else ""
-                    
-                    # Preserve color coding for certain cells
-                    cell_style = ""
-                    if item:
-                        color = item.foreground()
-                        if color.isValid():
-                            cell_style = f' style="color: {color.color().name()};"'
-                    
-                    html += f"<td{cell_style}>{cell_text}</td>"
-                
-                html += "</tr>"
-            
-            html += """
-                    </tbody>
-                </table>
-                
-                <div class="footer">
-                    Generated by Medical Rep Transaction System (MongoDB Edition)
-                </div>
-            </body>
-            </html>
-            """
-            
-            return html
-            
-        except Exception as e:
-            return f"<html><body><h2>Error generating report HTML: {str(e)}</h2></body></html>"

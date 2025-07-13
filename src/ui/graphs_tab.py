@@ -284,23 +284,23 @@ class GraphsTab(QWidget):
             # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
                 credit_set = QBarSet("Credit")
-                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.setColor(QColor("#F44336"))
                 credit_set.append(credit_amounts)
                 
                 debit_set = QBarSet("Debit")
-                debit_set.setColor(QColor("#F44336"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debit_amounts)
                 
                 series.append(credit_set)
                 series.append(debit_set)
             elif self.radio_credit.isChecked():
                 credit_set = QBarSet("Credit")
-                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.setColor(QColor("#F44336"))
                 credit_set.append(credit_amounts)
                 series.append(credit_set)
             else:
                 debit_set = QBarSet("Debit")
-                debit_set.setColor(QColor("#F44336"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debit_amounts)
                 series.append(debit_set)
             
@@ -381,23 +381,23 @@ class GraphsTab(QWidget):
             # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
                 credit_set = QBarSet("Credit")
-                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.setColor(QColor("#F44336"))
                 credit_set.append(credit_amounts)
                 
                 debit_set = QBarSet("Debit")
-                debit_set.setColor(QColor("#F44336"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debit_amounts)
                 
                 series.append(credit_set)
                 series.append(debit_set)
             elif self.radio_credit.isChecked():
                 credit_set = QBarSet("Credit")
-                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.setColor(QColor("#F44336"))
                 credit_set.append(credit_amounts)
                 series.append(credit_set)
             else:
                 debit_set = QBarSet("Debit")
-                debit_set.setColor(QColor("#F44336"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debit_amounts)
                 series.append(debit_set)
             
@@ -477,23 +477,23 @@ class GraphsTab(QWidget):
             # Add bar sets based on radio button selection
             if self.radio_all.isChecked():
                 credit_set = QBarSet("Credit")
-                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.setColor(QColor("#F44336"))
                 credit_set.append(credit_amounts)
                 
                 debit_set = QBarSet("Debit")
-                debit_set.setColor(QColor("#F44336"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debit_amounts)
                 
                 series.append(credit_set)
                 series.append(debit_set)
             elif self.radio_credit.isChecked():
                 credit_set = QBarSet("Credit")
-                credit_set.setColor(QColor("#4CAF50"))
+                credit_set.setColor(QColor("#F44336"))
                 credit_set.append(credit_amounts)
                 series.append(credit_set)
             else:
                 debit_set = QBarSet("Debit")
-                debit_set.setColor(QColor("#F44336"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debit_amounts)
                 series.append(debit_set)
             

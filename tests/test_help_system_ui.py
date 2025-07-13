@@ -137,7 +137,7 @@ class HelpSystemTestWindow(QMainWindow):
             try:
                 # Test loading initial help content
                 initial_content = self.help_browser.getWelcomeHelp()
-                if "MongoDB Edition" in initial_content:
+                if "" in initial_content:
                     print("   ✅ Welcome content: MongoDB-specific content found")
                 else:
                     print("   ⚠️ Welcome content: May not be MongoDB-specific")

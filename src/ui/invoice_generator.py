@@ -16,6 +16,7 @@ import tempfile
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.database.mongo_adapter import MongoAdapter
+from src.utils.pdf_generator import PDFGenerator
 
 class InvoicePreviewDialog(QDialog):
     def __init__(self, invoice_html, parent=None):
@@ -843,263 +844,263 @@ class InvoiceGenerator(QWidget):
         
         # Generate professional pharmaceutical invoice HTML
         html = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Bill/Cash Memo</title>
-            <style>
-                body {{ 
-                    font-family: Arial, sans-serif; 
-                    margin: 0; 
-                    padding: 10px;
-                    font-size: 12px;
-                }}
-                .invoice-container {{
-                    border: 2px solid #000;
-                    padding: 0;
-                    max-width: 210mm;
-                    margin: 0 auto;
-                }}
-                .header {{
-                    background-color: #8A2BE2;
-                    color: white;
-                    padding: 10px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 16px;
-                }}
-                .company-header {{
-                    background-color: #8A2BE2;
-                    color: white;
-                    padding: 15px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }}
-                .company-logo {{
-                    font-size: 24px;
-                    font-weight: bold;
-                }}
-                .company-contact {{
-                    text-align: right;
-                    font-size: 11px;
-                }}
-                .bill-details {{
-                    display: flex;
-                    border-bottom: 2px solid #000;
-                }}
-                .bill-to {{
-                    flex: 1;
-                    padding: 15px;
-                    border-right: 1px solid #000;
-                }}
-                .transport-details {{
-                    flex: 1;
-                    padding: 15px;
-                    border-right: 1px solid #000;
-                }}
-                .invoice-details {{
-                    flex: 1;
-                    padding: 15px;
-                }}
-                .items-header {{
-                    background-color: #8A2BE2;
-                    color: white;
-                    padding: 8px;
-                    text-align: center;
-                    font-weight: bold;
-                }}
-                .items-table {{
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 0;
-                }}
-                .items-table th {{
-                    background-color: #8A2BE2;
-                    color: white;
-                    padding: 8px;
-                    border: 1px solid #666;
-                    text-align: center;
-                    font-size: 11px;
-                }}
-                .items-table td {{
-                    padding: 8px;
-                    border: 1px solid #666;
-                    font-size: 11px;
-                }}
-                .totals-section {{
-                    display: flex;
-                    border-top: 1px solid #000;
-                }}
-                .amounts-section {{
-                    flex: 1;
-                    padding: 15px;
-                }}
-                .amounts-header {{
-                    background-color: #8A2BE2;
-                    color: white;
-                    padding: 5px;
-                    text-align: center;
-                    font-weight: bold;
-                    margin-bottom: 10px;
-                }}
-                .amount-row {{
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 3px 0;
-                    border-bottom: 1px solid #ccc;
-                }}
-                .amount-words {{
-                    background-color: #8A2BE2;
-                    color: white;
-                    padding: 10px;
-                    text-align: center;
-                    font-weight: bold;
-                }}
-                .terms-section {{
-                    display: flex;
-                    border-top: 1px solid #000;
-                }}
-                .terms {{
-                    flex: 2;
-                    padding: 15px;
-                    font-size: 10px;
-                    border-right: 1px solid #000;
-                }}
-                .signature-section {{
-                    flex: 1;
-                    padding: 15px;
-                    text-align: center;
-                }}
-                .bold {{ font-weight: bold; }}
-                .right-align {{ text-align: right; }}
-            </style>
-        </head>
-        <body>
-            <div class="invoice-container">
-                <!-- Header -->
-                <div class="header">Bill/Cash Memo</div>
-                
-                <!-- Company Header -->
-                <div class="company-header">
-                    <div class="company-logo">
-                        {logo_html}
-                        {self.company_name.text()}
-                    </div>
-                    <div class="company-contact">
-                        {customer_contact}<br>
-                        {self.company_address.toPlainText().replace(chr(10), '<br>')}
-                    </div>
+       <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bill/Cash Memo</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 10px;
+            font-size: 12px;
+        }
+        .invoice-container {
+            border: 2px solid #000;
+            padding: 0;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .company-header {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .company-logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .company-contact {
+            text-align: right;
+            font-size: 11px;
+        }
+        .bill-details {
+            display: flex;
+            border-bottom: 2px solid #000;
+        }
+        .bill-to {
+            flex: 1;
+            padding: 15px;
+            border-right: 1px solid #000;
+        }
+        .transport-details {
+            flex: 1;
+            padding: 15px;
+            border-right: 1px solid #000;
+        }
+        .invoice-details {
+            flex: 1;
+            padding: 15px;
+        }
+        .items-header {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        .items-table th {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 8px;
+            border: 1px solid #666;
+            text-align: center;
+            font-size: 11px;
+        }
+        .items-table td {
+            padding: 8px;
+            border: 1px solid #666;
+            font-size: 11px;
+        }
+        .totals-section {
+            display: flex;
+            border-top: 1px solid #000;
+        }
+        .amounts-section {
+            flex: 1;
+            padding: 15px;
+        }
+        .amounts-header {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid #ccc;
+        }
+        .amount-words {
+            background-color: #8A2BE2;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .terms-section {
+            display: flex;
+            border-top: 1px solid #000;
+        }
+        .terms {
+            flex: 2;
+            padding: 15px;
+            font-size: 10px;
+            border-right: 1px solid #000;
+        }
+        .signature-section {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+        }
+        .bold { font-weight: bold; }
+        .right-align { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="header">Bill/Cash Memo</div>
+        
+        <!-- Company Header -->
+        <div class="company-header">
+            <div class="company-logo">
+                {logo_html}
+                {self.company_name.text()}
+            </div>
+            <div class="company-contact">
+                {customer_contact}<br>
+                {self.company_address.toPlainText().replace(chr(10), '<br>')}
+            </div>
+        </div>
+        
+        <!-- Bill Details Section -->
+        <div class="bill-details">
+            <div class="bill-to">
+                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Bill To</div>
+                <div class="bold">{customer_name}</div>
+                <div style="margin-top: 10px;">{customer_address.replace(chr(10), '<br>')}</div>
+            </div>
+            
+            <div class="transport-details">
+                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Transportation Details</div>
+                <div><span class="bold">Transport Name:</span> {transport_name}</div>
+                <div><span class="bold">Delivery Date:</span> {delivery_date}</div>
+                <div><span class="bold">Delivery location:</span> {delivery_location}</div>
+            </div>
+            
+            <div class="invoice-details">
+                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Invoice Details</div>
+                <div><span class="bold">Invoice No.:</span> {self.invoice_number.text()}</div>
+                <div><span class="bold">Date:</span> {self.invoice_date.date().toString("dd-MM-yy")}</div>
+            </div>
+        </div>
+        
+        <!-- Items Section -->
+        <div class="items-header">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 25%;">Item name</th>
+                        <th style="width: 10%;">No.</th>
+                        <th style="width: 10%;">MRP</th>
+                        <th style="width: 10%;">Quantity</th>
+                        <th style="width: 10%;">Rate</th>
+                        <th style="width: 10%;">Discount</th>
+                        <th style="width: 15%;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items_html}
+                    <tr>
+                        <td colspan="7" style="text-align: right; padding: 8px; border: 1px solid #666; font-weight: bold;">Total</td>
+                        <td style="text-align: right; padding: 8px; border: 1px solid #666; font-weight: bold;">{subtotal:.0f}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Totals Section -->
+        <div class="totals-section">
+            <div class="amounts-section">
+                <div class="amounts-header">Amounts</div>
+                <div class="amount-row">
+                    <span>Sub Total</span>
+                    <span>{subtotal:.0f}</span>
                 </div>
-                
-                <!-- Bill Details Section -->
-                <div class="bill-details">
-                    <div class="bill-to">
-                        <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Bill To</div>
-                        <div class="bold">{customer_name}</div>
-                        <div style="margin-top: 10px;">{customer_address.replace(chr(10), '<br>')}</div>
-                    </div>
-                    
-                    <div class="transport-details">
-                        <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Transportation Details</div>
-                        <div><span class="bold">Transport Name:</span> {transport_name}</div>
-                        <div><span class="bold">Delivery Date:</span> {delivery_date}</div>
-                        <div><span class="bold">Delivery location:</span> {delivery_location}</div>
-                    </div>
-                    
-                    <div class="invoice-details">
-                        <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Invoice Details</div>
-                        <div><span class="bold">Invoice No.:</span> {self.invoice_number.text()}</div>
-                        <div><span class="bold">Date:</span> {self.invoice_date.date().toString("dd-MM-yy")}</div>
-                    </div>
+                <div class="amount-row">
+                    <span>Total</span>
+                    <span>{total:.0f}</span>
                 </div>
-                
-                <!-- Items Section -->
-                <div class="items-header">
-                    <table class="items-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 5%;">#</th>
-                                <th style="width: 25%;">Item name</th>
-                                <th style="width: 10%;">No.</th>
-                                <th style="width: 10%;">MRP</th>
-                                <th style="width: 10%;">Quantity</th>
-                                <th style="width: 10%;">Rate</th>
-                                <th style="width: 10%;">Discount</th>
-                                <th style="width: 15%;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items_html}
-                            <tr>
-                                <td colspan="7" style="text-align: right; padding: 8px; border: 1px solid #666; font-weight: bold;">Total</td>
-                                <td style="text-align: right; padding: 8px; border: 1px solid #666; font-weight: bold;">{subtotal:.0f}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="amount-row">
+                    <span>Received</span>
+                    <span>0.00</span>
                 </div>
-                
-                <!-- Totals Section -->
-                <div class="totals-section">
-                    <div class="amounts-section">
-                        <div class="amounts-header">Amounts</div>
-                        <div class="amount-row">
-                            <span>Sub Total</span>
-                            <span>{subtotal:.0f}</span>
-                        </div>
-                        <div class="amount-row">
-                            <span>Total</span>
-                            <span>{total:.0f}</span>
-                        </div>
-                        <div class="amount-row">
-                            <span>Received</span>
-                            <span>0.00</span>
-                        </div>
-                        <div class="amount-row bold">
-                            <span>Balance</span>
-                            <span>{total:.0f}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Amount in Words -->
-                <div class="amount-words">
-                    <div class="bold" style="margin-bottom: 5px;">Invoice Amount In Words</div>
-                    <div>{amount_to_words(total)}</div>
-                </div>
-                
-                <!-- Terms and Signature -->
-                <div class="terms-section">
-                    <div class="terms">
-                        <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Terms and Conditions</div>
-                        <div style="text-align: justify;">
-                            {self.notes.toPlainText().replace(chr(10), '<br>')}
-                            <br><br>
-                            Form 2-A, as specified under Rules 19 and 30, pertains to the warranty 
-                            provided under Section 23(1)(1) of the Drug Act 1976. This document, 
-                            issued by {self.company_name.text()}, serves as an assurance of the quality and 
-                            effectiveness of products. The warranty ensures that the drugs 
-                            manufactured by {self.company_name.text()} comply with the prescribed standards and 
-                            meet the necessary regulatory requirements. By utilizing Form 2-A, 
-                            {self.company_name.text()} demonstrates its commitment to delivering safe and reliable 
-                            pharmaceuticals to consumers. This form acts as a legal document, 
-                            emphasizing {self.company_name.text()}'s responsibility and accountability in 
-                            maintaining the highest standards in drug manufacturing and 
-                            distribution.
-                        </div>
-                    </div>
-                    
-                    <div class="signature-section">
-                        <div style="margin-bottom: 20px;">For : {self.company_name.text()}</div>
-                        <div style="margin-top: 80px; border-top: 1px solid #000; padding-top: 10px;">
-                            <div class="bold">Authorized Signatory</div>
-                        </div>
-                    </div>
+                <div class="amount-row bold">
+                    <span>Balance</span>
+                    <span>{total:.0f}</span>
                 </div>
             </div>
-        </body>
-        </html>
+        </div>
+        
+        <!-- Amount in Words -->
+        <div class="amount-words">
+            <div class="bold" style="margin-bottom: 5px;">Invoice Amount In Words</div>
+            <div>{amount_to_words(total)}</div>
+        </div>
+        
+        <!-- Terms and Signature -->
+        <div class="terms-section">
+            <div class="terms">
+                <div class="bold" style="background-color: #8A2BE2; color: white; padding: 5px; margin-bottom: 10px;">Terms and Conditions</div>
+                <div style="text-align: justify;">
+                    {self.notes.toPlainText().replace(chr(10), '<br>')}
+                    <br><br>
+                    Form 2-A, as specified under Rules 19 and 30, pertains to the warranty 
+                    provided under Section 23(1)(1) of the Drug Act 1976. This document, 
+                    issued by {self.company_name.text()}, serves as an assurance of the quality and 
+                    effectiveness of products. The warranty ensures that the drugs 
+                    manufactured by {self.company_name.text()} comply with the prescribed standards and 
+                    meet the necessary regulatory requirements. By utilizing Form 2-A, 
+                    {self.company_name.text()} demonstrates its commitment to delivering safe and reliable 
+                    pharmaceuticals to consumers. This form acts as a legal document, 
+                    emphasizing {self.company_name.text()}'s responsibility and accountability in 
+                    maintaining the highest standards in drug manufacturing and 
+                    distribution.
+                </div>
+            </div>
+            
+            <div class="signature-section">
+                <div style="margin-bottom: 20px;">For : {self.company_name.text()}</div>
+                <div style="margin-top: 80px; border-top: 1px solid #000; padding-top: 10px;">
+                    <div class="bold">Authorized Signatory</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
         """
         
         return html
@@ -1115,7 +1116,7 @@ class InvoiceGenerator(QWidget):
         preview_dialog.exec_()
     
     def saveAsPdf(self):
-        """Save the invoice as a PDF file"""
+        """Save the invoice as a PDF file using reportlab"""
         if not self.invoice_items:
             QMessageBox.warning(self, "No Items", "Please add at least one item to the invoice.")
             return
@@ -1127,41 +1128,137 @@ class InvoiceGenerator(QWidget):
         )
         
         if file_name:
-            # Generate HTML
-            invoice_html = self.generateInvoiceHtml()
-            
-            # Create document
-            doc = QTextDocument()
-            doc.setHtml(invoice_html)
-            
-            # Create printer
-            printer = QPrinter(QPrinter.HighResolution)
-            printer.setOutputFormat(QPrinter.PdfFormat)
-            printer.setOutputFileName(file_name)
-            printer.setPageSize(QPrinter.A4)
-            
-            # Print document to PDF
-            doc.print_(printer)
-            
-            QMessageBox.information(
-                self, "PDF Saved",
-                f"Invoice saved as PDF:\n{file_name}"
-            )
+            try:
+                # Prepare invoice data for PDF generator
+                invoice_data = self.prepareInvoiceData()
+                
+                # Generate PDF using reportlab
+                pdf_generator = PDFGenerator()
+                success = pdf_generator.generate_invoice_pdf(invoice_data, file_name)
+                
+                if success:
+                    QMessageBox.information(
+                        self, "PDF Saved",
+                        f"Invoice saved as PDF:\n{file_name}"
+                    )
+                else:
+                    QMessageBox.critical(
+                        self, "Error",
+                        "Failed to generate PDF. Please try again."
+                    )
+                    
+            except ImportError:
+                QMessageBox.critical(
+                    self, "Missing Library",
+                    "ReportLab library is required for PDF generation.\n"
+                    "Please install it using: pip install reportlab"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    self, "Error",
+                    f"Failed to save PDF: {str(e)}"
+                )
     
+    def prepareInvoiceData(self):
+        """Prepare invoice data for PDF generation"""
+        # Get customer info
+        customer_name = self.customer_combo.currentText()
+        customer_info = self.customer_data.get(customer_name, {})
+        customer_address = customer_info.get('address', '')
+        customer_contact = customer_info.get('contact', '')
+        
+        # Calculate totals
+        subtotal = sum(item['total'] for item in self.invoice_items)
+        tax_rate = self.tax_rate.value() / 100
+        tax_amount = subtotal * tax_rate
+        total = subtotal + tax_amount
+        
+        # Prepare items data
+        items_data = []
+        for item in self.invoice_items:
+            items_data.append({
+                'product_name': item['product'],
+                'batch_number': item.get('batch_number', 'N/A'),
+                'product_id': item.get('product_id', 'N/A'),
+                'quantity': item['quantity'],
+                'unit_price': item['unit_price'],
+                'discount': 0,  # Can be made configurable
+                'amount': item['total']
+            })
+        
+        return {
+            'company_name': self.company_name.text(),
+            'company_logo': self.company_logo,
+            'customer_info': {
+                'name': customer_name,
+                'address': customer_address,
+                'contact': customer_contact
+            },
+            'transport_info': {
+                'transport_name': 'Standard Delivery',
+                'delivery_date': self.due_date.date().toString("dd-MM-yy"),
+                'delivery_location': customer_address.split('\n')[0] if customer_address else 'Customer Location'
+            },
+            'invoice_details': {
+                'invoice_number': self.invoice_number.text(),
+                'invoice_date': self.invoice_date.date().toString("dd-MM-yy")
+            },
+            'items': items_data,
+            'terms': self.notes.toPlainText(),
+            'total_amount': total
+        }
+
     def printInvoice(self):
-        """Print the invoice"""
+        """Print the invoice using reportlab PDF"""
         if not self.invoice_items:
             QMessageBox.warning(self, "No Items", "Please add at least one item to the invoice.")
             return
         
-        # Generate HTML
-        invoice_html = self.generateInvoiceHtml()
-        
-        # Create document
-        doc = QTextDocument()
-        doc.setHtml(invoice_html)
-        
-        # Show print dialog
-        print_dialog = QPrintPreviewDialog()
-        print_dialog.paintRequested.connect(lambda printer: doc.print_(printer))
-        print_dialog.exec_()
+        try:
+            # Create temporary PDF file
+            temp_dir = tempfile.gettempdir()
+            temp_pdf = os.path.join(temp_dir, f"temp_invoice_{self.invoice_number.text()}.pdf")
+            
+            # Prepare invoice data
+            invoice_data = self.prepareInvoiceData()
+            
+            # Generate PDF
+            pdf_generator = PDFGenerator()
+            success = pdf_generator.generate_invoice_pdf(invoice_data, temp_pdf)
+            
+            if success:
+                # Show print dialog using QPrinter
+                from PyQt5.QtPrintSupport import QPrintDialog
+                from PyQt5.QtGui import QTextDocument
+                
+                # For now, we'll open the PDF file for printing
+                # In a real implementation, you might want to use a PDF viewer
+                import subprocess
+                if sys.platform == "win32":
+                    os.startfile(temp_pdf)
+                elif sys.platform == "darwin":
+                    subprocess.call(["open", temp_pdf])
+                else:
+                    subprocess.call(["xdg-open", temp_pdf])
+                    
+                QMessageBox.information(
+                    self, "Print Ready",
+                    f"PDF generated and opened for printing:\n{temp_pdf}"
+                )
+            else:
+                QMessageBox.critical(
+                    self, "Error",
+                    "Failed to generate PDF for printing."
+                )
+                
+        except ImportError:
+            QMessageBox.critical(
+                self, "Missing Library",
+                "ReportLab library is required for PDF generation.\n"
+                "Please install it using: pip install reportlab"
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Print Error",
+                f"Failed to print invoice: {str(e)}"
+            )

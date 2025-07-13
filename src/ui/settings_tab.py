@@ -241,7 +241,7 @@ class SettingsTab(QWidget):
         # About
         about_label = QLabel(
             "Medical Rep Transaction Software\n"
-            "Version 2.0 - MongoDB Edition\n"
+            "Version 2.0 - \n"
             "© 2025 BSOLS Technologies\n"
         )
         about_label.setAlignment(Qt.AlignCenter)

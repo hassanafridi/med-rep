@@ -515,157 +515,179 @@ class NewEntryTab(QWidget):
         self.total_label.setText(f"Total: Rs {total:.2f}")
     
     def saveEntry(self):
-        """Save the entry to MongoDB and generate invoice if enabled"""
-        # Validate inputs
-        if self.customer_combo.currentIndex() == 0:
-            QMessageBox.warning(self, "Validation Error", "Please select a customer")
-            return
-        
-        if not self.product_items:
-            QMessageBox.warning(self, "Validation Error", "Please add at least one product")
-            return
-        
-        # Validate database connection
-        if not self.db:
-            QMessageBox.critical(self, "Database Error", "Database connection not available")
-            return
-        
+        """Save the entry to MongoDB with invoice number generation"""
         try:
-            # Ensure connection
-            if not self.db.connected:
-                self.db.connect()
+            # Validate inputs
+            if not self.validateInputs():
+                return
             
-            # Get form data
+            # Generate invoice number for this entry
+            invoice_number = self.generateInvoiceNumber()
+            
+            # Get values
             date = self.date_edit.date().toString("yyyy-MM-dd")
             customer_display_name = self.customer_combo.currentText()
             
-            # Validate customer selection
-            if customer_display_name not in self.customer_data:
-                QMessageBox.warning(self, "Validation Error", "Invalid customer selection")
-                return
-                
-            customer_id = self.customer_data[customer_display_name]
-            is_credit = self.is_credit.isChecked()
-            notes = self.notes_edit.text()
+            # Get customer ID from customer_data
+            customer_id = None
+            if customer_display_name in self.customer_data:
+                customer_id = self.customer_data[customer_display_name]
             
-            # Calculate total
+            if not customer_id:
+                QMessageBox.warning(self, "Error", "Please select a valid customer.")
+                return
+            
+            is_credit = self.is_credit.isChecked()
+            
+            # Prepare notes with invoice information
+            base_notes = self.notes_edit.text().strip()
+            invoice_info = f"Invoice: {invoice_number}"
+            
+            # Add transport and delivery info if auto-invoice is enabled
+            if self.auto_invoice_check.isChecked():
+                transport_name = self.transport_name_edit.text().strip() or "Standard Delivery"
+                delivery_location = self.delivery_location_edit.text().strip() or "Customer Location"
+                delivery_date = self.delivery_date_edit.date().toString("dd-MM-yy")
+                
+                invoice_info += f" | Transport: {transport_name} | Delivery: {delivery_location} ({delivery_date})"
+            
+            # Add products information as JSON for multi-product invoices
+            if len(self.product_items) > 1:
+                products_json = json.dumps([{
+                    'product_name': item['product_name'],
+                    'batch_number': item.get('batch_number', ''),
+                    'quantity': item['quantity'],
+                    'unit_price': item['unit_price'],
+                    'amount': item['amount']
+                } for item in self.product_items])
+                invoice_info += f" | Products: {products_json}"
+            
+            # Combine base notes with invoice info
+            final_notes = f"{base_notes} | {invoice_info}" if base_notes else invoice_info
+            
+            # Calculate total amount
             total_amount = sum(item['amount'] for item in self.product_items)
             
-            # Get current balance from MongoDB
-            transactions = self.db.get_transactions()
-            current_balance = 0
-            if transactions:
-                balances = []
-                for t in transactions:
-                    balance = t.get('balance')
-                    if balance is not None:
-                        try:
-                            balances.append(float(balance))
-                        except (ValueError, TypeError):
-                            continue
-                current_balance = max(balances) if balances else 0
-            
-            # Calculate new balance
-            new_balance = current_balance + total_amount if is_credit else current_balance - total_amount
-            
-            # Save each product as a separate entry in MongoDB
-            entry_ids = []
-            
-            for item in self.product_items:
-                # Validate product data
-                if not item.get('product_id'):
-                    QMessageBox.warning(self, "Data Error", f"Invalid product data for {item.get('product_name', 'Unknown')}")
-                    continue
-                    
-                # Add entry to MongoDB
-                entry_id = self.db.add_entry(
-                    date=date,
-                    customer_id=customer_id,
-                    product_id=item['product_id'],
-                    quantity=item['quantity'],
-                    unit_price=item['unit_price'],
-                    is_credit=is_credit,
-                    notes=f"{notes} | Discount: {item.get('discount', 0)}% | Amount: Rs.{item['amount']:.2f}"
-                )
-                
-                if entry_id:
-                    entry_ids.append(str(entry_id))
-            
-            if not entry_ids:
-                QMessageBox.critical(self, "Save Error", "Failed to save any entries to MongoDB")
+            # For multi-product entries, use the first product for the main entry
+            # and store others in notes
+            main_product = self.product_items[0] if self.product_items else None
+            if not main_product:
+                QMessageBox.warning(self, "Error", "Please add at least one product.")
                 return
             
-            # Add transaction record for the total
-            transaction_id = self.db.add_transaction(
-                entry_id=entry_ids[0],  # Use first entry ID
-                amount=total_amount,
-                balance=new_balance
+            # Save entry with invoice number in notes
+            success = self.db.add_entry(
+                date=date,
+                customer_id=customer_id,
+                product_id=main_product['product_id'],
+                quantity=main_product['quantity'],
+                unit_price=main_product['unit_price'],
+                is_credit=is_credit,
+                notes=final_notes
             )
             
-            # Prepare entry data for invoice
-            entry_data = {
-                'entry_id': entry_ids[0],
+            if success:
+                # Generate invoice if auto-invoice is enabled
+                invoice_path = None
+                if self.auto_invoice_check.isChecked() and self.invoice_generator:
+                    try:
+                        invoice_path = self.generateAutoInvoice(invoice_number, customer_id, date, total_amount)
+                    except Exception as e:
+                        print(f"Auto-invoice generation failed: {e}")
+                        # Continue without failing the entry save
+                
+                # Show success message with balance info
+                customer_name = customer_display_name.split(' (')[0]  # Remove contact info
+                balance = self.db.get_customer_balance(customer_id)
+                
+                balance_text = f"PKR{balance:,.2f}"
+                balance_status = "Credit Balance" if balance > 0 else "No Balance"
+                
+                success_msg = (
+                    f"Entry saved successfully!\n\n"
+                    f"Invoice Number: {invoice_number}\n"
+                    f"Customer: {customer_name}\n"
+                    f"Amount: PKR{total_amount:,.2f} ({'Credit' if is_credit else 'Debit'})\n"
+                    f"Customer Balance: {balance_text} ({balance_status})"
+                )
+                
+                if invoice_path:
+                    success_msg += f"\n\nInvoice saved to: {invoice_path}"
+                    
+                    # Show invoice quick view dialog
+                    quick_view = InvoiceQuickViewDialog(invoice_path, self)
+                    quick_view.exec_()
+                else:
+                    QMessageBox.information(self, "Entry Saved", success_msg)
+                
+                self.clearForm()
+                
+                # Emit signal to refresh other tabs
+                if hasattr(self, 'entry_saved'):
+                    self.entry_saved.emit(invoice_path or "")
+                
+            else:
+                QMessageBox.critical(self, "Error", "Failed to save entry. Please try again.")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to save entry: {str(e)}")
+    
+    def generateInvoiceNumber(self):
+        """Generate a unique invoice number"""
+        import random
+        today = datetime.now()
+        # Format: INV-YYYYMMDD-XXX (where XXX is a random 3-digit number)
+        random_suffix = random.randint(100, 999)
+        return f"INV-{today.year}{today.month:02d}{today.day:02d}-{random_suffix}"
+    
+    def generateAutoInvoice(self, invoice_number, customer_id, date, total_amount):
+        """Generate invoice automatically using the auto invoice generator"""
+        try:
+            # Get customer and product details
+            customers = self.db.get_customers()
+            customer = next((c for c in customers if str(c.get('id')) == str(customer_id)), None)
+            
+            if not customer:
+                raise Exception("Customer not found")
+            
+            # Prepare invoice data
+            invoice_data = {
+                'invoice_number': invoice_number,
                 'date': date,
-                'customer_id': customer_id,
-                'customer_name': customer_display_name.split(' (')[0],  # Remove contact info
-                'items': self.product_items,  # Multiple products
+                'customer': {
+                    'name': customer.get('name', ''),
+                    'address': customer.get('address', ''),
+                    'contact': customer.get('contact', '')
+                },
+                'items': self.product_items,
                 'total_amount': total_amount,
-                'is_credit': is_credit,
-                'notes': notes,
-                'balance': new_balance,
-                'transport_name': self.transport_name_edit.text() or 'N/A',
+                'transport_name': self.transport_name_edit.text().strip() or "Standard Delivery",
+                'delivery_location': self.delivery_location_edit.text().strip() or customer.get('address', '').split('\n')[0],
                 'delivery_date': self.delivery_date_edit.date().toString("dd-MM-yy"),
-                'delivery_location': self.delivery_location_edit.text() or 'N/A'
+                'notes': self.notes_edit.text().strip()
             }
             
-            # Generate invoice if enabled and available
-            invoice_path = None
-            invoice_number = None
-            if self.auto_invoice_check.isChecked() and self.invoice_generator:
-                try:
-                    invoice_path = self.invoice_generator.generate_invoice_from_entry(entry_data)
-                    
-                    if invoice_path:
-                        # Extract invoice number
-                        invoice_filename = os.path.basename(invoice_path)
-                        invoice_number = invoice_filename.split('_')[1] if '_' in invoice_filename else 'N/A'
-                        
-                except Exception as e:
-                    print(f"Invoice generation error: {e}")
-                    QMessageBox.warning(self, "Invoice Warning", 
-                                      f"Entry saved but invoice generation failed: {str(e)}")
+            # Generate invoice using the auto invoice generator
+            invoice_path = self.invoice_generator.generate_invoice(invoice_data)
             
-            # Show success message
-            success_message = f"Entry saved successfully to MongoDB!\n\n"
-            success_message += f"Entry IDs: {', '.join(entry_ids)}\n"
-            success_message += f"Products: {len(self.product_items)}\n"
-            success_message += f"Total Amount: Rs. {total_amount:.2f}\n"
-            success_message += f"New Balance: Rs. {new_balance:.2f}\n"
-            success_message += f"Entry Type: {'Credit' if is_credit else 'Debit'}"
-            
-            if invoice_path:
-                success_message += f"\n\nInvoice generated: {os.path.basename(invoice_path)}"
-                self.status_label.setText(f"✓ Invoice saved: {invoice_path}")
-                self.status_label.setStyleSheet("color: green; font-weight: bold;")
-                
-                # Emit signal with invoice path
-                self.entry_saved.emit(invoice_path)
-            else:
-                self.status_label.setText("✓ Entry saved to MongoDB successfully")
-                self.status_label.setStyleSheet("color: green; font-weight: bold;")
-            
-            QMessageBox.information(self, "Success", success_message)
-            
-            # Clear form after successful save
-            self.clearForm()
+            return invoice_path
             
         except Exception as e:
-            error_msg = f"Failed to save entry to MongoDB: {str(e)}"
-            print(error_msg)
-            import traceback
-            traceback.print_exc()
-            QMessageBox.critical(self, "MongoDB Error", error_msg)
-
+            print(f"Error generating auto invoice: {e}")
+            raise e
+    
+    def validateInputs(self):
+        """Validate form inputs"""
+        if self.customer_combo.currentIndex() == 0:
+            QMessageBox.warning(self, "Validation Error", "Please select a customer.")
+            return False
+        
+        if not self.product_items:
+            QMessageBox.warning(self, "Validation Error", "Please add at least one product.")
+            return False
+        
+        return True
+    
     def clearForm(self):
         """Clear all form fields"""
         self.date_edit.setDate(QDate.currentDate())

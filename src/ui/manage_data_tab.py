@@ -17,7 +17,7 @@ class CustomerDialog(QDialog):
     def __init__(self, parent=None, customer_data=None):
         super().__init__(parent)
         self.customer_data = customer_data  # (id, name, contact, address)
-        self.setWindowTitle("Customer Details - MongoDB Edition")
+        self.setWindowTitle("Customer Details - ")
         self.setMinimumWidth(400)
         self.initUI()
         
@@ -78,7 +78,7 @@ class ProductDialog(QDialog):
     def __init__(self, parent=None, product_data=None):
         super().__init__(parent)
         self.product_data = product_data  # (id, name, description, unit_price, batch_number, expiry_date)
-        self.setWindowTitle("Product Details - MongoDB Edition")
+        self.setWindowTitle("Product Details - ")
         self.setMinimumWidth(500)
         self.initUI()
         
@@ -210,7 +210,7 @@ class ManageDataTab(QWidget):
         main_layout = QVBoxLayout()
         
         # Title
-        title_label = QLabel("Data Management - MongoDB Edition")
+        title_label = QLabel("Data Management - ")
         title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #4B0082; margin-bottom: 10px;")
         main_layout.addWidget(title_label)
         

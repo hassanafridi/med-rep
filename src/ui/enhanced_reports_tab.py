@@ -95,7 +95,7 @@ class EnhancedReportsTab(QWidget):
         
         # Header
         header_layout = QHBoxLayout()
-        title_label = QLabel("Enhanced Analytics & Reports - MongoDB Edition")
+        title_label = QLabel("Enhanced Analytics & Reports")
         title_label.setFont(QFont("Arial", 16, QFont.Bold))
         header_layout.addWidget(title_label)
         header_layout.addStretch()
@@ -1030,7 +1030,7 @@ class EnhancedReportsTab(QWidget):
             customer_lookup = {}
             for customer in customers:
                 customer_lookup[str(customer.get('id', ''))] = customer
-            
+        
             # Calculate customer balances
             customer_balances = {}
             summary = {'total_credit': 0, 'total_debit': 0}
@@ -1048,35 +1048,37 @@ class EnhancedReportsTab(QWidget):
                         'customer_name': customer_info.get('name', 'Unknown'),
                         'credit_total': 0,
                         'debit_total': 0,
+                        'raw_balance': 0,
                         'balance': 0
                     }
                 
                 if is_credit:
                     customer_balances[customer_id]['credit_total'] += amount
-                    customer_balances[customer_id]['balance'] += amount
+                    customer_balances[customer_id]['raw_balance'] += amount
                     summary['total_credit'] += amount
                 else:
                     customer_balances[customer_id]['debit_total'] += amount
-                    customer_balances[customer_id]['balance'] -= amount
+                    customer_balances[customer_id]['raw_balance'] -= amount
                     summary['total_debit'] += amount
-            
-            # Add status for each customer
+        
+            # Add status for each customer and handle negative balances
             for customer_id, balance_data in customer_balances.items():
-                balance = balance_data['balance']
-                if balance > 1000:
+                raw_balance = balance_data['raw_balance']
+                display_balance = max(0, raw_balance)  # Show 0 if negative
+                balance_data['balance'] = display_balance
+                
+                if raw_balance > 1000:
                     balance_data['status'] = 'High Credit'
-                elif balance > 0:
+                elif raw_balance > 0:
                     balance_data['status'] = 'Credit Balance'
-                elif balance < -1000:
-                    balance_data['status'] = 'High Debit'
-                elif balance < 0:
-                    balance_data['status'] = 'Debit Balance'
+                elif raw_balance < 0:
+                    balance_data['status'] = 'No Balance'
                 else:
                     balance_data['status'] = 'Balanced'
             
             # Convert to list format
             customer_balances_list = list(customer_balances.values())
-            customer_balances_list.sort(key=lambda x: x['balance'], reverse=True)
+            customer_balances_list.sort(key=lambda x: x['raw_balance'], reverse=True)
             
             # Create summary in expected format
             summary_list = [
@@ -1103,11 +1105,11 @@ class EnhancedReportsTab(QWidget):
         # Update summary cards
         total_credit = sum(s["total_amount"] for s in summary if s["_id"] == True)
         total_debit = sum(s["total_amount"] for s in summary if s["_id"] == False)
-        net_outstanding = total_credit - total_debit
+        net_outstanding = max(0, total_credit - total_debit)  # Show 0 if negative
         active_customers = len(customer_balances)
         
         self.revenue_card.value_label.setText(f"PKR{total_credit:,.2f}")
-        self.outstanding_card.value_label.setText(f"PKR{abs(net_outstanding):,.2f}")
+        self.outstanding_card.value_label.setText(f"PKR{net_outstanding:,.2f}")
         self.credit_card.value_label.setText(f"PKR{total_debit:,.2f}")
         self.customers_card.value_label.setText(str(active_customers))
         
@@ -1123,21 +1125,23 @@ class EnhancedReportsTab(QWidget):
             self.financial_table.setItem(row, 1, QTableWidgetItem(f"PKR{balance.get('credit_total', 0):,.2f}"))
             self.financial_table.setItem(row, 2, QTableWidgetItem(f"PKR{balance.get('debit_total', 0):,.2f}"))
             
-            balance_amount = balance.get("balance", 0)
-            balance_item = QTableWidgetItem(f"PKR{balance_amount:,.2f}")
-            if balance_amount > 0:
+            display_balance = balance.get("balance", 0)  # This is already max(0, raw_balance)
+            raw_balance = balance.get("raw_balance", display_balance)
+            balance_item = QTableWidgetItem(f"PKR{display_balance:,.2f}")
+            
+            if raw_balance > 0:
                 balance_item.setBackground(QColor(200, 255, 200))  # Light green for positive
-            elif balance_amount < 0:
-                balance_item.setBackground(QColor(255, 200, 200))  # Light red for negative
+            else:
+                balance_item.setBackground(QColor(245, 245, 245))  # Light gray for zero display
                 
             self.financial_table.setItem(row, 3, balance_item)
             self.financial_table.setItem(row, 4, QTableWidgetItem(balance.get("status", "")))
-        
+    
         self.financial_table.resizeColumnsToContents()
         
         # Create balance distribution chart
         self.create_balance_distribution_chart(customer_balances)
-    
+
     def create_balance_distribution_chart(self, balances):
         """Create balance distribution chart"""
         chart = QChart()
@@ -1145,16 +1149,13 @@ class EnhancedReportsTab(QWidget):
         
         series = QPieSeries()
         
-        positive_count = sum(1 for b in balances if b.get("balance", 0) > 0)
-        negative_count = sum(1 for b in balances if b.get("balance", 0) < 0)
-        zero_count = sum(1 for b in balances if b.get("balance", 0) == 0)
+        positive_count = sum(1 for b in balances if b.get("raw_balance", 0) > 0)
+        no_balance_count = sum(1 for b in balances if b.get("raw_balance", 0) <= 0)
         
         if positive_count > 0:
             series.append("Credit Balance", positive_count)
-        if negative_count > 0:
-            series.append("Debit Balance", negative_count)
-        if zero_count > 0:
-            series.append("Balanced", zero_count)
+        if no_balance_count > 0:
+            series.append("No Balance", no_balance_count)
         
         chart.addSeries(series)
         self.financial_chart_view.setChart(chart)

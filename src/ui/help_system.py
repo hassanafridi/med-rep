@@ -63,7 +63,7 @@ class HelpBrowser(QWidget):
         # Header
         header_layout = QHBoxLayout()
         
-        header_label = QLabel("Medical Rep Transaction Software - Help & Documentation (MongoDB Edition)")
+        header_label = QLabel("Medical Rep Transaction Software - Help & Documentation")
         header_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4B0082;")
         
         search_box = QLineEdit()
@@ -288,11 +288,11 @@ class HelpBrowser(QWidget):
     def getWelcomeHelp(self):
         """Get the welcome help content"""
         return """
-        <h1>Welcome to Medical Rep Transaction Software (MongoDB Edition)</h1>
+        <h1>Welcome to Medical Rep Transaction Software ()</h1>
         <p>This help system will guide you through using the Medical Rep Transaction Software with MongoDB database integration.</p>
         
         <h2>About the Software</h2>
-        <p>Medical Rep Transaction Software is designed to help medical representatives track their sales, manage customer relationships, and generate reports and invoices. This MongoDB edition provides enhanced performance, scalability, and cloud integration capabilities.</p>
+        <p>Medical Rep Transaction Software is designed to help medical representatives track their sales, manage customer relationships, and generate reports and invoices. This  provides enhanced performance, scalability, and cloud integration capabilities.</p>
         
         <h2>MongoDB Benefits</h2>
         <ul>
@@ -758,7 +758,7 @@ class HelpBrowser(QWidget):
         <p>If you're upgrading from a previous version with SQLite, the software provides tools to migrate your existing data to MongoDB.</p>
         
         <h2>Automatic Migration</h2>
-        <p>When you first run the MongoDB edition with existing SQLite data:</p>
+        <p>When you first run the  with existing SQLite data:</p>
         <ol>
             <li>The software will detect your existing SQLite database</li>
             <li>A migration wizard will appear automatically</li>
@@ -816,9 +816,9 @@ class HelpBrowser(QWidget):
     def getEnhancedAnalyticsHelp(self):
         """Get enhanced analytics help content"""
         return """
-        <h1>Enhanced Analytics (MongoDB Edition)</h1>
+        <h1>Enhanced Analytics ()</h1>
         
-        <p>The MongoDB edition provides powerful analytics capabilities through the Enhanced Reports tab, offering deep insights into your business data.</p>
+        <p>The  provides powerful analytics capabilities through the Enhanced Reports tab, offering deep insights into your business data.</p>
         
         <h2>Available Analytics</h2>
         
@@ -903,7 +903,7 @@ class HelpBrowser(QWidget):
         return """
         <h1>MongoDB Backup and Recovery</h1>
         
-        <p>Protecting your data with regular backups is crucial. The MongoDB edition provides comprehensive backup and recovery options.</p>
+        <p>Protecting your data with regular backups is crucial. The  provides comprehensive backup and recovery options.</p>
         
         <h2>Backup Types</h2>
         

@@ -4984,3 +4984,1603 @@
 2025-07-13 08:04:30,145 - root - INFO - Configuration saved to data\config.json
 2025-07-13 08:04:30,145 - src.database.mongo_db - INFO - MongoDB connection closed
 2025-07-13 08:04:30,145 - root - INFO - MongoDB connection closed
+2025-07-13 10:11:43,377 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:11:43,378 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:11:44,727 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:44,728 - root - INFO - MongoDB connection successful
+2025-07-13 10:11:45,327 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:46,258 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:11:46,259 - root - INFO - MongoDB initialization successful
+2025-07-13 10:11:46,259 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:11:50,372 - root - INFO - User admin logged in successfully
+2025-07-13 10:11:51,036 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:51,200 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:51,256 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:51,256 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:51,310 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:51,310 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:51,366 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:51,366 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:51,420 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:11:51,420 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:11:51,476 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:51,476 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:51,531 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:51,531 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:51,601 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:51,602 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:51,670 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:51,670 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:51,724 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:51,724 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:51,781 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:51,781 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:51,839 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:51,839 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:51,892 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:11:51,892 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:11:51,947 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:51,947 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:52,597 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:52,759 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:53,350 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:53,506 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:53,577 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:11:53,577 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:11:53,633 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:53,633 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:54,280 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:54,450 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:55,029 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:55,235 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:55,289 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:11:55,289 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:11:55,354 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:11:55,354 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:11:55,405 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:11:55,405 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:11:55,457 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:55,457 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:55,510 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:11:55,511 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:11:56,123 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:56,288 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:56,893 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:57,059 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:57,136 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:11:57,136 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:11:57,190 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:11:57,190 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:11:57,784 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:57,947 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:58,594 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:58,770 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:11:59,400 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:11:59,561 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:12:00,156 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:12:00,320 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:12:01,019 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:12:01,182 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:12:01,792 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:12:01,948 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:12:02,564 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:12:02,725 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:12:02,844 - root - INFO - Dashboard data refreshed
+2025-07-13 10:12:02,900 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:12:02,900 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:12:02,955 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:12:02,955 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:12:02,955 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:12:03,008 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:12:03,008 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:12:03,062 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:12:03,062 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:12:03,115 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:12:03,115 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:12:03,168 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:12:03,168 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:12:03,220 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:12:03,221 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:12:03,223 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:12:03,279 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:12:03,279 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:12:03,332 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:12:03,332 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:12:03,333 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:13:06,792 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:13:06,792 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:13:12,168 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 10:13:12,168 - root - INFO - MongoDB connection closed
+2025-07-13 10:13:15,814 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:13:15,814 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:13:15,815 - src.database.mongo_db - ERROR - MongoDB connection error: All nameservers failed to answer the query _mongodb._tcp.cluster0.tgwmarr.mongodb.net. IN SRV: 
+2025-07-13 10:13:15,815 - root - ERROR - Failed to connect to MongoDB - connection returned None or False
+2025-07-13 10:13:40,394 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:13:40,394 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:13:41,741 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:41,741 - root - INFO - MongoDB connection successful
+2025-07-13 10:13:42,367 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:43,332 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:13:43,332 - root - INFO - MongoDB initialization successful
+2025-07-13 10:13:43,332 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:13:48,578 - root - INFO - User admin logged in successfully
+2025-07-13 10:13:49,189 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:49,342 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:49,394 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:49,394 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:49,445 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:49,446 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:49,498 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:49,498 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:49,549 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:13:49,549 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:13:49,602 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:49,602 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:49,653 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:49,653 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:49,708 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:49,709 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:49,762 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:49,763 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:49,815 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:49,815 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:49,868 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:49,868 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:49,924 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:49,924 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:49,975 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:13:49,976 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:13:50,027 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:50,028 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:50,679 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:50,834 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:51,436 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:51,597 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:51,666 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:13:51,666 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:13:51,719 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:51,719 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:52,325 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:52,485 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:53,073 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:53,232 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:53,288 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:13:53,288 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:13:53,355 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:13:53,355 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:13:53,408 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:13:53,408 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:13:53,461 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:53,461 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:53,515 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:13:53,516 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:13:54,121 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:54,278 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:54,898 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:55,058 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:55,138 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:13:55,138 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:13:55,192 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:13:55,192 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:13:55,807 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:55,970 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:56,572 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:56,730 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:57,335 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:57,501 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:58,100 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:58,263 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:58,882 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:59,041 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:13:59,624 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:13:59,784 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:14:00,376 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:14:00,535 - src.database.mongo_adapter - INFO - Data availability check: 5 customers, 5 products, 36 entries
+2025-07-13 10:14:00,694 - root - INFO - Dashboard data refreshed
+2025-07-13 10:14:00,748 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:14:00,748 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:14:00,802 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:14:00,802 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:14:00,802 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:14:00,856 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:14:00,856 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:14:00,911 - src.database.mongo_adapter - INFO - Retrieved 36 entries directly from MongoDB
+2025-07-13 10:14:00,911 - src.database.mongo_adapter - INFO - Formatted 36 entries
+2025-07-13 10:14:00,964 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:14:00,964 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:14:01,018 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:14:01,018 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:14:01,073 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:14:01,073 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:14:01,076 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:14:01,131 - src.database.mongo_adapter - INFO - Retrieved 5 customers directly from MongoDB
+2025-07-13 10:14:01,131 - src.database.mongo_adapter - INFO - Formatted 5 customers
+2025-07-13 10:14:01,185 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:14:01,185 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:14:01,186 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:14:21,603 - src.database.mongo_db - INFO - Added customer: Test
+2025-07-13 10:14:22,774 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:14:22,774 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:15:25,572 - src.database.mongo_adapter - INFO - Retrieved 36 transactions directly from MongoDB
+2025-07-13 10:15:25,572 - src.database.mongo_adapter - INFO - Formatted 36 transactions
+2025-07-13 10:15:25,629 - src.database.mongo_db - INFO - Added entry for customer: 6872f70d98dfe7da56eb9575
+2025-07-13 10:15:33,028 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:15:33,029 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:15:33,082 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:15:33,083 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:15:33,136 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:15:33,136 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:15:33,190 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:15:33,190 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:15:47,386 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:15:47,386 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:15:47,439 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:15:47,439 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:15:47,492 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:15:47,493 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:15:47,547 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:15:47,548 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:15:51,452 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:15:51,452 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:15:51,506 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:15:51,506 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:15:51,565 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:15:51,566 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:15:51,620 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:15:51,620 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:15:53,119 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:15:53,119 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:15:53,172 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:15:53,172 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:15:53,227 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:15:53,227 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:15:53,281 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:15:53,282 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:15:53,615 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:15:53,615 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:15:53,668 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:15:53,668 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:15:53,721 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:15:53,721 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:15:53,776 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:15:53,776 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:17:24,545 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:17:24,546 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:17:24,598 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:17:24,599 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:17:24,652 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:17:24,652 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:05,682 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:22:05,682 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:22:05,738 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 10:22:05,739 - root - INFO - MongoDB connection closed
+2025-07-13 10:22:08,672 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:22:08,672 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:22:10,242 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:10,242 - root - INFO - MongoDB connection successful
+2025-07-13 10:22:10,846 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:11,797 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:22:11,797 - root - INFO - MongoDB initialization successful
+2025-07-13 10:22:11,797 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:22:24,035 - root - INFO - User admin logged in successfully
+2025-07-13 10:22:24,661 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:24,821 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:24,874 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:24,874 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:24,928 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:24,928 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:24,981 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:24,981 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:25,034 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:22:25,034 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:22:25,089 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:25,089 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:25,142 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:25,143 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:25,199 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:25,199 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:25,256 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:25,256 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:25,310 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:25,310 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:25,364 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:25,364 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:25,420 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:25,420 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:25,473 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:25,473 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:25,525 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:25,525 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:26,153 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:26,312 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:26,901 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:27,059 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:27,126 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:27,126 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:27,178 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:27,178 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:27,800 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:27,961 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:28,575 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:28,735 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:28,790 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:28,790 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:28,858 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:28,859 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:28,911 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:28,911 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:28,964 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:28,965 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:29,018 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:22:29,019 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:22:29,615 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:29,776 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:30,410 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:30,574 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:30,654 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:30,654 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:30,709 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:30,709 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:31,303 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:31,462 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:32,069 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:32,229 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:32,823 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:32,983 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:33,576 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:33,740 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:34,378 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:34,543 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:35,130 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:35,291 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:35,883 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:22:36,039 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:22:36,170 - root - INFO - Dashboard data refreshed
+2025-07-13 10:22:36,224 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:36,224 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:36,278 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:36,278 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:36,279 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:22:36,331 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:36,332 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:36,385 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:22:36,385 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:22:36,437 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:36,437 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:36,490 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:36,490 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:36,542 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:22:36,542 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:22:36,546 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:22:36,601 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:22:36,601 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:22:36,654 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:22:36,654 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:22:36,655 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:23:00,744 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:23:00,744 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:23:00,797 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:23:00,797 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:23:00,852 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:23:00,852 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:23:12,269 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:23:12,269 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:23:12,320 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:23:12,320 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:23:12,373 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:23:12,373 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:23:12,427 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:23:12,427 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:26:51,229 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:26:51,229 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:26:51,283 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 10:26:51,283 - root - INFO - MongoDB connection closed
+2025-07-13 10:27:14,492 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:27:14,492 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:27:15,826 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:27:15,826 - root - INFO - MongoDB connection successful
+2025-07-13 10:27:16,436 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:27:17,394 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:27:17,394 - root - INFO - MongoDB initialization successful
+2025-07-13 10:27:17,394 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:29:20,500 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:29:20,500 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:29:21,819 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:29:21,819 - root - INFO - MongoDB connection successful
+2025-07-13 10:29:22,443 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:29:23,410 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:29:23,410 - root - INFO - MongoDB initialization successful
+2025-07-13 10:29:23,410 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:30:20,415 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:30:20,415 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:30:21,539 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:30:21,539 - root - INFO - MongoDB connection successful
+2025-07-13 10:30:22,164 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:30:23,129 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:30:23,130 - root - INFO - MongoDB initialization successful
+2025-07-13 10:30:23,130 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:32:03,943 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:32:03,943 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:32:05,292 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:05,293 - root - INFO - MongoDB connection successful
+2025-07-13 10:32:05,943 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:06,923 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:32:06,923 - root - INFO - MongoDB initialization successful
+2025-07-13 10:32:06,923 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:32:11,902 - root - INFO - User admin logged in successfully
+2025-07-13 10:32:12,521 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:12,682 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:12,738 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:12,738 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:12,793 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:12,793 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:12,848 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:12,848 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:12,902 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:32:12,902 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:32:12,958 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:12,958 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:13,013 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:13,014 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:13,070 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:13,071 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:13,145 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:13,145 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:13,199 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:13,199 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:13,254 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:13,255 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:13,313 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:13,314 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:13,367 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:13,367 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:13,422 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:13,422 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:14,059 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:14,217 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:14,811 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:14,968 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:15,037 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:15,037 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:15,088 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:15,088 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:15,684 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:15,847 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:16,491 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:16,656 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:16,711 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:16,711 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:16,776 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:16,776 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:16,829 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:16,830 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:16,882 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:16,883 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:16,937 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:32:16,938 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:32:17,535 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:17,693 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:18,289 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:18,445 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:18,525 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:18,525 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:18,578 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:18,578 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:19,171 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:19,324 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:19,937 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:20,098 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:20,711 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:20,865 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:21,465 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:21,625 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:22,248 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:22,405 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:23,004 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:23,162 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:23,784 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:32:23,944 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:32:24,069 - root - INFO - Dashboard data refreshed
+2025-07-13 10:32:24,125 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:24,125 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:24,180 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:24,180 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:24,180 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:32:24,234 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:24,235 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:24,289 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:24,289 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:24,343 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:24,343 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:24,397 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:24,397 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:24,452 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:32:24,453 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:32:24,456 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:32:24,512 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:24,512 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:24,570 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:24,570 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:32:24,572 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:32:52,362 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:32:52,362 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:32:52,415 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:32:52,415 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:32:52,468 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:32:52,468 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:33:26,268 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:33:26,268 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:33:26,361 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:33:26,361 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:33:26,456 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:33:26,456 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:33:26,549 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:33:26,549 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:33:27,913 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:33:27,913 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:33:28,005 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:33:28,005 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:33:28,098 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:33:28,098 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:33:28,190 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:33:28,191 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:33:30,218 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:33:30,218 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:33:30,312 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:33:30,312 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:33:30,404 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:33:30,404 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:33:30,497 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:33:30,497 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:33:32,050 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:33:32,050 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:33:32,142 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:33:32,142 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:33:32,235 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:33:32,235 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:33:32,330 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:33:32,330 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:33:33,494 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:33:33,494 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:33:33,588 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:33:33,589 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:33:33,681 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:33:33,681 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:33:33,775 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:33:33,775 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:33:56,659 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:33:56,659 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:33:58,343 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:33:58,343 - root - INFO - MongoDB connection successful
+2025-07-13 10:33:59,368 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:00,972 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:34:00,972 - root - INFO - MongoDB initialization successful
+2025-07-13 10:34:00,972 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:34:03,402 - root - INFO - User admin logged in successfully
+2025-07-13 10:34:04,440 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:04,728 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:04,822 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:04,822 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:04,917 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:04,917 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:05,026 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:05,026 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:05,120 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:34:05,120 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:34:05,215 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:05,215 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:05,309 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:05,309 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:05,407 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:05,407 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:05,505 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:05,505 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:05,599 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:05,599 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:05,695 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:05,695 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:05,793 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:05,794 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:05,888 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:05,888 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:05,984 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:05,984 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:06,996 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:07,282 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:08,237 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:08,517 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:08,625 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:08,625 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:08,718 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:08,718 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:09,706 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:09,992 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:10,956 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:11,233 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:11,327 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:11,327 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:11,435 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:11,435 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:11,526 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:11,527 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:11,621 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:11,621 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:11,714 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:34:11,714 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:34:12,688 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:12,967 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:13,925 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:14,208 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:14,329 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:14,329 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:14,425 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:14,425 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:15,396 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:15,679 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:16,650 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:16,933 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:17,899 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:18,178 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:19,146 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:19,427 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:20,411 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:20,693 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:21,642 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:21,921 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:22,898 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:34:23,180 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:34:23,306 - root - INFO - Dashboard data refreshed
+2025-07-13 10:34:23,410 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:23,410 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:23,504 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:23,504 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:23,504 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:34:23,597 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:23,597 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:23,691 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:23,691 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:23,784 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:23,784 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:23,876 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:23,876 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:23,969 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:34:23,969 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:34:23,973 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:34:24,071 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:24,071 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:24,167 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:24,167 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:34:24,168 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:34:35,079 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:34:35,080 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:34:35,172 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:34:35,173 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:34:35,265 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:34:35,265 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:12,169 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:35:12,170 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:35:12,264 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 10:35:12,264 - root - INFO - MongoDB connection closed
+2025-07-13 10:35:14,377 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:35:14,378 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:35:16,070 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:16,071 - root - INFO - MongoDB connection successful
+2025-07-13 10:35:17,048 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:18,622 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:35:18,622 - root - INFO - MongoDB initialization successful
+2025-07-13 10:35:18,622 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:35:22,989 - root - INFO - User admin logged in successfully
+2025-07-13 10:35:23,979 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:24,259 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:24,352 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:24,352 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:24,445 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:24,445 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:24,538 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:24,539 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:24,630 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:35:24,631 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:35:24,725 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:24,725 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:24,818 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:24,818 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:24,914 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:24,914 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:25,009 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:25,009 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:25,102 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:25,102 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:25,195 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:25,195 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:25,292 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:25,292 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:25,384 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:25,384 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:25,477 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:25,477 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:26,486 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:26,769 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:27,748 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:28,034 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:28,144 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:28,144 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:28,247 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:28,247 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:29,220 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:29,508 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:30,484 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:30,762 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:30,857 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:30,857 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:30,964 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:30,964 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:31,057 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:31,058 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:31,152 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:31,152 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:31,246 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:35:31,246 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:35:32,230 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:32,512 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:33,464 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:33,748 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:33,863 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:33,863 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:33,957 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:33,957 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:34,930 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:35,215 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:36,178 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:36,463 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:37,425 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:37,707 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:38,695 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:38,975 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:39,953 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:40,235 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:41,216 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:41,502 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:42,490 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:35:42,776 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:35:42,940 - root - INFO - Dashboard data refreshed
+2025-07-13 10:35:43,049 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:43,049 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:43,144 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:43,145 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:43,145 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:35:43,237 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:43,238 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:43,332 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:35:43,332 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:35:43,426 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:43,426 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:43,520 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:43,520 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:43,614 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:35:43,614 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:35:43,618 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:35:43,712 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:35:43,712 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:35:43,804 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:35:43,805 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:35:43,805 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:40:49,369 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:40:49,370 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:40:49,463 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:40:49,463 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:40:49,556 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:40:49,556 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:09,840 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:43:09,841 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:43:09,937 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 10:43:09,937 - root - INFO - MongoDB connection closed
+2025-07-13 10:43:12,064 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:43:12,064 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:43:13,774 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:13,774 - root - INFO - MongoDB connection successful
+2025-07-13 10:43:14,769 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:16,385 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:43:16,385 - root - INFO - MongoDB initialization successful
+2025-07-13 10:43:16,385 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:43:21,897 - root - INFO - User admin logged in successfully
+2025-07-13 10:43:22,899 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:23,180 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:23,275 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:23,275 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:23,369 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:23,369 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:23,464 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:23,464 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:23,558 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:43:23,558 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:43:23,654 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:23,654 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:23,749 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:23,749 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:23,847 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:23,847 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:23,946 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:23,946 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:24,040 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:24,040 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:24,137 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:24,137 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:24,236 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:24,236 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:24,330 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:24,330 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:24,425 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:24,425 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:25,416 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:25,700 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:26,665 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:26,948 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:27,058 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:27,058 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:27,152 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:27,152 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:28,102 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:28,380 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:29,352 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:29,638 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:29,736 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:29,736 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:29,847 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:29,847 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:29,943 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:29,943 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:30,040 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:30,040 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:30,135 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:43:30,135 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:43:31,110 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:31,394 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:32,366 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:32,649 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:32,766 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:32,766 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:32,861 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:32,861 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:33,812 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:34,092 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:35,066 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:35,346 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:36,301 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:36,592 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:37,557 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:37,838 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:38,832 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:39,113 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:40,086 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:40,378 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:41,363 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:43:41,647 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:43:41,769 - root - INFO - Dashboard data refreshed
+2025-07-13 10:43:41,862 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:41,862 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:41,955 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:41,955 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:41,956 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:43:42,056 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:42,056 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:42,152 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:43:42,153 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:43:42,248 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:42,249 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:42,343 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:42,343 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:42,439 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:43:42,439 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:43:42,443 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:43:42,539 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:43:42,539 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:43:42,633 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:43:42,633 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:43:42,634 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:44:13,692 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:44:13,692 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:44:13,785 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:44:13,785 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:44:13,879 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:44:13,879 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:17,727 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:47:17,727 - root - INFO - Configuration saved to data\config.json
+2025-07-13 10:47:17,822 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 10:47:17,822 - root - INFO - MongoDB connection closed
+2025-07-13 10:47:20,450 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:47:20,451 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:47:22,108 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:22,108 - root - INFO - MongoDB connection successful
+2025-07-13 10:47:23,095 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:24,640 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:47:24,640 - root - INFO - MongoDB initialization successful
+2025-07-13 10:47:24,640 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:47:28,154 - root - INFO - User admin logged in successfully
+2025-07-13 10:47:29,127 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:29,402 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:29,496 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:29,496 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:29,589 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:29,589 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:29,683 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:29,683 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:29,775 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:47:29,775 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:47:29,869 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:29,869 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:29,963 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:29,963 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:30,059 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:30,059 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:30,155 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:30,155 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:30,249 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:30,249 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:30,344 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:30,344 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:30,442 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:30,442 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:30,534 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:30,534 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:30,627 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:30,627 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:31,632 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:31,911 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:32,898 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:33,188 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:33,300 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:33,300 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:33,396 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:33,396 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:34,365 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:34,644 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:35,596 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:35,874 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:35,972 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:35,972 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:36,081 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:36,081 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:36,174 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:36,174 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:36,266 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:36,266 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:36,358 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:36,358 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:36,457 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:36,457 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:36,551 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:36,551 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:36,643 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:36,644 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:36,736 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:36,736 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:37,732 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:38,019 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:39,011 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:39,307 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:39,429 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:39,429 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:39,523 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:39,524 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:40,506 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:40,787 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:41,745 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:42,028 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:42,975 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:43,258 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:44,223 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:44,508 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:45,476 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:45,756 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:46,723 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:47,001 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:47,970 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:47:48,253 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:47:48,386 - root - INFO - Dashboard data refreshed
+2025-07-13 10:47:48,479 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:48,480 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:48,574 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:48,574 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:48,574 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:47:48,667 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:48,667 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:48,759 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:47:48,759 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:47:48,852 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:48,852 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:48,945 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:48,945 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:48,948 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:47:49,044 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:47:49,044 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:47:49,138 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:47:49,138 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:47:49,139 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:50:42,951 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 10:50:42,951 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 10:50:44,290 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:44,290 - root - INFO - MongoDB connection successful
+2025-07-13 10:50:44,915 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:45,888 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 10:50:45,889 - root - INFO - MongoDB initialization successful
+2025-07-13 10:50:45,889 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 10:50:50,714 - root - INFO - User admin logged in successfully
+2025-07-13 10:50:51,347 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:51,504 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:51,557 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:51,557 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:51,611 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:51,611 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:51,665 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:51,665 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:51,718 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:50:51,718 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:50:51,772 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:51,772 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:51,825 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:51,826 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:51,882 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:51,883 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:51,939 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:51,939 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:51,994 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:51,994 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:52,048 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:52,049 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:52,106 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:52,106 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:52,158 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:52,158 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:52,210 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:52,210 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:52,869 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:53,026 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:53,645 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:53,804 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:53,870 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:53,870 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:53,923 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:53,923 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:54,518 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:54,676 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:55,266 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:55,427 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:55,486 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:55,487 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:55,558 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:55,558 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:55,613 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:55,613 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:55,667 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:55,667 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:55,720 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:55,720 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:55,774 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:55,774 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:55,829 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:50:55,830 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:50:55,883 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:55,883 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:55,938 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:55,938 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:56,534 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:56,690 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:57,292 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:57,458 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:57,539 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:50:57,539 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:50:57,594 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:50:57,594 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:50:58,193 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:58,354 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:58,949 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:59,102 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:50:59,700 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:50:59,858 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:51:00,463 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:51:00,628 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:51:01,258 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:51:01,421 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:51:02,014 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:51:02,170 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:51:02,779 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 10:51:02,937 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 10:51:03,062 - root - INFO - Dashboard data refreshed
+2025-07-13 10:51:03,115 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:51:03,115 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:51:03,176 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:51:03,176 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:51:03,177 - root - INFO - New entry tab data loaded successfully
+2025-07-13 10:51:03,232 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:51:03,232 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:51:03,287 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:51:03,287 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:51:03,340 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:51:03,340 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:51:03,395 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:51:03,395 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:51:03,397 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 10:51:03,453 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:51:03,453 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:51:03,506 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:51:03,506 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:51:03,507 - root - INFO - Manage data tab loaded successfully
+2025-07-13 10:52:49,796 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:52:49,796 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 10:52:49,849 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 10:52:49,849 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 10:52:49,904 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 10:52:49,904 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 10:52:49,957 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 10:52:49,958 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 10:54:51,682 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 10:54:51,682 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:13,896 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:00:13,897 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:00:13,950 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 11:00:13,950 - root - INFO - MongoDB connection closed
+2025-07-13 11:00:16,289 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 11:00:16,289 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 11:00:17,616 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:17,616 - root - INFO - MongoDB connection successful
+2025-07-13 11:00:18,250 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:19,208 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 11:00:19,208 - root - INFO - MongoDB initialization successful
+2025-07-13 11:00:19,208 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 11:00:22,516 - root - INFO - User admin logged in successfully
+2025-07-13 11:00:23,144 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:23,306 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:23,361 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:23,361 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:23,414 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:23,415 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:23,468 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:23,468 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:23,520 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 11:00:23,520 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 11:00:23,575 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:23,575 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:23,627 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:23,627 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:23,684 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:23,684 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:23,739 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:23,739 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:23,793 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:23,793 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:23,847 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:23,847 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:23,904 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:23,904 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:23,957 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:23,957 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:24,010 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:24,010 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:24,660 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:24,822 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:25,428 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:25,588 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:25,657 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:25,657 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:25,710 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:25,710 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:26,310 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:26,470 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:27,048 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:27,198 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:27,253 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:27,253 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:27,317 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:27,317 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:27,368 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:27,369 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:27,420 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:27,421 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:27,471 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:27,471 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:27,522 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:27,522 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:27,575 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:27,575 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:27,626 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:27,626 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:27,677 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:27,678 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:28,272 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:28,434 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:29,012 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:29,169 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:29,248 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:29,248 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:29,300 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:29,300 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:29,891 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:30,049 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:30,644 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:30,826 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:31,433 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:31,591 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:32,172 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:32,332 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:32,940 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:33,103 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:33,692 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:33,852 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:34,445 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:00:34,602 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:00:34,743 - root - INFO - Dashboard data refreshed
+2025-07-13 11:00:34,797 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:34,797 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:34,848 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:34,849 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:34,849 - root - INFO - New entry tab data loaded successfully
+2025-07-13 11:00:34,902 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:34,902 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:34,955 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:00:34,955 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:00:35,005 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:35,005 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:35,057 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:35,057 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:35,060 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 11:00:35,113 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:00:35,113 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:00:35,163 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:00:35,163 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:00:35,164 - root - INFO - Manage data tab loaded successfully
+2025-07-13 11:02:51,581 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:02:51,581 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:02:51,634 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:02:51,634 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:02:51,687 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:02:51,687 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:05,022 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:10:05,022 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:10:05,073 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 11:10:05,073 - root - INFO - MongoDB connection closed
+2025-07-13 11:10:33,059 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 11:10:33,059 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 11:10:34,435 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:34,435 - root - INFO - MongoDB connection successful
+2025-07-13 11:10:35,048 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:36,038 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 11:10:36,038 - root - INFO - MongoDB initialization successful
+2025-07-13 11:10:36,038 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 11:10:39,185 - root - INFO - User admin logged in successfully
+2025-07-13 11:10:39,810 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:39,976 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:40,031 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:40,032 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:40,088 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:40,088 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:40,143 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:40,144 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:40,197 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 11:10:40,197 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 11:10:40,252 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:40,252 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:40,307 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:40,308 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:40,365 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:40,365 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:40,422 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:40,422 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:40,477 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:40,477 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:40,532 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:40,532 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:40,591 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:40,591 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:40,644 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:40,644 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:40,701 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:40,701 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:41,328 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:41,491 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:42,128 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:42,293 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:42,360 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:42,361 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:42,415 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:42,415 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:43,037 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:43,200 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:43,790 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:43,953 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:44,011 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:44,011 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:44,082 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:44,082 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:44,137 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:44,137 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:44,191 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:44,191 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:44,245 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:44,245 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:44,300 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:44,300 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:44,355 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:44,355 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:44,408 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:44,408 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:44,463 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:44,463 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:45,047 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:45,206 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:45,799 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:45,964 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:46,043 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:46,043 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:46,097 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:46,098 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:46,686 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:46,845 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:47,429 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:47,585 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:48,201 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:48,361 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:48,957 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:49,119 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:49,721 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:49,878 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:50,457 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:50,616 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:51,226 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:10:51,401 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:10:51,533 - root - INFO - Dashboard data refreshed
+2025-07-13 11:10:51,589 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:51,589 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:51,644 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:51,644 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:51,644 - root - INFO - New entry tab data loaded successfully
+2025-07-13 11:10:51,698 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:51,698 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:51,753 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:10:51,753 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:10:51,806 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:51,806 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:51,859 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:51,860 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:51,862 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 11:10:51,917 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:10:51,917 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:10:51,972 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:10:51,972 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:10:51,973 - root - INFO - Manage data tab loaded successfully
+2025-07-13 11:11:00,442 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:11:00,443 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:11:00,496 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:11:00,496 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:11:00,550 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:11:00,551 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:11:00,604 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 11:11:00,604 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 11:15:59,079 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:15:59,079 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:15:59,134 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 11:15:59,134 - root - INFO - MongoDB connection closed
+2025-07-13 11:16:02,329 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 11:16:02,330 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 11:16:03,686 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:03,686 - root - INFO - MongoDB connection successful
+2025-07-13 11:16:04,313 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:05,281 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 11:16:05,282 - root - INFO - MongoDB initialization successful
+2025-07-13 11:16:05,282 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 11:16:11,455 - root - INFO - User admin logged in successfully
+2025-07-13 11:16:12,116 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:12,278 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:12,331 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:12,331 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:12,385 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:12,385 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:12,440 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:12,440 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:12,494 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 11:16:12,494 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 11:16:12,549 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:12,549 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:12,603 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:12,604 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:12,662 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:12,662 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:12,719 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:12,720 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:12,775 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:12,775 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:12,832 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:12,832 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:12,890 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:12,890 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:12,944 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:12,944 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:12,998 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:12,998 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:13,647 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:13,809 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:14,407 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:14,559 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:15,149 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:15,305 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:15,910 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:16,072 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:16,130 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:16,131 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:16,727 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:16,885 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:17,482 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:17,635 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:17,712 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:17,712 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:17,764 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:17,764 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:18,349 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:18,503 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:19,098 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:19,257 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:19,879 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:20,039 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:20,629 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:20,789 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:21,429 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:21,593 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:22,197 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:22,352 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:22,932 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:16:23,092 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:16:23,214 - root - INFO - Dashboard data refreshed
+2025-07-13 11:16:23,270 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:23,270 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:23,323 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:23,323 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:23,326 - root - INFO - New entry tab data loaded successfully
+2025-07-13 11:16:23,382 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:23,383 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:23,437 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:16:23,437 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:16:23,490 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:23,490 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:23,545 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:23,545 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:23,547 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 11:16:23,600 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:16:23,600 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:16:23,655 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:16:23,655 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:16:23,656 - root - INFO - Manage data tab loaded successfully
+2025-07-13 11:16:37,765 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:16:37,766 - root - INFO - Configuration saved to data\config.json
+2025-07-13 11:16:37,817 - src.database.mongo_db - INFO - MongoDB connection closed
+2025-07-13 11:16:37,818 - root - INFO - MongoDB connection closed
+2025-07-13 11:19:01,429 - root - INFO - Configuration loaded from data\config.json
+2025-07-13 11:19:01,429 - root - WARNING - No mongo_uri in config, using default Atlas connection
+2025-07-13 11:19:02,895 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:02,895 - root - INFO - MongoDB connection successful
+2025-07-13 11:19:03,496 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:04,463 - src.database.mongo_db - INFO - MongoDB collections and indexes initialized successfully
+2025-07-13 11:19:04,463 - root - INFO - MongoDB initialization successful
+2025-07-13 11:19:04,463 - root - INFO - Successfully connected to MongoDB Atlas
+2025-07-13 11:19:07,292 - root - INFO - User admin logged in successfully
+2025-07-13 11:19:07,944 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:08,099 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:08,153 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:08,153 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:08,207 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:08,207 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:08,261 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:08,261 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:08,313 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 11:19:08,313 - src.database.mongo_adapter - INFO - Formatted 37 transactions
+2025-07-13 11:19:08,368 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:08,368 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:08,422 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:08,422 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:08,478 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:08,478 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:08,537 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:08,537 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:08,591 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:08,591 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:08,646 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:08,646 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:08,704 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:08,704 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:08,757 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:08,757 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:08,810 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:08,810 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:09,453 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:09,609 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:10,214 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:10,375 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:10,442 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:10,442 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:10,495 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:10,495 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:11,101 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:11,259 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:11,860 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:12,024 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:12,084 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:12,084 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:12,156 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:12,157 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:12,212 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:12,212 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:12,267 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:12,267 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:12,322 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:12,322 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:12,377 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:12,377 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:12,434 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:12,434 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:12,488 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:12,488 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:12,543 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:12,543 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:13,135 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:13,292 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:13,881 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:14,039 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:14,123 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:14,123 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:14,174 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:14,174 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:14,775 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:14,933 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:15,523 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:15,680 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:16,278 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:16,435 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:17,055 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:17,218 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:17,830 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:17,989 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:18,589 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:18,749 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:19,364 - src.database.mongo_db - INFO - Connected to MongoDB database: medrep
+2025-07-13 11:19:19,525 - src.database.mongo_adapter - INFO - Data availability check: 6 customers, 5 products, 37 entries
+2025-07-13 11:19:19,658 - root - INFO - Dashboard data refreshed
+2025-07-13 11:19:19,713 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:19,713 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:19,768 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:19,768 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:19,768 - root - INFO - New entry tab data loaded successfully
+2025-07-13 11:19:19,823 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:19,823 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:19,878 - src.database.mongo_adapter - INFO - Retrieved 37 entries directly from MongoDB
+2025-07-13 11:19:19,878 - src.database.mongo_adapter - INFO - Formatted 37 entries
+2025-07-13 11:19:19,933 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:19,933 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:19,988 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:19,989 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:19,991 - root - INFO - Ledger tab data loaded successfully
+2025-07-13 11:19:20,045 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:19:20,045 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:19:20,098 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:19:20,098 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:19:20,099 - root - INFO - Manage data tab loaded successfully
+2025-07-13 11:20:00,793 - src.database.mongo_db - INFO - Added entry for customer: 687340ad5076ddcb183e3d95
+2025-07-13 11:20:00,847 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:20:00,847 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:20:00,902 - src.database.mongo_adapter - INFO - Retrieved 38 entries directly from MongoDB
+2025-07-13 11:20:00,902 - src.database.mongo_adapter - INFO - Formatted 38 entries
+2025-07-13 11:20:08,415 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:20:08,416 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:20:08,470 - src.database.mongo_adapter - INFO - Retrieved 38 entries directly from MongoDB
+2025-07-13 11:20:08,470 - src.database.mongo_adapter - INFO - Formatted 38 entries
+2025-07-13 11:20:08,525 - src.database.mongo_adapter - INFO - Retrieved 38 entries directly from MongoDB
+2025-07-13 11:20:08,525 - src.database.mongo_adapter - INFO - Formatted 38 entries
+2025-07-13 11:20:08,578 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:20:08,578 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:20:08,635 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:20:08,635 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:20:35,066 - src.database.mongo_adapter - INFO - Retrieved 38 entries directly from MongoDB
+2025-07-13 11:20:35,066 - src.database.mongo_adapter - INFO - Formatted 38 entries
+2025-07-13 11:20:35,121 - src.database.mongo_adapter - INFO - Retrieved 6 customers directly from MongoDB
+2025-07-13 11:20:35,121 - src.database.mongo_adapter - INFO - Formatted 6 customers
+2025-07-13 11:20:35,178 - src.database.mongo_adapter - INFO - Retrieved 5 products directly from MongoDB
+2025-07-13 11:20:35,178 - src.database.mongo_adapter - INFO - Formatted 5 products
+2025-07-13 11:20:35,233 - src.database.mongo_adapter - INFO - Retrieved 37 transactions directly from MongoDB
+2025-07-13 11:20:35,233 - src.database.mongo_adapter - INFO - Formatted 37 transactions

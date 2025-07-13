@@ -332,9 +332,9 @@ class DashboardTab(QWidget):
                 
                 amount_label = QLabel(f"Rs. {transaction[4]:.2f}")
                 if transaction[3]:  # is_credit
-                    amount_label.setStyleSheet("color: green; font-weight: bold;")
-                else:
                     amount_label.setStyleSheet("color: red; font-weight: bold;")
+                else:
+                    amount_label.setStyleSheet("color: green; font-weight: bold;")
                 
                 # Add expiry warning if applicable
                 expiry_warning = ""
@@ -634,11 +634,11 @@ class DashboardTab(QWidget):
             if any(credits) or any(debits):
                 # Create bar sets
                 credit_set = QBarSet("Credits")
-                credit_set.setColor(QColor("#4e73df"))
+                credit_set.setColor(QColor("#e74a3b"))
                 credit_set.append(credits)
                 
                 debit_set = QBarSet("Debits")
-                debit_set.setColor(QColor("#e74a3b"))
+                debit_set.setColor(QColor("#4CAF50"))
                 debit_set.append(debits)
                 
                 # Create bar series
