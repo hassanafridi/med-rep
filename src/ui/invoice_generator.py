@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QLabel, QDateEdit, QGroupBox, QFormLayout,
     QPushButton, QDialog, QMessageBox, QFileDialog,
     QTableWidget, QTableWidgetItem, QHeaderView,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit
+    QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QCheckBox
 )
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtPrintSupport import QPrinter, QPrintPreviewDialog
@@ -19,13 +19,13 @@ from src.database.mongo_adapter import MongoAdapter
 from src.utils.pdf_generator import PDFGenerator
 
 class PDFInfoDialog(QDialog):
-    """Dialog to collect additional information needed for PDF generation"""
+    """Dialog to collect additional information needed for PDF generation including company details"""
     
     def __init__(self, parent=None, existing_data=None):
         super().__init__(parent)
         self.setWindowTitle("PDF Invoice Information")
         self.setModal(True)
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(600)
         self.existing_data = existing_data or {}
         self.initUI()
     
@@ -38,11 +38,34 @@ class PDFInfoDialog(QDialog):
         instruction_label.setStyleSheet("font-weight: bold; color: #4B0082; margin-bottom: 10px;")
         layout.addWidget(instruction_label)
         
-        # Form layout
-        form_layout = QFormLayout()
+        # Company Information Group
+        company_group = QGroupBox("Company Information")
+        company_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        company_layout = QFormLayout()
+        
+        # Company contact
+        self.company_contact = QLineEdit()
+        self.company_contact.setPlaceholderText("e.g., 0333-99-11-514")
+        self.company_contact.setText(self.existing_data.get('company_contact', '0333-99-11-514'))
+        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        company_layout.addRow("Company Contact:", self.company_contact)
+        
+        # Company address
+        self.company_address = QTextEdit()
+        self.company_address.setMaximumHeight(80)
+        self.company_address.setPlaceholderText("Enter your company address...")
+        default_address = self.existing_data.get('company_address', 
+            'info@trupharma.com')
+        self.company_address.setText(default_address)
+        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        company_layout.addRow("Company Address:", self.company_address)
+        
+        company_group.setLayout(company_layout)
+        layout.addWidget(company_group)
         
         # Transport Information Group
         transport_group = QGroupBox("Transport & Delivery Information")
+        transport_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
         transport_layout = QFormLayout()
         
         self.transport_name = QLineEdit()
@@ -70,33 +93,9 @@ class PDFInfoDialog(QDialog):
         transport_group.setLayout(transport_layout)
         layout.addWidget(transport_group)
         
-        # Company Information Group
-        company_group = QGroupBox("Company Information")
-        company_layout = QFormLayout()
-        
-        self.company_name = QLineEdit()
-        self.company_name.setText(self.existing_data.get('company_name', 'Tru_pharma'))
-        self.company_name.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        company_layout.addRow("Company Name:", self.company_name)
-        
-        self.company_contact = QLineEdit()
-        self.company_contact.setText(self.existing_data.get('company_contact', '0333-99-11-514'))
-        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        company_layout.addRow("Company Contact:", self.company_contact)
-        
-        self.company_address = QTextEdit()
-        self.company_address.setMaximumHeight(80)
-        default_address = self.existing_data.get('company_address', 
-            'Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514')
-        self.company_address.setText(default_address)
-        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        company_layout.addRow("Company Address:", self.company_address)
-        
-        company_group.setLayout(company_layout)
-        layout.addWidget(company_group)
-        
         # Terms and Conditions Group
         terms_group = QGroupBox("Terms & Conditions")
+        terms_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
         terms_layout = QVBoxLayout()
         
         self.terms_text = QTextEdit()
@@ -113,6 +112,7 @@ class PDFInfoDialog(QDialog):
         
         # Customer Information (read-only display)
         customer_group = QGroupBox("Customer Information (from invoice)")
+        customer_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
         customer_layout = QFormLayout()
         
         customer_name = self.existing_data.get('customer_name', 'N/A')
@@ -164,12 +164,11 @@ class PDFInfoDialog(QDialog):
     def get_pdf_data(self):
         """Get the collected PDF data"""
         return {
+            'company_contact': self.company_contact.text().strip() or '0333-99-11-514',
+            'company_address': self.company_address.toPlainText().strip() or 'Main Market, Faisalabad\nPunjab, Pakistan',
             'transport_name': self.transport_name.text().strip() or 'Standard Delivery',
             'delivery_date': self.delivery_date.date().toString("dd-MM-yy"),
             'delivery_location': self.delivery_location.text().strip() or 'Customer Location',
-            'company_name': self.company_name.text().strip() or 'Tru_pharma',
-            'company_contact': self.company_contact.text().strip() or '0333-99-11-514',
-            'company_address': self.company_address.toPlainText().strip(),
             'terms': self.terms_text.toPlainText().strip()
         }
 
@@ -281,23 +280,6 @@ class InvoiceGenerator(QWidget):
         self.loadCustomers()
         header_layout.addRow("Customer:", self.customer_combo)
         
-        # Your company info
-        self.company_name = QLineEdit("Tru_pharma")
-        self.company_name.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        header_layout.addRow("Company Name:", self.company_name)
-        
-        # Company contact
-        self.company_contact = QLineEdit("0333-99-11-514")
-        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        header_layout.addRow("Company Contact:", self.company_contact)
-        
-        # Company address
-        self.company_address = QTextEdit()
-        self.company_address.setMaximumHeight(80)
-        self.company_address.setText("Main Market, Faisalabad\nPunjab, Pakistan\nPhone: 0333-99-11-514\nEmail: info@trupharma.com")
-        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        header_layout.addRow("Company Address:", self.company_address)
-        
         # Logo selection
         logo_layout = QHBoxLayout()
         self.logo_preview = QLabel("No logo")
@@ -385,7 +367,7 @@ class InvoiceGenerator(QWidget):
         # Totals section
         totals_layout = QFormLayout()
         
-        self.subtotal_label = QLabel("$0.00")
+        self.subtotal_label = QLabel("Rs 0.00")
         self.subtotal_label.setStyleSheet("font-weight: bold;")
         totals_layout.addRow("Subtotal:", self.subtotal_label)
         
@@ -397,11 +379,11 @@ class InvoiceGenerator(QWidget):
         self.tax_rate.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
         totals_layout.addRow("Tax Rate:", self.tax_rate)
         
-        self.tax_amount_label = QLabel("$0.00")
+        self.tax_amount_label = QLabel("Rs 0.00")
         self.tax_amount_label.setStyleSheet("font-weight: bold;")
         totals_layout.addRow("Tax Amount:", self.tax_amount_label)
         
-        self.total_label = QLabel("$0.00")
+        self.total_label = QLabel("Rs 0.00")
         self.total_label.setStyleSheet("font-weight: bold; font-size: 14px; color: #4B0082;")
         totals_layout.addRow("Total:", self.total_label)
         
@@ -561,9 +543,41 @@ class InvoiceGenerator(QWidget):
                 for product in products:
                     name = product.get('name', '')
                     if name:
-                        display_text = f"{name} (Batch: {product.get('batch_number', 'N/A')})"
+                        # Ensure MRP is properly typed and has fallback
+                        raw_mrp = product.get('mrp', 0)
+                        raw_unit_price = product.get('unit_price', 0)
+                        
+                        # Convert to float with proper validation
+                        try:
+                            unit_price = float(raw_unit_price) if raw_unit_price else 0.0
+                            mrp = float(raw_mrp) if raw_mrp else 0.0
+                            
+                            # If MRP is 0 or missing, calculate as 120% of unit price
+                            if mrp <= 0 and unit_price > 0:
+                                mrp = unit_price * 1.2
+                                print(f"Product {name}: MRP was {raw_mrp}, calculated as {mrp:.2f} from unit_price {unit_price}")
+                            
+                        except (ValueError, TypeError):
+                            unit_price = 0.0
+                            mrp = 0.0
+                            print(f"Product {name}: Error converting prices, using defaults")
+                        
+                        # Enhanced display with MRP info
+                        display_text = f"{name} (MRP: {mrp:.0f}, Rate: {unit_price:.0f}, Batch: {product.get('batch_number', 'N/A')})"
                         product_combo.addItem(display_text, product.get('id'))
-                        self.product_data[product.get('id')] = product
+                        
+                        # Store complete product data including validated MRP
+                        self.product_data[product.get('id')] = {
+                            'id': product.get('id'),
+                            'name': name,
+                            'description': product.get('description', ''),
+                            'unit_price': unit_price,
+                            'mrp': mrp,  # Ensure this is always a valid float
+                            'batch_number': product.get('batch_number', ''),
+                            'expiry_date': product.get('expiry_date', '')
+                        }
+                        
+                        print(f"Loaded product {name}: MRP={mrp} (type: {type(mrp)}), UnitPrice={unit_price} (type: {type(unit_price)})")
         except Exception as e:
             print(f"Error loading products: {e}")
             product_combo.addItem("Error loading products", None)
@@ -575,14 +589,14 @@ class InvoiceGenerator(QWidget):
         description.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
         layout.addRow("Description:", description)
         
-        # Unit price field (auto-filled based on product selection)
+        # Unit price field (wholesale price, auto-filled based on product selection)
         unit_price = QDoubleSpinBox()
         unit_price.setMinimum(0.01)
         unit_price.setMaximum(99999.99)
-        unit_price.setPrefix("$")
+        unit_price.setPrefix("Rs ")
         unit_price.setDecimals(2)
         unit_price.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        layout.addRow("Unit Price:", unit_price)
+        layout.addRow("Rate (UnitPrice):", unit_price)
         
         # Quantity field
         quantity = QSpinBox()
@@ -601,12 +615,15 @@ class InvoiceGenerator(QWidget):
                 # Auto-fill description
                 product_description = product_info.get('description', '')
                 if not product_description:
-                    product_description = f"{product_info.get('name', '')} - Batch: {product_info.get('batch_number', 'N/A')}"
+                    mrp = product_info.get('mrp', 0)
+                    product_description = f"{product_info.get('name', '')} - MRP: Rs{mrp:.0f} - Batch: {product_info.get('batch_number', 'N/A')}"
                 description.setText(product_description)
                 
-                # Auto-fill unit price
+                # Auto-fill wholesale price (unit_price)
                 product_price = float(product_info.get('unit_price', 0))
                 unit_price.setValue(product_price)
+                
+                print(f"Auto-filled product: {product_info.get('name')} - MRP: {product_info.get('mrp')}, Rate: {product_price}")
         
         # Connect product selection change
         product_combo.currentIndexChanged.connect(on_product_changed)
@@ -644,21 +661,35 @@ class InvoiceGenerator(QWidget):
                 QMessageBox.warning(self, "No Product Selected", "Please select a product from the dropdown.")
                 return
             
-            # Get product info
+            # Get product info with validated MRP
             product_info = self.product_data.get(selected_product_id, {})
             product_name = product_info.get('name', 'Unknown Product')
             
-            # Add item to table
+            # Ensure MRP is properly retrieved and typed
+            stored_mrp = product_info.get('mrp', 0)
+            unit_price_value = unit_price.value()
+            
+            try:
+                final_mrp = float(stored_mrp) if stored_mrp else unit_price_value * 1.2
+            except (ValueError, TypeError):
+                final_mrp = unit_price_value * 1.2
+            
+            print(f"Adding item - Product: {product_name}, Stored MRP: {stored_mrp}, Final MRP: {final_mrp}, Rate: {unit_price_value}")
+            
+            # Add item to table with proper MRP
             item = {
                 'product': product_name,
                 'description': description.text(),
                 'quantity': quantity.value(),
-                'unit_price': unit_price.value(),
-                'total': quantity.value() * unit_price.value(),
+                'unit_price': unit_price_value,  # Wholesale price for billing
+                'mrp': final_mrp,  # Market retail price for display - ensure float
+                'total': quantity.value() * unit_price_value,
                 'product_id': selected_product_id,
                 'batch_number': product_info.get('batch_number', ''),
                 'expiry_date': product_info.get('expiry_date', '')
             }
+            
+            print(f"Final item data - MRP: {item['mrp']} (type: {type(item['mrp'])}), Rate: {item['unit_price']} (type: {type(item['unit_price'])})")
             
             self.addItemToTable(item)
             self.updateTotals()
@@ -784,8 +815,34 @@ class InvoiceGenerator(QWidget):
                 entries = self.mongo_adapter.get_entries()
                 products = self.mongo_adapter.get_products()
                 
-                # Create product lookup
-                product_lookup = {str(product.get('id')): product for product in products}
+                # Create product lookup with proper MRP handling
+                product_lookup = {}
+                for product in products:
+                    product_id = str(product.get('id'))
+                    raw_mrp = product.get('mrp', 0)
+                    raw_unit_price = product.get('unit_price', 0)
+                    
+                    # Ensure proper type conversion with fallbacks
+                    try:
+                        unit_price = float(raw_unit_price) if raw_unit_price else 0.0
+                        mrp = float(raw_mrp) if raw_mrp else 0.0
+                        
+                        # Calculate MRP if missing
+                        if mrp <= 0 and unit_price > 0:
+                            mrp = unit_price * 1.2
+                    except (ValueError, TypeError):
+                        unit_price = 0.0
+                        mrp = 0.0
+                    
+                    product_lookup[product_id] = {
+                        'name': product.get('name', 'Unknown'),
+                        'mrp': mrp,
+                        'unit_price': unit_price,
+                        'batch_number': product.get('batch_number', ''),
+                        'expiry_date': product.get('expiry_date', '')
+                    }
+                    
+                    print(f"Transaction lookup - Product {product.get('name')}: MRP={mrp}, UnitPrice={unit_price}")
                 
                 # Filter entries for this customer and date range
                 from_date_str = from_date.date().toString("yyyy-MM-dd")
@@ -829,8 +886,8 @@ class InvoiceGenerator(QWidget):
                     transactions_table.setItem(row, 1, QTableWidgetItem(transaction['date']))
                     transactions_table.setItem(row, 2, QTableWidgetItem(transaction['product_name']))
                     transactions_table.setItem(row, 3, QTableWidgetItem(str(transaction['quantity'])))
-                    transactions_table.setItem(row, 4, QTableWidgetItem(f"${transaction['unit_price']:.2f}"))
-                    transactions_table.setItem(row, 5, QTableWidgetItem(f"${transaction['total']:.2f}"))
+                    transactions_table.setItem(row, 4, QTableWidgetItem(f"Rs {transaction['unit_price']:.2f}"))
+                    transactions_table.setItem(row, 5, QTableWidgetItem(f"Rs {transaction['total']:.2f}"))
                     transactions_table.setItem(row, 6, QTableWidgetItem(transaction['invoice_number']))
                     
                     # Add checkbox for selection
@@ -856,9 +913,9 @@ class InvoiceGenerator(QWidget):
             selected_invoice_number = None
             for row in range(transactions_table.rowCount()):
                 if transactions_table.item(row, 7) and transactions_table.item(row, 7).checkState() == Qt.Checked:
-                    product = transactions_table.item(row, 2).text()
+                    product_name = transactions_table.item(row, 2).text()
                     quantity = int(float(transactions_table.item(row, 3).text()))
-                    unit_price = float(transactions_table.item(row, 4).text().replace('$', ''))
+                    unit_price = float(transactions_table.item(row, 4).text().replace('Rs ', ''))
                     invoice_number = transactions_table.item(row, 6).text()
                     
                     # Set invoice number from the first selected item
@@ -866,14 +923,37 @@ class InvoiceGenerator(QWidget):
                         selected_invoice_number = invoice_number
                         self.invoice_number.setText(invoice_number)
                     
+                    # Get product MRP from the enhanced lookup
+                    product_mrp = unit_price  # Default fallback
+                    product_id = None
+                    batch_number = ""
+                    
+                    # Find the product in the lookup to get real MRP
+                    try:
+                        for pid, pinfo in product_lookup.items():
+                            if pinfo['name'] == product_name:
+                                product_id = pid
+                                product_mrp = float(pinfo['mrp'])  # Already validated in lookup creation
+                                batch_number = pinfo['batch_number']
+                                print(f"Found product {product_name} in lookup: MRP={product_mrp}, UnitPrice={unit_price}")
+                                break
+                    except Exception as e:
+                        print(f"Error fetching product MRP for {product_name}: {e}")
+                        # Use fallback calculation
+                        product_mrp = unit_price * 1.2
+                    
                     item = {
-                        'product': product,
+                        'product': product_name,
                         'description': f"Transaction from {transactions_table.item(row, 1).text()}",
                         'quantity': quantity,
-                        'unit_price': unit_price,
-                        'total': quantity * unit_price
+                        'unit_price': float(unit_price),  # Ensure float for billing price
+                        'mrp': float(product_mrp),  # Ensure float for market retail price  
+                        'total': quantity * unit_price,
+                        'product_id': product_id,
+                        'batch_number': batch_number
                     }
                     
+                    print(f"Adding transaction item: {item['product']} - MRP: {item['mrp']} (type: {type(item['mrp'])}), Rate: {item['unit_price']} (type: {type(item['unit_price'])})")
                     selected_items.append(item)
             
             # Add selected items to invoice
@@ -882,7 +962,98 @@ class InvoiceGenerator(QWidget):
             
             self.updateTotals()
 
-    def generateInvoiceHtml(self):
+    def addItemToTable(self, item):
+        """Add an item to the invoice table"""
+        try:
+            self.invoice_items.append(item)
+            self.refreshItemsTable()
+        except Exception as e:
+            print(f"Error adding item to table: {e}")
+    
+    def refreshItemsTable(self):
+        """Refresh the items table display"""
+        try:
+            self.items_table.setRowCount(len(self.invoice_items))
+            
+            for row, item in enumerate(self.invoice_items):
+                # Product name
+                self.items_table.setItem(row, 0, QTableWidgetItem(item.get('product', '')))
+                
+                # Description
+                self.items_table.setItem(row, 1, QTableWidgetItem(item.get('description', '')))
+                
+                # Quantity
+                self.items_table.setItem(row, 2, QTableWidgetItem(str(item.get('quantity', 0))))
+                
+                # Unit Price
+                self.items_table.setItem(row, 3, QTableWidgetItem(f"Rs {item.get('unit_price', 0):.2f}"))
+                
+                # Total
+                self.items_table.setItem(row, 4, QTableWidgetItem(f"Rs {item.get('total', 0):.2f}"))
+                
+                # Remove button
+                remove_btn = QPushButton("Remove")
+                remove_btn.clicked.connect(lambda checked, r=row: self.removeItem(r))
+                remove_btn.setStyleSheet("background-color: #ff4444; color: white; padding: 4px;")
+                self.items_table.setCellWidget(row, 5, remove_btn)
+        except Exception as e:
+            print(f"Error refreshing items table: {e}")
+    
+    def removeItem(self, row):
+        """Remove an item from the invoice"""
+        try:
+            if 0 <= row < len(self.invoice_items):
+                del self.invoice_items[row]
+                self.refreshItemsTable()
+                self.updateTotals()
+        except Exception as e:
+            print(f"Error removing item: {e}")
+    
+    def updateTotals(self):
+        """Update the totals display"""
+        try:
+            if not self.invoice_items:
+                self.subtotal_label.setText("Rs 0.00")
+                self.tax_amount_label.setText("Rs 0.00")
+                self.total_label.setText("Rs 0.00")
+                return
+            
+            # Calculate subtotal
+            subtotal = sum(item.get('total', 0) for item in self.invoice_items)
+            
+            # Calculate tax
+            tax_rate = self.tax_rate.value() / 100
+            tax_amount = subtotal * tax_rate
+            
+            # Calculate total
+            total = subtotal + tax_amount
+            
+            # Update labels
+            self.subtotal_label.setText(f"Rs {subtotal:.2f}")
+            self.tax_amount_label.setText(f"Rs {tax_amount:.2f}")
+            self.total_label.setText(f"Rs {total:.2f}")
+            
+        except Exception as e:
+            print(f"Error updating totals: {e}")
+    
+    def clearItems(self):
+        """Clear all items from the invoice"""
+        try:
+            reply = QMessageBox.question(
+                self, "Clear Items",
+                "Are you sure you want to clear all items?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            
+            if reply == QMessageBox.Yes:
+                self.invoice_items.clear()
+                self.refreshItemsTable()
+                self.updateTotals()
+        except Exception as e:
+            print(f"Error clearing items: {e}")
+
+    def generateInvoiceHtml(self, company_contact="0333-99-11-514", company_address="Main Market, Faisalabad\nPunjab, Pakistan"):
         """Generate HTML for the invoice that matches the pharmaceutical format"""
         # Get customer info
         customer_name = self.customer_combo.currentText()
@@ -920,6 +1091,10 @@ class InvoiceGenerator(QWidget):
             if 'batch_number' in item and item['batch_number']:
                 batch_info = f" (Batch: {item['batch_number']})"
             
+            # Use MRP for display, wholesale price for calculations
+            mrp_price = item.get('mrp', item['unit_price'])  # Fallback to unit_price if MRP not available
+            unit_price = item['unit_price']  # This is the actual rate used for billing
+            
             # Calculate discount (if any)
             discount_percent = 0  # Can be made configurable
             discount_amount = item['total'] * (discount_percent / 100)
@@ -929,10 +1104,9 @@ class InvoiceGenerator(QWidget):
                 <tr>
                     <td style="text-align: center; border: 1px solid #666; padding: 8px;">{item_number}</td>
                     <td style="border: 1px solid #666; padding: 8px;">{item['product']}{batch_info}</td>
-                    <td style="text-align: center; border: 1px solid #666; padding: 8px;">{item.get('product_id', 'N/A')}</td>
-                    <td style="text-align: center; border: 1px solid #666; padding: 8px;">{item['unit_price']:.0f}</td>
+                    <td style="text-align: center; border: 1px solid #666; padding: 8px;">{mrp_price:.0f}</td>
                     <td style="text-align: center; border: 1px solid #666; padding: 8px;">{item['quantity']}</td>
-                    <td style="text-align: center; border: 1px solid #666; padding: 8px;">{item['unit_price']:.0f}</td>
+                    <td style="text-align: center; border: 1px solid #666; padding: 8px;">{unit_price:.0f}</td>
                     <td style="text-align: center; border: 1px solid #666; padding: 8px;">{discount_percent}%</td>
                     <td style="text-align: right; border: 1px solid #666; padding: 8px;">{final_amount:.0f}</td>
                 </tr>
@@ -948,9 +1122,8 @@ class InvoiceGenerator(QWidget):
         current_date = QDate.currentDate().toString("dd-MM-yy")
         invoice_number = self.invoice_number.text()
         
-        # Get company info
-        company_contact = self.company_contact.text()
-        company_address = self.company_address.toPlainText().replace('\n', '<br>')
+        # Format company address for HTML
+        company_address_html = company_address.replace('\n', '<br>')
         
         # Generate professional pharmaceutical invoice HTML
         html = f"""
@@ -993,6 +1166,7 @@ class InvoiceGenerator(QWidget):
         font-weight: bold;
         display: flex;
         align-items: center;
+        color: rgb(132 125 230);
       }}
       .company-contact {{
         text-align: right;
@@ -1062,6 +1236,26 @@ class InvoiceGenerator(QWidget):
       }}
       .items-table td:nth-child(2) {{
         text-align: left;
+      }}
+            .amounts-section {{
+        width: 270px;
+        margin-left: auto;
+        border-left: 1px solid #000;
+      }}
+            .amounts-header {{
+        background-color: rgb(132 125 230);
+        color: white;
+        padding: 6px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+      }}
+      .amount-row {{
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 10px;
+        border-bottom: 1px solid #000;
+        font-size: 11px;
       }}
       .amounts-section {{
         width: 270px;
@@ -1146,10 +1340,10 @@ class InvoiceGenerator(QWidget):
     <div class="invoice-container">
       <!-- Company Header -->
       <div class="company-header">
-        <div class="company-logo">{logo_html}</div>
+        <div class="company-logo">Tru-Pharma</div>
         <div class="company-contact">
           {company_contact}<br />
-          {company_address}
+          {company_address_html}
         </div>
       </div>
 
@@ -1193,8 +1387,7 @@ class InvoiceGenerator(QWidget):
         <thead>
           <tr>
             <th style="width: 5%">#</th>
-            <th style="width: 25%">Item name</th>
-            <th style="width: 12%">No.</th>
+            <th style="width: 35%">Item name</th>
             <th style="width: 12%">MRP</th>
             <th style="width: 12%">Quantity</th>
             <th style="width: 12%">Rate</th>
@@ -1205,7 +1398,7 @@ class InvoiceGenerator(QWidget):
         <tbody>
           {items_html}
           <tr>
-            <td colspan="7" style="text-align: right; font-weight: bold">
+            <td colspan="6" style="text-align: right; font-weight: bold">
               Total
             </td>
             <td style="text-align: right; font-weight: bold">{subtotal:.0f}</td>
@@ -1249,8 +1442,6 @@ class InvoiceGenerator(QWidget):
             Terms and Conditions
           </div>
           <div style="text-align: justify; line-height: 1.3">
-            {self.notes.toPlainText()}
-            <br><br>
             Form 2-A, as specified under Rules 19 and 30, pertains to the
             warranty provided under Section 23(1)(1) of the Drug Act 1976. This
             document, issued by Tru_pharma, serves as an assurance of the
@@ -1337,43 +1528,50 @@ class InvoiceGenerator(QWidget):
         tax_rate = self.tax_rate.value() / 100
         tax_amount = subtotal * tax_rate
         total = subtotal + tax_amount
+
+        # Default received and balance (can be customized in dialog)
+        received_amount = 0.0
+        balance_amount = total
         
-        # Prepare items data
+        # Prepare items data with MRP and consistent structure
         items_data = []
         for item in self.invoice_items:
+            # Ensure both 'amount' and 'total' keys exist for compatibility
+            item_amount = item.get('total', item.get('amount', 0))
+            
             items_data.append({
                 'product_name': item['product'],
                 'batch_number': item.get('batch_number', 'N/A'),
                 'product_id': item.get('product_id', 'N/A'),
                 'quantity': item['quantity'],
-                'unit_price': item['unit_price'],
+                'unit_price': item['unit_price'],  # Wholesale/billing price
+                'mrp': item.get('mrp', item['unit_price']),  # Market retail price for display
                 'discount': 0,  # Can be made configurable
-                'amount': item['total']
+                'amount': item_amount,  # Primary amount field
+                'total': item_amount   # Compatibility field
             })
         
         # Use PDF info if provided, otherwise use defaults
         if pdf_info:
+            company_contact = pdf_info['company_contact']
+            company_address = pdf_info['company_address']
             transport_name = pdf_info['transport_name']
             delivery_date = pdf_info['delivery_date']
             delivery_location = pdf_info['delivery_location']
-            company_name = pdf_info['company_name']
-            company_contact = pdf_info['company_contact']
-            company_address = pdf_info['company_address']
             terms = pdf_info['terms']
         else:
+            company_contact = '0333-99-11-514'
+            company_address = 'info@trupharma.com'
             transport_name = 'Standard Delivery'
             delivery_date = self.due_date.date().toString("dd-MM-yy")
             delivery_location = customer_address.split('\n')[0] if customer_address else 'Customer Location'
-            company_name = self.company_name.text()
-            company_contact = self.company_contact.text()
-            company_address = self.company_address.toPlainText()
             terms = self.notes.toPlainText()
         
         return {
-            'company_name': company_name,
-            'company_logo': self.company_logo,
-            'company_contact': company_contact,
-            'company_address': company_address,
+            'company_name': 'Tru_pharma',  # Hardcoded
+            'company_logo': None,  # No logo needed
+            'company_contact': company_contact,  # From dialog
+            'company_address': company_address,  # From dialog
             'customer_info': {
                 'name': customer_name,
                 'address': customer_address,
@@ -1390,7 +1588,9 @@ class InvoiceGenerator(QWidget):
             },
             'items': items_data,
             'terms': terms,
-            'total_amount': total
+            'total_amount': total,
+            'received_amount': received_amount,
+            'balance_amount': balance_amount
         }
 
     def previewInvoice(self):
@@ -1399,9 +1599,32 @@ class InvoiceGenerator(QWidget):
             QMessageBox.warning(self, "No Items", "Please add at least one item to the invoice.")
             return
         
-        invoice_html = self.generateInvoiceHtml()
-        preview_dialog = InvoicePreviewDialog(invoice_html, self)
-        preview_dialog.exec_()
+        # Get customer info for the dialog
+        customer_name = self.customer_combo.currentText()
+        customer_info = self.customer_data.get(customer_name, {})
+        
+        # Prepare existing data for the dialog
+        existing_data = {
+            'customer_name': customer_name,
+            'customer_address': customer_info.get('address', ''),
+            'customer_contact': customer_info.get('contact', ''),
+            'terms': self.notes.toPlainText(),
+            'transport_name': 'Standard Delivery',
+            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else '',
+            'company_contact': '0333-99-11-514',
+            'company_address': 'info@trupharma.com'
+        }
+        
+        # Show PDF info dialog
+        pdf_dialog = PDFInfoDialog(self, existing_data)
+        if pdf_dialog.exec_() == QDialog.Accepted:
+            # Get PDF-specific information
+            pdf_info = pdf_dialog.get_pdf_data()
+            
+            # Generate HTML with company details
+            invoice_html = self.generateInvoiceHtml(pdf_info['company_contact'], pdf_info['company_address'])
+            preview_dialog = InvoicePreviewDialog(invoice_html, self)
+            preview_dialog.exec_()
     
     def saveAsPdf(self):
         """Save the invoice as a PDF file using reportlab with dialog for additional info"""
@@ -1418,12 +1641,11 @@ class InvoiceGenerator(QWidget):
             'customer_name': customer_name,
             'customer_address': customer_info.get('address', ''),
             'customer_contact': customer_info.get('contact', ''),
-            'company_name': self.company_name.text(),
-            'company_contact': self.company_contact.text(),
-            'company_address': self.company_address.toPlainText(),
             'terms': self.notes.toPlainText(),
             'transport_name': 'Standard Delivery',
-            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else ''
+            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else '',
+            'company_contact': '0333-99-11-514',
+            'company_address': 'info@trupharma.com'
         }
         
         # Show PDF info dialog
@@ -1455,9 +1677,10 @@ class InvoiceGenerator(QWidget):
                     QMessageBox.information(
                         self, "PDF Saved",
                         f"Invoice saved as PDF:\n{file_name}\n\n"
+                        f"Company: {pdf_info['company_contact']}\n"
                         f"Transport: {pdf_info['transport_name']}\n"
                         f"Delivery: {pdf_info['delivery_location']} ({pdf_info['delivery_date']})\n"
-                        f"Total Amount: ${invoice_data['total_amount']:.2f}"
+                        f"Total Amount: Rs {invoice_data['total_amount']:.2f}"
                     )
                 else:
                     QMessageBox.critical(
@@ -1492,16 +1715,16 @@ class InvoiceGenerator(QWidget):
             'customer_name': customer_name,
             'customer_address': customer_info.get('address', ''),
             'customer_contact': customer_info.get('contact', ''),
-            'company_name': self.company_name.text(),
-            'company_contact': self.company_contact.text(),
-            'company_address': self.company_address.toPlainText(),
             'terms': self.notes.toPlainText(),
             'transport_name': 'Standard Delivery',
-            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else ''
+            'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else '',
+            'company_contact': '0333-99-11-514',
+            'company_address': 'info@trupharma.com'
         }
         
         # Show PDF info dialog
         pdf_dialog = PDFInfoDialog(self, existing_data)
+        pdf_dialog.setWindowTitle("Print Invoice Information")
         if pdf_dialog.exec_() != QDialog.Accepted:
             return
         
@@ -1534,6 +1757,7 @@ class InvoiceGenerator(QWidget):
                 QMessageBox.information(
                     self, "Print Ready",
                     f"PDF generated and opened for printing:\n{temp_pdf}\n\n"
+                    f"Company: {pdf_info['company_contact']}\n"
                     f"Transport: {pdf_info['transport_name']}\n"
                     f"Delivery: {pdf_info['delivery_location']} ({pdf_info['delivery_date']})"
                 )

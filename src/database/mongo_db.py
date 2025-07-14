@@ -151,6 +151,7 @@ class MongoDB:
                     "name": "MediCure",
                     "description": "General antibiotic",
                     "unit_price": 25.50,
+                    "mrp": 30.60,  # 20% higher than unit_price
                     "batch_number": "MCR-2024-001",
                     "expiry_date": "2025-12-31",
                     "created_at": datetime.now(timezone.utc)
@@ -159,6 +160,7 @@ class MongoDB:
                     "name": "MediCure",
                     "description": "General antibiotic", 
                     "unit_price": 25.50,
+                    "mrp": 30.60,
                     "batch_number": "MCR-2024-002",
                     "expiry_date": "2026-06-30",
                     "created_at": datetime.now(timezone.utc)
@@ -167,6 +169,7 @@ class MongoDB:
                     "name": "PainAway",
                     "description": "Pain reliever",
                     "unit_price": 12.75,
+                    "mrp": 15.30,
                     "batch_number": "PA-2024-101", 
                     "expiry_date": "2025-08-15",
                     "created_at": datetime.now(timezone.utc)
@@ -175,6 +178,7 @@ class MongoDB:
                     "name": "PainAway",
                     "description": "Pain reliever",
                     "unit_price": 12.75,
+                    "mrp": 15.30,
                     "batch_number": "PA-2024-102",
                     "expiry_date": "2025-11-30", 
                     "created_at": datetime.now(timezone.utc)
@@ -183,6 +187,7 @@ class MongoDB:
                     "name": "HealthBoost",
                     "description": "Vitamin supplement",
                     "unit_price": 35.00,
+                    "mrp": 42.00,
                     "batch_number": "HB-2024-001",
                     "expiry_date": "2027-03-20",
                     "created_at": datetime.now(timezone.utc)
@@ -191,6 +196,7 @@ class MongoDB:
                     "name": "HealthBoost", 
                     "description": "Vitamin supplement",
                     "unit_price": 35.00,
+                    "mrp": 42.00,
                     "batch_number": "HB-2024-002",
                     "expiry_date": "2026-09-10",
                     "created_at": datetime.now(timezone.utc)
@@ -199,6 +205,7 @@ class MongoDB:
                     "name": "ColdRelief",
                     "description": "Cold and flu medicine",
                     "unit_price": 18.25,
+                    "mrp": 21.90,
                     "batch_number": "CR-2024-001",
                     "expiry_date": "2025-10-15",
                     "created_at": datetime.now(timezone.utc)
@@ -207,8 +214,18 @@ class MongoDB:
                     "name": "HeartCare",
                     "description": "Cardiovascular support",
                     "unit_price": 45.00,
+                    "mrp": 54.00,
                     "batch_number": "HC-2024-001",
                     "expiry_date": "2026-12-31",
+                    "created_at": datetime.now(timezone.utc)
+                },
+                {
+                    "name": "TYes",
+                    "description": "Pharmaceutical product",
+                    "unit_price": 15.0,
+                    "mrp": 19.0,  # Add proper MRP for TYes
+                    "batch_number": "2342",
+                    "expiry_date": "2025-12-31",
                     "created_at": datetime.now(timezone.utc)
                 }
             ]
@@ -311,27 +328,29 @@ class MongoDB:
             return []
     
     def add_product(self, name: str, description: str = "", unit_price: float = 0.0, 
-                   batch_number: str = "", expiry_date: str = "") -> str:
-        """Add a new product"""
+                   batch_number: str = "", expiry_date: str = "", mrp: float = 0.0) -> str:
+        """Add a new product with MRP support"""
         try:
             product = {
                 "name": name,
                 "description": description,
                 "unit_price": unit_price,
+                "mrp": mrp,  # Market Retail Price
                 "batch_number": batch_number,
                 "expiry_date": expiry_date,
                 "created_at": datetime.now(timezone.utc)
             }
             result = self.db.products.insert_one(product)
-            logger.info(f"Added product: {name}")
+            logger.info(f"Added product: {name} with MRP: {mrp}")
             return str(result.inserted_id)
         except Exception as e:
             logger.error(f"Error adding product: {e}")
             return None
     
     def update_product(self, product_id: str, name: str, description: str = "", 
-                      unit_price: float = 0.0, batch_number: str = "", expiry_date: str = "") -> bool:
-        """Update a product"""
+                      unit_price: float = 0.0, batch_number: str = "", expiry_date: str = "", 
+                      mrp: float = 0.0) -> bool:
+        """Update a product with MRP support"""
         try:
             result = self.db.products.update_one(
                 {"_id": ObjectId(product_id)},
@@ -339,6 +358,7 @@ class MongoDB:
                     "name": name,
                     "description": description,
                     "unit_price": unit_price,
+                    "mrp": mrp,  # Market Retail Price
                     "batch_number": batch_number,
                     "expiry_date": expiry_date,
                     "updated_at": datetime.now(timezone.utc)

@@ -110,6 +110,17 @@ class AutoInvoiceGenerator:
         subtotal = sum(item['amount'] for item in items)
         total = subtotal
         
+        # Handle received amount based on credit/debit entry
+        is_credit = entry_data.get('is_credit', True)
+        if is_credit:
+            # Credit entry: amount goes to received, balance is 0
+            received_amount = total
+            balance_amount = 0.0
+        else:
+            # Debit entry: received is 0, full amount goes to balance
+            received_amount = 0.0
+            balance_amount = total
+        
         # Prepare invoice data
         invoice_data = {
             'customer_name': entry_data.get('customer_name', 'Cash Customer'),
@@ -122,8 +133,8 @@ class AutoInvoiceGenerator:
             'items': items,
             'subtotal': subtotal,
             'total': total,
-            'received': 0.00,
-            'balance': total,
+            'received': received_amount,  # Use calculated received amount
+            'balance': balance_amount,    # Use calculated balance amount
             'terms': None  # Will use default
         }
         

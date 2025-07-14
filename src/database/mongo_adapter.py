@@ -143,13 +143,13 @@ class MongoAdapter:
                 customer_ids.append(result.inserted_id)
                 logger.info(f"Inserted customer: {customer['name']}")
             
-            # Insert sample pharmaceutical products
+            # Insert sample pharmaceutical products with MRP
             sample_products = [
-                {"name": "G+ cream", "description": "Topical antibiotic cream", "unit_price": 1020, "batch_number": "GP1K24", "expiry_date": "2025-12-31"},
-                {"name": "B+ cream", "description": "Vitamin B complex cream", "unit_price": 1020, "batch_number": "BP2K24", "expiry_date": "2025-11-30"},
-                {"name": "Folicare Shop", "description": "Folic acid supplement", "unit_price": 263.5, "batch_number": "FC3K24", "expiry_date": "2025-10-31"},
-                {"name": "Scarheal", "description": "Scar healing ointment", "unit_price": 1020, "batch_number": "SH4K24", "expiry_date": "2025-09-30"},
-                {"name": "Paracetamol 500mg", "description": "Pain reliever and fever reducer", "unit_price": 150, "batch_number": "PC5K24", "expiry_date": "2026-01-31"}
+                {"name": "G+ cream", "description": "Topical antibiotic cream", "unit_price": 850, "mrp": 1020, "batch_number": "GP1K24", "expiry_date": "2025-12-31"},
+                {"name": "B+ cream", "description": "Vitamin B complex cream", "unit_price": 850, "mrp": 1020, "batch_number": "BP2K24", "expiry_date": "2025-11-30"},
+                {"name": "Folicare Shop", "description": "Folic acid supplement", "unit_price": 220, "mrp": 263.5, "batch_number": "FC3K24", "expiry_date": "2025-10-31"},
+                {"name": "Scarheal", "description": "Scar healing ointment", "unit_price": 850, "mrp": 1020, "batch_number": "SH4K24", "expiry_date": "2025-09-30"},
+                {"name": "Paracetamol 500mg", "description": "Pain reliever and fever reducer", "unit_price": 120, "mrp": 150, "batch_number": "PC5K24", "expiry_date": "2026-01-31"}
             ]
             
             product_ids = []
@@ -353,7 +353,8 @@ class MongoAdapter:
                     product.get('id', ''),
                     product.get('name', ''),
                     product.get('description', ''),
-                    float(product.get('unit_price', 0)),
+                    float(product.get('unit_price', 0)),  # Wholesale price
+                    float(product.get('mrp', 0)),  # Market retail price
                     product.get('batch_number', ''),
                     product.get('expiry_date', '')
                 ])
@@ -443,14 +444,58 @@ class MongoAdapter:
                     formatted_product['id'] = str(product.get('_id', ''))
                     formatted_product['name'] = str(product.get('name', ''))
                     formatted_product['description'] = str(product.get('description', ''))
-                    # Ensure unit_price is float
-                    formatted_product['unit_price'] = float(product.get('unit_price', 0))
+                    
+                    # Ensure unit_price is float (wholesale price) with proper type checking
+                    unit_price_raw = product.get('unit_price', 0)
+                    formatted_product['unit_price'] = float(unit_price_raw) if unit_price_raw else 0.0
+                    
+                    # Enhanced MRP handling with validation and fallback calculation
+                    mrp_raw = product.get('mrp', 0)
+                    logger.debug(f"Product {formatted_product['name']}: Raw MRP from DB = {mrp_raw} (type: {type(mrp_raw)})")
+                    
+                    if mrp_raw is None:
+                        # Calculate MRP as 120% of unit_price if completely missing
+                        calculated_mrp = formatted_product['unit_price'] * 1.2
+                        formatted_product['mrp'] = calculated_mrp
+                        logger.warning(f"Product {formatted_product['name']}: MRP is None, calculated as {calculated_mrp:.2f}")
+                    elif isinstance(mrp_raw, (int, float)) and mrp_raw > 0:
+                        formatted_product['mrp'] = float(mrp_raw)
+                        logger.debug(f"Product {formatted_product['name']}: MRP converted to {formatted_product['mrp']}")
+                    elif isinstance(mrp_raw, str) and mrp_raw.strip():
+                        try:
+                            parsed_mrp = float(mrp_raw)
+                            if parsed_mrp > 0:
+                                formatted_product['mrp'] = parsed_mrp
+                                logger.debug(f"Product {formatted_product['name']}: MRP converted from string to {formatted_product['mrp']}")
+                            else:
+                                # Calculate MRP if parsed value is 0 or negative
+                                calculated_mrp = formatted_product['unit_price'] * 1.2
+                                formatted_product['mrp'] = calculated_mrp
+                                logger.warning(f"Product {formatted_product['name']}: MRP was {parsed_mrp}, calculated as {calculated_mrp:.2f}")
+                        except ValueError:
+                            # Calculate MRP if string can't be parsed
+                            calculated_mrp = formatted_product['unit_price'] * 1.2
+                            formatted_product['mrp'] = calculated_mrp
+                            logger.warning(f"Product {formatted_product['name']}: Invalid MRP string '{mrp_raw}', calculated as {calculated_mrp:.2f}")
+                    else:
+                        # Calculate MRP for any other invalid cases
+                        calculated_mrp = formatted_product['unit_price'] * 1.2
+                        formatted_product['mrp'] = calculated_mrp
+                        logger.warning(f"Product {formatted_product['name']}: Invalid MRP value '{mrp_raw}', calculated as {calculated_mrp:.2f}")
+                    
                     formatted_product['batch_number'] = str(product.get('batch_number', ''))
                     formatted_product['expiry_date'] = str(product.get('expiry_date', ''))
+                    
+                    # Final validation to ensure MRP is never zero or negative
+                    if formatted_product['mrp'] <= 0:
+                        formatted_product['mrp'] = max(formatted_product['unit_price'] * 1.2, 1.0)
+                        logger.warning(f"Product {formatted_product['name']}: MRP was <= 0, set to {formatted_product['mrp']:.2f}")
+                    
                 except (ValueError, TypeError) as e:
                     logger.warning(f"Data type conversion error for product {product.get('_id', 'unknown')}: {e}")
                     # Use safe defaults
                     formatted_product['unit_price'] = 0.0
+                    formatted_product['mrp'] = 1.0  # Default minimum MRP
                 
                 formatted_products.append(formatted_product)
             
@@ -554,14 +599,27 @@ class MongoAdapter:
             logger.error(f"Error adding customer: {e}")
             return None
     
-    def add_product(self, name, description="", unit_price=0.0, batch_number="", expiry_date=""):
-        """Add a new product"""
+    def add_product(self, name, description="", unit_price=0.0, batch_number="", expiry_date="", mrp=0.0):
+        """Add a new product with MRP"""
         try:
-            # Ensure unit_price is float
+            # Ensure unit_price and mrp are float
             unit_price = float(unit_price) if unit_price else 0.0
-            return self.mongo_db.add_product(name, description, unit_price, batch_number, expiry_date)
+            mrp = float(mrp) if mrp else 0.0
+            
+            # Add product with MRP support
+            result = self.mongo_db.add_product(name, description, unit_price, batch_number, expiry_date, mrp)
+            
+            if result:
+                logger.info(f"Successfully added product: {name} with MRP: {mrp}")
+            else:
+                logger.error(f"Failed to add product: {name}")
+            
+            return result
+                
         except Exception as e:
             logger.error(f"Error adding product: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def add_entry(self, date, customer_id, product_id, quantity, unit_price, is_credit, notes=""):
@@ -1499,5 +1557,38 @@ class MongoAdapter:
             print(f"Error getting entries with balance: {e}")
             return []
 
+    def update_products_with_mrp(self):
+        """Update existing products that have missing or zero MRP values"""
+        try:
+            # Get all products
+            products = list(self.mongo_db.db.products.find())
+            updated_count = 0
+            
+            for product in products:
+                current_mrp = product.get('mrp', 0)
+                unit_price = product.get('unit_price', 0)
+                
+                # If MRP is missing or zero, calculate a reasonable MRP
+                if not current_mrp or current_mrp == 0:
+                    # Calculate MRP as 20% higher than unit_price
+                    new_mrp = float(unit_price) * 1.2
+                    
+                    # Update the product
+                    result = self.mongo_db.db.products.update_one(
+                        {"_id": product["_id"]},
+                        {"$set": {"mrp": new_mrp}}
+                    )
+                    
+                    if result.modified_count > 0:
+                        updated_count += 1
+                        logger.info(f"Updated MRP for {product.get('name', 'Unknown')}: {unit_price} -> {new_mrp}")
+            
+            logger.info(f"Updated MRP for {updated_count} products")
+            return updated_count
+            
+        except Exception as e:
+            logger.error(f"Error updating products with MRP: {e}")
+            return 0
+    
 # Compatibility alias for easy replacement
 Database = MongoAdapter

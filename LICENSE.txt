@@ -1,0 +1,6 @@
+
+            Medical Rep Transaction Software v1.0.0
+            Copyright (c) 2025 Your Company
+            
+            This is a placeholder license file. Replace with your actual license terms.
+            

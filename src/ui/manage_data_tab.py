@@ -77,7 +77,7 @@ class CustomerDialog(QDialog):
 class ProductDialog(QDialog):
     def __init__(self, parent=None, product_data=None):
         super().__init__(parent)
-        self.product_data = product_data  # (id, name, description, unit_price, batch_number, expiry_date)
+        self.product_data = product_data  # (id, name, description, unit_price, mrp, batch_number, expiry_date)
         self.setWindowTitle("Product Details - ")
         self.setMinimumWidth(500)
         self.initUI()
@@ -101,7 +101,7 @@ class ProductDialog(QDialog):
             self.description_input.setText(self.product_data[2] or "")
         layout.addRow("Description:", self.description_input)
         
-        # Unit price
+        # Wholesale price (unit_price)
         self.price_input = QDoubleSpinBox()
         self.price_input.setMinimum(0.01)
         self.price_input.setMaximum(99999.99)
@@ -112,12 +112,24 @@ class ProductDialog(QDialog):
             self.price_input.setValue(self.product_data[3])
         layout.addRow("Unit Price:", self.price_input)
         
+        # MRP (Market Retail Price)
+        self.mrp_input = QDoubleSpinBox()
+        self.mrp_input.setMinimum(0.01)
+        self.mrp_input.setMaximum(99999.99)
+        self.mrp_input.setPrefix("PKR ")
+        self.mrp_input.setDecimals(2)
+        self.mrp_input.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        if self.product_data and len(self.product_data) > 4:
+            self.mrp_input.setValue(self.product_data[4])
+        layout.addRow("MRP (Market Price):", self.mrp_input)
+        
         # Batch number
         self.batch_input = QLineEdit()
         self.batch_input.setPlaceholderText("e.g., MCR-2024-001")
         self.batch_input.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
         if self.product_data:
-            self.batch_input.setText(self.product_data[4] or "")
+            batch_index = 5 if len(self.product_data) > 5 else 4
+            self.batch_input.setText(self.product_data[batch_index] or "")
         layout.addRow("Batch Number:", self.batch_input)
         
         # Expiry date
@@ -125,13 +137,15 @@ class ProductDialog(QDialog):
         self.expiry_input.setCalendarPopup(True)
         self.expiry_input.setDate(QDate.currentDate().addYears(1))  # Default to 1 year from now
         self.expiry_input.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
-        if self.product_data and self.product_data[5]:
-            try:
-                expiry_date = QDate.fromString(self.product_data[5], "yyyy-MM-dd")
-                if expiry_date.isValid():
-                    self.expiry_input.setDate(expiry_date)
-            except:
-                pass  # Use default date if parsing fails
+        if self.product_data:
+            expiry_index = 6 if len(self.product_data) > 6 else 5
+            if len(self.product_data) > expiry_index and self.product_data[expiry_index]:
+                try:
+                    expiry_date = QDate.fromString(self.product_data[expiry_index], "yyyy-MM-dd")
+                    if expiry_date.isValid():
+                        self.expiry_input.setDate(expiry_date)
+                except:
+                    pass  # Use default date if parsing fails
         layout.addRow("Expiry Date:", self.expiry_input)
         
         # Buttons
@@ -159,6 +173,7 @@ class ProductDialog(QDialog):
             'name': self.name_input.text(),
             'description': self.description_input.toPlainText(),
             'unit_price': self.price_input.value(),
+            'mrp': self.mrp_input.value(),
             'batch_number': self.batch_input.text(),
             'expiry_date': self.expiry_input.date().toString("yyyy-MM-dd")
         }
@@ -341,10 +356,10 @@ class ManageDataTab(QWidget):
         
         products_layout.addLayout(product_controls)
         
-        # Product table with new columns
+        # Product table with new columns including MRP
         self.products_table = QTableWidget()
-        self.products_table.setColumnCount(6)
-        self.products_table.setHorizontalHeaderLabels(["ID", "Name", "Description", "Unit Price", "Batch Number", "Expiry Date"])
+        self.products_table.setColumnCount(7)
+        self.products_table.setHorizontalHeaderLabels(["ID", "Name", "Description", "Unit Price", "MRP", "Batch Number", "Expiry Date"])
         self.products_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.products_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.products_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -410,16 +425,20 @@ class ManageDataTab(QWidget):
             
             # Fill table with data
             for row, product in enumerate(products):
-                # Product data: {'id': '...', 'name': '...', 'description': '...', 'unit_price': 0.0, 'batch_number': '...', 'expiry_date': '...'}
+                # Product data: {'id': '...', 'name': '...', 'description': '...', 'unit_price': 0.0, 'mrp': 0.0, 'batch_number': '...', 'expiry_date': '...'}
                 self.products_table.setItem(row, 0, QTableWidgetItem(str(product.get('id', ''))))
                 self.products_table.setItem(row, 1, QTableWidgetItem(str(product.get('name', ''))))
                 self.products_table.setItem(row, 2, QTableWidgetItem(str(product.get('description', ''))))
                 
-                # Format price
-                price = product.get('unit_price', 0)
-                self.products_table.setItem(row, 3, QTableWidgetItem(f"PKR{float(price):.2f}"))
+                # Format wholesale price
+                unit_price = product.get('unit_price', 0)
+                self.products_table.setItem(row, 3, QTableWidgetItem(f"PKR{float(unit_price):.2f}"))
                 
-                self.products_table.setItem(row, 4, QTableWidgetItem(str(product.get('batch_number', ''))))
+                # Format MRP
+                mrp = product.get('mrp', 0)
+                self.products_table.setItem(row, 4, QTableWidgetItem(f"PKR{float(mrp):.2f}"))
+                
+                self.products_table.setItem(row, 5, QTableWidgetItem(str(product.get('batch_number', ''))))
                 
                 # Format expiry date with warnings
                 expiry_date = product.get('expiry_date', '')
@@ -442,7 +461,7 @@ class ManageDataTab(QWidget):
                 except:
                     item = QTableWidgetItem(str(expiry_date))
                 
-                self.products_table.setItem(row, 5, item)
+                self.products_table.setItem(row, 6, item)
                 
             print(f"Loaded {len(products)} products into table")
             
@@ -470,7 +489,7 @@ class ManageDataTab(QWidget):
         
         for row in range(self.products_table.rowCount()):
             visible = False
-            for col in range(1, 6):  # Skip ID column
+            for col in range(1, 7):  # Skip ID column
                 item = self.products_table.item(row, col)
                 if item and search_text in item.text().lower():
                     visible = True
@@ -616,6 +635,10 @@ class ManageDataTab(QWidget):
             if product_data['unit_price'] <= 0:
                 QMessageBox.warning(self, "Validation Error", "Unit price must be greater than zero.")
                 return
+                
+            if product_data['mrp'] <= 0:
+                QMessageBox.warning(self, "Validation Error", "MRP must be greater than zero.")
+                return
             
             try:
                 if not self.mongo_adapter:
@@ -629,13 +652,14 @@ class ManageDataTab(QWidget):
                         QMessageBox.warning(self, "Validation Error", "Batch number already exists. Please use a unique batch number.")
                         return
                 
-                # Use MongoDB adapter to add product
+                # Use MongoDB adapter to add product with MRP
                 result = self.mongo_adapter.add_product(
                     product_data['name'],
                     product_data['description'],
                     product_data['unit_price'],
                     product_data['batch_number'],
-                    product_data['expiry_date']
+                    product_data['expiry_date'],
+                    product_data['mrp']
                 )
                 
                 if result:
@@ -666,6 +690,7 @@ class ManageDataTab(QWidget):
                         p.get('name'), 
                         p.get('description'), 
                         p.get('unit_price'),
+                        p.get('mrp'),
                         p.get('batch_number'),
                         p.get('expiry_date')
                     )
@@ -692,6 +717,10 @@ class ManageDataTab(QWidget):
                 if product_data['unit_price'] <= 0:
                     QMessageBox.warning(self, "Validation Error", "Unit price must be greater than zero.")
                     return
+                    
+                if product_data['mrp'] <= 0:
+                    QMessageBox.warning(self, "Validation Error", "MRP must be greater than zero.")
+                    return
                 
                 # Check if batch number already exists (excluding current product)
                 all_products = self.mongo_adapter.get_products()
@@ -708,7 +737,8 @@ class ManageDataTab(QWidget):
                     product_data['description'],
                     product_data['unit_price'],
                     product_data['batch_number'],
-                    product_data['expiry_date']
+                    product_data['expiry_date'],
+                    product_data['mrp']
                 )
                 
                 if result:
