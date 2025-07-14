@@ -24,8 +24,9 @@ class KPICard(QFrame):
             QFrame {{
                 border-left: 4px solid {color};
                 background-color: white;
-                border-radius: 0px;
+                border-radius: 4px;
                 padding: 15px;
+                margin: 5px;
             }}
         """)
         
@@ -33,11 +34,12 @@ class KPICard(QFrame):
         
         # Title
         title_label = QLabel(title)
-        title_label.setStyleSheet("color: #5a5c69; font-size: 11px; font-weight: bold; text-transform: uppercase;")
+        title_label.setStyleSheet("color: #5a5c69; font-size: 10px; font-weight: bold; text-transform: uppercase;")
         
-        # Value
-        value_label = QLabel(value)
-        value_label.setStyleSheet(f"color: {color}; font-size: 20px; font-weight: bold;")
+        # Value with proper formatting
+        value_label = QLabel(self.format_value(value))
+        value_label.setStyleSheet(f"color: {color}; font-size: 18px; font-weight: bold;")
+        value_label.setWordWrap(True)
         
         layout.addWidget(title_label)
         layout.addWidget(value_label)
@@ -45,15 +47,35 @@ class KPICard(QFrame):
         # Optional subtitle
         if subtitle:
             subtitle_label = QLabel(subtitle)
-            subtitle_label.setStyleSheet("color: #858796; font-size: 11px;")
+            subtitle_label.setStyleSheet("color: #858796; font-size: 10px;")
+            subtitle_label.setWordWrap(True)
             layout.addWidget(subtitle_label)
         
-        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setContentsMargins(10, 10, 10, 10)
         self.setLayout(layout)
         
         # Set minimum size policy
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setMinimumHeight(100)
+        self.setMaximumHeight(120)
+    
+    def format_value(self, value):
+        """Format numeric values for better display"""
+        if isinstance(value, str):
+            return value
+        
+        try:
+            num_value = float(value)
+            if num_value >= 1000000:
+                return f"{num_value/1000000:.1f}M"
+            elif num_value >= 1000:
+                return f"{num_value/1000:.1f}K"
+            elif num_value == int(num_value):
+                return str(int(num_value))
+            else:
+                return f"{num_value:.2f}"
+        except (ValueError, TypeError):
+            return str(value)
 
 class ChartCard(QFrame):
     """Card widget to display a chart"""
@@ -186,7 +208,7 @@ class DashboardTab(QWidget):
         """Initialize the UI components"""
         # Main layout
         main_layout = QVBoxLayout()
-        main_layout.setSpacing(20)
+        main_layout.setSpacing(15)
         
         # Welcome section
         welcome_layout = QHBoxLayout()
@@ -196,7 +218,7 @@ class DashboardTab(QWidget):
             welcome_text = f"Welcome, {self.current_user['username']}!"
         
         welcome_label = QLabel(welcome_text)
-        welcome_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #5a5c69;")
+        welcome_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #5a5c69; margin-bottom: 10px;")
         
         date_label = QLabel(f"Today: {QDate.currentDate().toString('dddd, MMMM d, yyyy')}")
         date_label.setStyleSheet("font-size: 14px; color: #858796;")
@@ -211,65 +233,92 @@ class DashboardTab(QWidget):
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setFrameShape(QFrame.NoFrame)
+        scroll_area.setStyleSheet("QScrollArea { background-color: #f8f9fc; }")
         
         # Create widget to hold dashboard content
         dashboard_widget = QWidget()
         dashboard_layout = QVBoxLayout(dashboard_widget)
         dashboard_layout.setSpacing(20)
         
-        # Alerts section (for expired/expiring products)
+        # Get alerts first
         alerts = self.getProductAlerts()
-        if alerts['expired'] or alerts['expiring']:
-            alerts_layout = QHBoxLayout()
-            
-            if alerts['expired']:
-                expired_card = AlertCard("Expired Products", alerts['expired'], "danger")
-                alerts_layout.addWidget(expired_card)
-            
-            if alerts['expiring']:
-                expiring_card = AlertCard("Products Expiring Soon", alerts['expiring'], "warning")
-                alerts_layout.addWidget(expiring_card)
-            
-            # Add spacer if only one alert type
-            if not alerts['expired'] or not alerts['expiring']:
-                alerts_layout.addStretch(1)
-            
-            dashboard_layout.addLayout(alerts_layout)
         
-        # KPI Cards section
-        kpi_layout = QHBoxLayout()
+        # Critical Alerts section (for expired products) - Direct alert display
+        if alerts['expired']:
+            critical_layout = QVBoxLayout()
+            
+            # Expired products alert with enhanced styling - no header
+            expired_card = AlertCard("🚨 IMMEDIATE ACTION REQUIRED - These products have EXPIRED", 
+                                   alerts['expired'], "danger")
+            critical_layout.addWidget(expired_card)
+            
+            dashboard_layout.addLayout(critical_layout)
+        
+        # Warning Alerts section (for expiring products)
+        if alerts['expiring']:
+            warning_layout = QVBoxLayout()
+            
+            expiring_card = AlertCard("⚠️ Products Expiring in the Next 30 Days", 
+                                    alerts['expiring'], "warning")
+            warning_layout.addWidget(expiring_card)
+            
+            dashboard_layout.addLayout(warning_layout)
+        
+        # KPI Cards section (removed header, just the cards)
+        kpi_section = QVBoxLayout()
+        
+        # Create two rows of KPI cards for better layout
+        kpi_row1 = QHBoxLayout()
+        kpi_row2 = QHBoxLayout()
         
         # Load KPI metrics
         metrics = self.loadKPIMetrics()
         
-        # Create KPI cards
-        total_sales_card = KPICard("Total Sales", f"Rs. {metrics['total_sales']:.2f}", 
-                               f"{metrics['sales_change']}% from last month", "#4e73df")
+        # Create KPI cards with improved formatting
+        total_sales_card = KPICard("Total Sales", f"Rs. {metrics['total_sales']:,.0f}", 
+                               f"{metrics['sales_change']:+.1f}% from last month", "#4e73df")
         
-        total_transactions_card = KPICard("Total Transactions", str(metrics['transaction_count']),
-                                     f"{metrics['transaction_change']}% from last month", "#1cc88a")
+        total_transactions_card = KPICard("Total Transactions", f"{metrics['transaction_count']:,}",
+                                     f"{metrics['transaction_change']:+.1f}% from last month", "#1cc88a")
         
-        average_sale_card = KPICard("Average Sale", f"Rs. {metrics['average_sale']:.2f}",
-                                f"{metrics['average_change']}% from last month", "#36b9cc")
+        average_sale_card = KPICard("Average Sale", f"Rs. {metrics['average_sale']:,.0f}",
+                                f"{metrics['average_change']:+.1f}% from last month", "#36b9cc")
         
-        balance_card = KPICard("Current Balance", f"Rs. {metrics['current_balance']:.2f}",
-                          "Updated just now", "#f6c23e")
+        # Format balance with proper sign indication
+        balance_color = "#1cc88a" if metrics['current_balance'] >= 0 else "#e74c3c"
+        balance_text = f"Rs. {abs(metrics['current_balance']):,.0f}"
+        if metrics['current_balance'] < 0:
+            balance_text = f"-{balance_text}"
+        
+        balance_card = KPICard("Current Balance", balance_text, "Net position", balance_color)
         
         # Add batch tracking metrics
         batch_metrics = self.getBatchMetrics()
-        batch_diversity_card = KPICard("Active Batches", str(batch_metrics['active_batches']),
-                                   f"{batch_metrics['total_products']} total products", "#e83e8c")
+        batch_diversity_card = KPICard("Active Batches", f"{batch_metrics['active_batches']:,}",
+                                   f"{batch_metrics['unique_products']} unique products", "#e83e8c")
         
-        kpi_layout.addWidget(total_sales_card)
-        kpi_layout.addWidget(total_transactions_card)
-        kpi_layout.addWidget(average_sale_card)
-        kpi_layout.addWidget(balance_card)
-        kpi_layout.addWidget(batch_diversity_card)
+        # Arrange KPI cards in two rows
+        kpi_row1.addWidget(total_sales_card)
+        kpi_row1.addWidget(total_transactions_card)
+        kpi_row1.addWidget(average_sale_card)
         
-        dashboard_layout.addLayout(kpi_layout)
+        kpi_row2.addWidget(balance_card)
+        kpi_row2.addWidget(batch_diversity_card)
+        kpi_row2.addStretch(1)  # Add stretch to balance the second row
         
-        # Charts section
+        kpi_section.addLayout(kpi_row1)
+        kpi_section.addLayout(kpi_row2)
+        
+        dashboard_layout.addLayout(kpi_section)
+        
+        # Charts section with improved spacing
+        charts_section = QVBoxLayout()
+        charts_title = QLabel("Analytics Dashboard")
+        charts_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #5a5c69; margin-bottom: 10px;")
+        charts_section.addWidget(charts_title)
+        
         charts_layout = QGridLayout()
+        charts_layout.setSpacing(15)
         
         # Monthly earnings chart
         sales_chart = self.createSalesChart()
@@ -292,20 +341,21 @@ class DashboardTab(QWidget):
         # Batch expiry timeline chart
         expiry_chart = self.createExpiryChart()
         
-        expiry_card = ChartCard("Expiry Timeline", expiry_chart)
+        expiry_card = ChartCard("Product Expiry Status", expiry_chart)
         charts_layout.addWidget(expiry_card, 1, 0, 1, 2)  # Span across both columns
         
-        dashboard_layout.addLayout(charts_layout)
+        charts_section.addLayout(charts_layout)
+        dashboard_layout.addLayout(charts_section)
         
-        # Recent transactions section
+        # Recent transactions section with improved styling
         recent_transactions = self.getRecentTransactions()
         
         if recent_transactions:
-            transactions_layout = QVBoxLayout()
+            transactions_section = QVBoxLayout()
             
             transactions_title = QLabel("Recent Transactions")
-            transactions_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #5a5c69;")
-            transactions_layout.addWidget(transactions_title)
+            transactions_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #5a5c69; margin-bottom: 10px;")
+            transactions_section.addWidget(transactions_title)
             
             for transaction in recent_transactions:
                 transaction_frame = QFrame()
@@ -315,35 +365,48 @@ class DashboardTab(QWidget):
                         background-color: white;
                         border-radius: 4px;
                         padding: 10px;
+                        margin: 2px;
+                        border: 1px solid #e3e6f0;
+                    }
+                    QFrame:hover {
+                        border: 1px solid #4e73df;
                     }
                 """)
                 
                 transaction_layout = QHBoxLayout(transaction_frame)
                 
                 date_label = QLabel(transaction[0])
+                date_label.setMinimumWidth(80)
                 customer_label = QLabel(transaction[1])
                 customer_label.setStyleSheet("font-weight: bold;")
+                customer_label.setMinimumWidth(120)
                 
                 # Enhanced product info with batch
                 product_info = transaction[2]
                 if len(transaction) > 6 and transaction[6]:  # batch_number exists
                     product_info += f" (Batch: {transaction[6]})"
                 product_label = QLabel(product_info)
+                product_label.setMinimumWidth(200)
                 
-                amount_label = QLabel(f"Rs. {transaction[4]:.2f}")
+                # Format amount with proper styling
+                amount = transaction[4]
+                amount_text = f"Rs. {amount:,.2f}"
+                amount_label = QLabel(amount_text)
                 if transaction[3]:  # is_credit
-                    amount_label.setStyleSheet("color: red; font-weight: bold;")
+                    amount_label.setStyleSheet("color: #e74a3b; font-weight: bold;")
                 else:
-                    amount_label.setStyleSheet("color: green; font-weight: bold;")
+                    amount_label.setStyleSheet("color: #1cc88a; font-weight: bold;")
+                amount_label.setMinimumWidth(100)
+                amount_label.setAlignment(Qt.AlignRight)
                 
-                # Add expiry warning if applicable
+                # Add expiry warning if applicable - make more prominent
                 expiry_warning = ""
                 if len(transaction) > 7 and transaction[7]:  # expiry_date exists
                     try:
                         expiry_date = QDate.fromString(transaction[7], "yyyy-MM-dd")
                         if expiry_date.isValid():
                             if expiry_date < QDate.currentDate():
-                                expiry_warning = "⚠️ EXPIRED"
+                                expiry_warning = "🚨 EXPIRED"
                             elif expiry_date < QDate.currentDate().addDays(30):
                                 expiry_warning = "⚠️ EXPIRING"
                     except:
@@ -354,12 +417,31 @@ class DashboardTab(QWidget):
                 transaction_layout.addWidget(product_label)
                 if expiry_warning:
                     warning_label = QLabel(expiry_warning)
-                    warning_label.setStyleSheet("color: #e74c3c; font-weight: bold; font-size: 10px;")
+                    if "EXPIRED" in expiry_warning:
+                        warning_label.setStyleSheet("""
+                            color: #e74c3c; 
+                            font-weight: bold; 
+                            font-size: 11px; 
+                            background-color: #fdf2f2; 
+                            padding: 4px 8px; 
+                            border-radius: 4px;
+                            border: 1px solid #e74c3c;
+                        """)
+                    else:
+                        warning_label.setStyleSheet("""
+                            color: #f39c12; 
+                            font-weight: bold; 
+                            font-size: 11px; 
+                            background-color: #fef9e7; 
+                            padding: 4px 8px; 
+                            border-radius: 4px;
+                            border: 1px solid #f39c12;
+                        """)
                     transaction_layout.addWidget(warning_label)
                 transaction_layout.addStretch(1)
                 transaction_layout.addWidget(amount_label)
                 
-                transactions_layout.addWidget(transaction_frame)
+                transactions_section.addWidget(transaction_frame)
             
             # Add the "View All Transactions" button with functionality
             view_all_btn = QPushButton("View All Transactions")
@@ -368,8 +450,9 @@ class DashboardTab(QWidget):
                     background-color: #4e73df;
                     color: white;
                     border: none;
-                    padding: 8px 16px;
+                    padding: 10px 20px;
                     border-radius: 4px;
+                    font-weight: bold;
                 }
                 QPushButton:hover {
                     background-color: #2e59d9;
@@ -377,9 +460,9 @@ class DashboardTab(QWidget):
             """)
             # Connect the button to switch to ledger tab
             view_all_btn.clicked.connect(self.viewAllTransactions)
-            transactions_layout.addWidget(view_all_btn)
+            transactions_section.addWidget(view_all_btn)
             
-            dashboard_layout.addLayout(transactions_layout)
+            dashboard_layout.addLayout(transactions_section)
         
         # Set dashboard widget as the scrollable content
         scroll_area.setWidget(dashboard_widget)
@@ -416,38 +499,81 @@ class DashboardTab(QWidget):
                                   "Please click on the 'Ledger' tab to view all transactions.")
     
     def getProductAlerts(self):
-        """Get alerts for expired and expiring products"""
+        """Get alerts for expired and expiring products with enhanced details"""
         try:
             current_date = QDate.currentDate().toString("yyyy-MM-dd")
             upcoming_date = QDate.currentDate().addDays(30).toString("yyyy-MM-dd")
+            
+            print(f"DEBUG: Checking alerts for current date: {current_date}")
+            print(f"DEBUG: Upcoming date threshold: {upcoming_date}")
             
             # Get all products directly from MongoDB
             products = self.db.get_products()
             entries = self.db.get_entries()
             
-            # Create a set of product IDs that have sales
-            products_with_sales = set()
+            print(f"DEBUG: Found {len(products)} products, {len(entries)} entries")
+            
+            # Create a map of product IDs that have sales with quantities
+            products_with_sales = {}
             for entry in entries:
-                if entry.get('is_credit'):
-                    products_with_sales.add(str(entry.get('product_id', '')))
+                if entry.get('is_credit'):  # Only count actual sales (credits)
+                    product_id = str(entry.get('product_id', ''))
+                    quantity = float(entry.get('quantity', 0))
+                    products_with_sales[product_id] = products_with_sales.get(product_id, 0) + quantity
+            
+            print(f"DEBUG: Products with sales: {len(products_with_sales)}")
             
             expired_alerts = []
             expiring_alerts = []
             
             for product in products:
-                # Only check products that have sales
                 product_id = str(product.get('id', ''))
-                if product_id in products_with_sales:
-                    expiry_date = product.get('expiry_date', '')
-                    if expiry_date:
-                        name = product.get('name', 'Unknown')
-                        batch = product.get('batch_number', 'Unknown')
+                product_name = product.get('name', 'Unknown')
+                expiry_date = product.get('expiry_date', '')
+                batch = product.get('batch_number', 'Unknown')
+                
+                print(f"DEBUG: Checking product '{product_name}' (ID: {product_id})")
+                print(f"       Expiry date: '{expiry_date}' | Batch: '{batch}'")
+                print(f"       Has sales: {product_id in products_with_sales}")
+                
+                # Check ALL products with expiry dates, not just those with sales
+                # This is important because expired products should be flagged regardless
+                if expiry_date:
+                    print(f"       Comparing dates: '{expiry_date}' vs '{current_date}'")
+                    
+                    # Check if product is expired
+                    if expiry_date < current_date:
+                        days_expired = QDate.fromString(expiry_date, "yyyy-MM-dd").daysTo(QDate.currentDate())
+                        sold_qty = products_with_sales.get(product_id, 0)
                         
-                        if expiry_date < current_date:
-                            expired_alerts.append(f"{name} (Batch: {batch}) - Expired: {expiry_date}")
-                        elif current_date <= expiry_date <= upcoming_date:
-                            days_until = QDate.currentDate().daysTo(QDate.fromString(expiry_date, "yyyy-MM-dd"))
-                            expiring_alerts.append(f"{name} (Batch: {batch}) - Expires in {days_until} days")
+                        alert_message = f"{product_name} (Batch: {batch}) - Expired {days_expired} days ago"
+                        if sold_qty > 0:
+                            alert_message += f" | Sold: {sold_qty:.0f} units"
+                        else:
+                            alert_message += " | No sales recorded"
+                        
+                        expired_alerts.append(alert_message)
+                        print(f"       >>> EXPIRED PRODUCT FOUND: {alert_message}")
+                    
+                    # Check if product is expiring soon
+                    elif current_date <= expiry_date <= upcoming_date:
+                        days_until = QDate.currentDate().daysTo(QDate.fromString(expiry_date, "yyyy-MM-dd"))
+                        sold_qty = products_with_sales.get(product_id, 0)
+                        
+                        alert_message = f"{product_name} (Batch: {batch}) - Expires in {days_until} days"
+                        if sold_qty > 0:
+                            alert_message += f" | Sold: {sold_qty:.0f} units"
+                        else:
+                            alert_message += " | No sales recorded"
+                        
+                        expiring_alerts.append(alert_message)
+                        print(f"       >>> EXPIRING PRODUCT FOUND: {alert_message}")
+                    else:
+                        print(f"       Product is active (expires after {upcoming_date})")
+                else:
+                    print(f"       No expiry date set")
+            
+            print(f"DEBUG: Final results - Expired: {len(expired_alerts)}, Expiring: {len(expiring_alerts)}")
             
             return {
                 'expired': expired_alerts,
@@ -459,20 +585,25 @@ class DashboardTab(QWidget):
             import traceback
             traceback.print_exc()
             return {'expired': [], 'expiring': []}
-    
+
     def getBatchMetrics(self):
-        """Get batch-related metrics"""
+        """Get batch-related metrics with improved calculation"""
         try:
             products = self.db.get_products()
             entries = self.db.get_entries()
             
-            # Get products with sales
-            products_with_sales = set()
+            # Get products with sales and their quantities
+            products_with_sales = {}
+            total_sold_quantity = 0
+            
             for entry in entries:
                 if entry.get('is_credit'):
-                    products_with_sales.add(str(entry.get('product_id', '')))
+                    product_id = str(entry.get('product_id', ''))
+                    quantity = float(entry.get('quantity', 0))
+                    products_with_sales[product_id] = products_with_sales.get(product_id, 0) + quantity
+                    total_sold_quantity += quantity
             
-            # Count unique product names with sales
+            # Count unique product names and active batches with sales
             unique_products = set()
             active_batches = 0
             
@@ -485,7 +616,8 @@ class DashboardTab(QWidget):
             return {
                 'active_batches': active_batches,
                 'unique_products': len(unique_products),
-                'total_products': len(products)
+                'total_products': len(products),
+                'total_sold_quantity': total_sold_quantity
             }
             
         except Exception as e:
@@ -495,7 +627,8 @@ class DashboardTab(QWidget):
             return {
                 'active_batches': 0,
                 'unique_products': 0,
-                'total_products': 0
+                'total_products': 0,
+                'total_sold_quantity': 0
             }
         
     def loadKPIMetrics(self):
