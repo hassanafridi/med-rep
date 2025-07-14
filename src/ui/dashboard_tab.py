@@ -686,7 +686,9 @@ class DashboardTab(QWidget):
             last_month_sales = last_month_credits + last_month_debits
             
             # Current balance = credits - debits (net position)
-            current_balance = total_credits - total_debits
+            # Set to 0 if negative (don't show negative balances)
+            calculated_balance = total_credits - total_debits
+            current_balance = max(0, calculated_balance)
             
             # Calculate percentage changes
             sales_change = 0

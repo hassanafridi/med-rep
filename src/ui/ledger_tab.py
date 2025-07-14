@@ -123,8 +123,8 @@ class LedgerTab(QWidget):
         
         # Customer filter
         self.customer_filter = QComboBox()
-        self.customer_filter.addItem("All Customers")
         self.customer_filter.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        # Load customers only once during initialization
         self.loadCustomers()
         filter_layout.addRow("Customer:", self.customer_filter)
         
@@ -186,9 +186,9 @@ class LedgerTab(QWidget):
         # Summary section
         summary_layout = QHBoxLayout()
         self.total_debit_label = QLabel("Total Debit: PKR0.00")
-        self.total_debit_label.setStyleSheet("color: red; font-weight: bold;")
+        self.total_debit_label.setStyleSheet("color: green; font-weight: bold;")
         self.total_credit_label = QLabel("Total Credit: PKR0.00")
-        self.total_credit_label.setStyleSheet("color: green; font-weight: bold;")
+        self.total_credit_label.setStyleSheet("color: red; font-weight: bold;")
         self.net_label = QLabel("Net Balance: PKR0.00")
         self.net_label.setStyleSheet("color: blue; font-weight: bold; font-size: 14px;")
         
@@ -220,8 +220,9 @@ class LedgerTab(QWidget):
         self.credit_check.toggled.connect(self.onTypeToggled)
         self.debit_check.toggled.connect(self.onTypeToggled)
         
-        # Load initial data
-        self.loadData()
+        # Load initial data (but don't reload customers)
+        self.loadCustomerBalances()
+        self.loadEntries()
     
     def loadData(self):
         """Load both customer balances and entries"""
@@ -394,13 +395,21 @@ class LedgerTab(QWidget):
         try:
             if not self.mongo_adapter:
                 return
-                
+            
+            # Clear existing items first to prevent duplicates
+            self.customer_filter.clear()
+            self.customer_filter.addItem("All Customers")
+            
             customers = self.mongo_adapter.get_customers()
             
+            # Use a set to track unique customer names
+            added_customers = set()
+            
             for customer in customers:
-                name = customer.get('name', '')
-                if name:
+                name = customer.get('name', '').strip()
+                if name and name not in added_customers:
                     self.customer_filter.addItem(name)
+                    added_customers.add(name)
                 
         except Exception as e:
             print(f"Error loading customers: {e}")
