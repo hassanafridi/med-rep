@@ -254,7 +254,7 @@ class ImprovedPDFGenerator:
             items_data.append(['', '', '', '', '', 'Total', f"{total_amount:.2f}"])
             
             # Adjusted column widths without the "No." column
-            items_table = Table(items_data, colWidths=[8*mm, 78*mm, 18*mm, 18*mm, 18*mm, 18*mm, 25*mm])
+            items_table = Table(items_data, colWidths=[8*mm, 85*mm, 18*mm, 18*mm, 18*mm, 18*mm, 25*mm])
             items_table.setStyle(TableStyle([
                 # Header row
                 ('BACKGROUND', (0, 0), (-1, 0), self.purple_color),

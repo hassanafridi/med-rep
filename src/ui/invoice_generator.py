@@ -1529,9 +1529,10 @@ class InvoiceGenerator(QWidget):
         tax_amount = subtotal * tax_rate
         total = subtotal + tax_amount
 
-        # Default received and balance (can be customized in dialog)
-        received_amount = 0.0
-        balance_amount = total
+        # For manual invoice generation, assume it's a credit entry with customizable received amount
+        # This can be enhanced with additional UI controls if needed
+        received_amount = 0.0  # Default for manual invoices
+        balance_amount = total  # Full amount goes to balance for manual invoices
         
         # Prepare items data with MRP and consistent structure
         items_data = []
@@ -1589,8 +1590,8 @@ class InvoiceGenerator(QWidget):
             'items': items_data,
             'terms': terms,
             'total_amount': total,
-            'received_amount': received_amount,
-            'balance_amount': balance_amount
+            'received_amount': received_amount,  # Use calculated received amount
+            'balance_amount': balance_amount     # Use calculated balance amount
         }
 
     def previewInvoice(self):

@@ -1590,5 +1590,80 @@ class MongoAdapter:
             logger.error(f"Error updating products with MRP: {e}")
             return 0
     
+    def get_expired_products(self):
+        """Get all expired products for debugging"""
+        try:
+            from datetime import datetime
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            
+            # Get all products with expiry dates
+            products = list(self.mongo_db.db.products.find({
+                "expiry_date": {"$exists": True, "$ne": ""}
+            }))
+            
+            expired_products = []
+            for product in products:
+                expiry_date = product.get('expiry_date', '')
+                if expiry_date and expiry_date < current_date:
+                    product_info = {
+                        'id': str(product.get('_id', '')),
+                        'name': product.get('name', ''),
+                        'batch_number': product.get('batch_number', ''),
+                        'expiry_date': expiry_date,
+                        'unit_price': product.get('unit_price', 0),
+                        'mrp': product.get('mrp', 0)
+                    }
+                    expired_products.append(product_info)
+            
+            logger.info(f"Found {len(expired_products)} expired products")
+            return expired_products
+            
+        except Exception as e:
+            logger.error(f"Error getting expired products: {e}")
+            return []
+
+    def debug_product_data(self):
+        """Debug method to check product data quality"""
+        try:
+            products = list(self.mongo_db.db.products.find())
+            
+            print(f"\n=== PRODUCT DATA DEBUG ===")
+            print(f"Total products: {len(products)}")
+            
+            products_with_expiry = 0
+            expired_count = 0
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            
+            for i, product in enumerate(products):
+                print(f"\nProduct {i+1}:")
+                print(f"  ID: {product.get('_id')}")
+                print(f"  Name: {product.get('name', 'NO NAME')}")
+                print(f"  Batch: {product.get('batch_number', 'NO BATCH')}")
+                print(f"  Expiry: {product.get('expiry_date', 'NO EXPIRY')}")
+                print(f"  Unit Price: {product.get('unit_price', 'NO PRICE')}")
+                print(f"  MRP: {product.get('mrp', 'NO MRP')}")
+                
+                expiry_date = product.get('expiry_date', '')
+                if expiry_date:
+                    products_with_expiry += 1
+                    if expiry_date < current_date:
+                        expired_count += 1
+                        print(f"  >>> EXPIRED! ({expiry_date} < {current_date})")
+            
+            print(f"\nSummary:")
+            print(f"  Products with expiry dates: {products_with_expiry}")
+            print(f"  Expired products: {expired_count}")
+            print(f"=== END DEBUG ===\n")
+            
+            return {
+                'total': len(products),
+                'with_expiry': products_with_expiry,
+                'expired': expired_count
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in debug_product_data: {e}")
+            return {}
+
 # Compatibility alias for easy replacement
 Database = MongoAdapter

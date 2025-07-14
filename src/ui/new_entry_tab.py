@@ -303,6 +303,76 @@ class InvoiceDetailsDialog(QDialog):
         }
 
 
+class InvoiceQuickViewDialog(QDialog):
+    """Quick view dialog to show invoice path and open options"""
+    
+    def __init__(self, invoice_path, parent=None):
+        super().__init__(parent)
+        self.invoice_path = invoice_path
+        self.setWindowTitle("Invoice Generated")
+        self.setModal(True)
+        self.setMinimumWidth(400)
+        
+        layout = QVBoxLayout()
+        
+        # Success icon and message
+        success_label = QLabel("✓ Invoice Generated Successfully!")
+        success_label.setStyleSheet("color: green; font-size: 16px; font-weight: bold;")
+        layout.addWidget(success_label)
+        
+        # Invoice path
+        path_label = QLabel(f"Saved to:\n{invoice_path}")
+        path_label.setWordWrap(True)
+        path_label.setStyleSheet("margin: 10px; padding: 10px; background-color: #f0f0f0;")
+        layout.addWidget(path_label)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        
+        open_button = QPushButton("Open Invoice")
+        open_button.clicked.connect(self.open_invoice)
+        
+        open_folder_button = QPushButton("Open Folder")
+        open_folder_button.clicked.connect(self.open_folder)
+        
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(self.accept)
+        
+        button_layout.addWidget(open_button)
+        button_layout.addWidget(open_folder_button)
+        button_layout.addWidget(close_button)
+        
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+    
+    def open_invoice(self):
+        """Open the invoice PDF"""
+        import subprocess
+        try:
+            if sys.platform == "win32":
+                os.startfile(self.invoice_path)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", self.invoice_path])
+            else:
+                subprocess.call(["xdg-open", self.invoice_path])
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Could not open invoice: {str(e)}")
+    
+    def open_folder(self):
+        """Open the folder containing the invoice"""
+        import subprocess
+        try:
+            folder = os.path.dirname(self.invoice_path)
+            if sys.platform == "win32":
+                os.startfile(folder)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", folder])
+            else:
+                subprocess.call(["xdg-open", folder])
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Could not open folder: {str(e)}")
+
+
 class NewEntryTab(QWidget):
     """
     Enhanced New Entry tab with multi-product support and automatic invoicing - MongoDB Only
@@ -385,9 +455,22 @@ class NewEntryTab(QWidget):
         
         # Transaction type
         self.is_credit = QCheckBox("Credit Entry")
-        self.is_credit.setToolTip("Check for Credit (money in), uncheck for Debit (money out)")
+        self.is_credit.setToolTip("Check for Credit (money out), uncheck for Debit (money in)")
         self.is_credit.setChecked(True)  # Default to credit
+        self.is_credit.stateChanged.connect(self.on_entry_type_changed)
         customer_layout.addRow("Entry Type:", self.is_credit)
+        
+        # Received amount field (only for credit entries)
+        self.received_amount_label = QLabel("Received Amount:")
+        self.received_amount_spin = QDoubleSpinBox()
+        self.received_amount_spin.setMinimum(0.0)
+        self.received_amount_spin.setMaximum(999999.99)
+        self.received_amount_spin.setDecimals(2)
+        self.received_amount_spin.setPrefix("Rs ")
+        self.received_amount_spin.setValue(0.0)
+        self.received_amount_spin.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.received_amount_spin.setToolTip("Amount received from customer (for credit entries)")
+        customer_layout.addRow(self.received_amount_label, self.received_amount_spin)
         
         # Notes field
         self.notes_edit = QLineEdit()
@@ -664,6 +747,21 @@ class NewEntryTab(QWidget):
                 return
             
             is_credit = self.is_credit.isChecked()
+            received_amount = self.received_amount_spin.value()
+            
+            # Calculate total amount
+            total_amount = sum(item['amount'] for item in self.product_items)
+            
+            # Validate received amount for credit entries
+            if is_credit and received_amount > total_amount:
+                reply = QMessageBox.question(
+                    self, "Received Amount Higher", 
+                    f"Received amount (Rs {received_amount:.2f}) is higher than total amount (Rs {total_amount:.2f}).\n"
+                    "This will result in a negative balance. Do you want to continue?",
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+                )
+                if reply == QMessageBox.No:
+                    return
             
             # If auto-invoice is checked, show invoice details dialog
             invoice_details = None
@@ -693,6 +791,10 @@ class NewEntryTab(QWidget):
             base_notes = self.notes_edit.text().strip()
             invoice_info = f"Invoice: {invoice_number}"
             
+            # Add received amount info to notes
+            if is_credit:
+                invoice_info += f" | Received: Rs {received_amount:.2f}"
+            
             # Add transport and delivery info if invoice details were provided
             if invoice_details:
                 transport_name = invoice_details['transport_name']
@@ -714,9 +816,6 @@ class NewEntryTab(QWidget):
             
             # Combine base notes with invoice info
             final_notes = f"{base_notes} | {invoice_info}" if base_notes else invoice_info
-            
-            # Calculate total amount
-            total_amount = sum(item['amount'] for item in self.product_items)
             
             # For multi-product entries, use the first product for the main entry
             # and store others in notes
@@ -742,7 +841,7 @@ class NewEntryTab(QWidget):
                 if self.auto_invoice_check.isChecked() and invoice_details:
                     try:
                         invoice_path = self.generateAutoInvoiceWithDetails(
-                            invoice_number, customer_id, date, total_amount, invoice_details
+                            invoice_number, customer_id, date, total_amount, received_amount, is_credit, invoice_details
                         )
                     except Exception as e:
                         print(f"Auto-invoice generation failed: {e}")
@@ -756,16 +855,32 @@ class NewEntryTab(QWidget):
                 customer_name = customer_display_name.split(' (')[0]  # Remove contact info
                 balance = self.db.get_customer_balance(customer_id)
                 
-                balance_text = f"PKR{balance:,.2f}"
-                balance_status = "Credit Balance" if balance > 0 else "No Balance"
+                # Calculate new balance based on entry type and received amount
+                if is_credit:
+                    # Credit entry: add to balance, subtract received amount
+                    new_balance = balance + total_amount - received_amount
+                    balance_change = f"+Rs {total_amount:.2f} (credit) -Rs {received_amount:.2f} (received)"
+                else:
+                    # Debit entry: subtract from balance
+                    new_balance = balance - total_amount
+                    balance_change = f"-Rs {total_amount:.2f} (debit)"
+                
+                balance_text = f"PKR{new_balance:,.2f}"
+                balance_status = "Credit Balance" if new_balance > 0 else "Paid" if new_balance == 0 else "Overpaid"
                 
                 success_msg = (
                     f"Entry saved successfully!\n\n"
                     f"Invoice Number: {invoice_number}\n"
                     f"Customer: {customer_name}\n"
-                    f"Amount: PKR{total_amount:,.2f} ({'Credit' if is_credit else 'Debit'})\n"
-                    f"Customer Balance: {balance_text} ({balance_status})"
+                    f"Entry Type: {'Credit' if is_credit else 'Debit'}\n"
+                    f"Amount: PKR{total_amount:,.2f}\n"
                 )
+                
+                if is_credit:
+                    success_msg += f"Received: PKR{received_amount:,.2f}\n"
+                    success_msg += f"Balance Added: PKR{total_amount - received_amount:,.2f}\n"
+                
+                success_msg += f"Customer Balance: {balance_text} ({balance_status})"
                 
                 if invoice_path:
                     success_msg += f"\n\nInvoice saved to: {invoice_path}"
@@ -796,7 +911,7 @@ class NewEntryTab(QWidget):
         random_suffix = random.randint(100, 999)
         return f"INV-{today.year}{today.month:02d}{today.day:02d}-{random_suffix}"
     
-    def generateAutoInvoiceWithDetails(self, invoice_number, customer_id, date, total_amount, invoice_details):
+    def generateAutoInvoiceWithDetails(self, invoice_number, customer_id, date, total_amount, received_amount, is_credit, invoice_details):
         """Generate invoice automatically with the provided details using improved HTML template"""
         try:
             # Get customer details
@@ -843,16 +958,15 @@ class NewEntryTab(QWidget):
                 print(f"Invoice item: {invoice_item['product_name']} - MRP: {invoice_item['mrp']}, Amount: {invoice_item['amount']}")
                 invoice_items.append(invoice_item)
             
-            # Calculate received amount and balance based on credit entry
-            is_credit = self.is_credit.isChecked()
+            # Calculate received amount and balance based on entry type and user input
             if is_credit:
-                # For credit entries, the amount goes to "received" and balance becomes 0
-                received_amount = total_amount
-                balance_amount = 0.0
+                # For credit entries: full amount goes to balance, received amount is subtracted
+                final_received_amount = received_amount
+                balance_amount = total_amount - received_amount
             else:
-                # For debit entries, received is 0 and full amount goes to balance
-                received_amount = 0.0
-                balance_amount = total_amount
+                # For debit entries: amount goes to received, balance becomes 0
+                final_received_amount = total_amount
+                balance_amount = 0.0
             
             # Prepare invoice data for the improved PDF generator
             invoice_data = {
@@ -877,8 +991,8 @@ class NewEntryTab(QWidget):
                 'items': invoice_items,
                 'terms': 'Thank you for your business! Payment is due within 30 days.\nAll products are subject to our standard terms and conditions.',
                 'total_amount': total_amount,
-                'received_amount': received_amount,  # Add received amount
-                'balance_amount': balance_amount     # Add balance amount
+                'received_amount': final_received_amount,  # Use calculated received amount
+                'balance_amount': balance_amount     # Use calculated balance amount
             }
             
             # Create invoices directory if it doesn't exist
@@ -906,522 +1020,23 @@ class NewEntryTab(QWidget):
             traceback.print_exc()
             raise e
     
-    def generateInvoiceHtml(self, company_contact="0333-99-11-514", company_address="Main Market, Faisalabad\nPunjab, Pakistan", invoice_details=None):
-        """Generate HTML for the invoice with improved dynamic item section"""
-        # Get customer info
-        customer_name = "Sample Customer"  # This would be populated from actual customer data
-        customer_address = "Sample Address"
-        customer_contact = "0300-0000000"
+    def on_entry_type_changed(self):
+        """Handle entry type change to show/hide received amount field"""
+        is_credit = self.is_credit.isChecked()
         
-        # Use invoice details if provided
-        if invoice_details:
-            company_contact = invoice_details.get('company_contact', company_contact)
-            company_address = invoice_details.get('company_address', company_address)
-            transport_name = invoice_details.get('transport_name', 'Standard Delivery')
-            delivery_date = invoice_details.get('delivery_date', QDate.currentDate().toString("dd-MM-yy"))
-            delivery_location = invoice_details.get('delivery_location', 'Customer Location')
+        # Update tooltip for clarity
+        if is_credit:
+            self.is_credit.setToolTip("Credit Entry: Customer owes money (amount goes to balance)")
         else:
-            transport_name = "Standard Delivery"
-            delivery_date = QDate.currentDate().toString("dd-MM-yy")
-            delivery_location = "Customer Location"
+            self.is_credit.setToolTip("Debit Entry: Customer pays money (amount goes to received)")
         
-        # Calculate totals
-        total = sum(item['amount'] for item in self.product_items)
-        subtotal = total
-        tax_amount = 0  # No tax for now
+        # Show/hide received amount field based on entry type
+        self.received_amount_label.setVisible(is_credit)
+        self.received_amount_spin.setVisible(is_credit)
         
-        # Convert amount to words
-        amount_in_words = self.amount_to_words(total)
-        
-        # Generate items HTML with improved formatting
-        items_html = ""
-        item_number = 1
-        for item in self.product_items:
-            # Format item name with batch info
-            item_name = item['product_name']
-            batch_info = ""
-            if 'batch_number' in item and item['batch_number'] and item['batch_number'] != 'N/A':
-                batch_info = f'<div class="batch-info">Batch: {item["batch_number"]}</div>'
-            
-            items_html += f"""
-                <tr>
-                    <td>{item_number}</td>
-                    <td>
-                        <div class="item-name">{item_name}</div>
-                        {batch_info}
-                    </td>
-                    <td>{item.get('product_id', 'N/A')}</td>
-                    <td>Rs {item['unit_price']:.0f}</td>
-                    <td>{item['quantity']}</td>
-                    <td>Rs {item['unit_price']:.0f}</td>
-                    <td>{item.get('discount', 0)}%</td>
-                    <td>Rs {item['amount']:.0f}</td>
-                </tr>
-            """
-            item_number += 1
-        
-        # Get dates
-        current_date = QDate.currentDate().toString("dd-MM-yy")
-        due_date = QDate.currentDate().addDays(30).toString("dd-MM-yy")
-        invoice_number = "INV-SAMPLE-001"
-        
-        # Format addresses for HTML
-        company_address_html = company_address.replace('\n', '<br>')
-        customer_address_html = customer_address.replace('\n', '<br>')
-        
-        # Generate the improved HTML template
-        html = f"""
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Bill/Cash Memo</title>
-    <style>
-      body {{
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 10px;
-        font-size: 12px;
-      }}
-      .invoice-container {{
-        border: 2px solid #000;
-        padding: 0;
-        max-width: 210mm;
-        margin: 0 auto;
-        background-color: white;
-      }}
-      .header {{
-        background-color: white;
-        color: black;
-        padding: 10px;
-        text-align: center;
-        font-weight: bold;
-        font-size: 16px;
-        border-bottom: 1px solid #000;
-      }}
-      .company-header {{
-        background-color: #ffffff;
-        color: rgb(0, 0, 0);
-        padding: 15px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #000;
-      }}
-      .company-logo {{
-        font-size: 24px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        color: rgb(132, 125, 230);
-        letter-spacing: 1px;
-      }}
-      .company-contact {{
-        text-align: right;
-        font-size: 11px;
-        line-height: 1.4;
-        max-width: 300px;
-      }}
-
-      .bill-details {{
-        display: flex;
-        border: 1px solid #000;
-        border-top: none;
-        background-color: #f4f0ff;
-        min-height: 80px;
-      }}
-
-      .bill-to,
-      .transport-details,
-      .invoice-details {{
-        flex: 1;
-        padding: 12px;
-        border-right: 1px solid #000;
-        background-color: #fff;
-        display: flex;
-        flex-direction: column;
-      }}
-
-      .invoice-details {{
-        border-right: none;
-      }}
-
-      .section-header {{
-        background-color: rgb(132, 125, 230);
-        color: white;
-        padding: 6px 12px;
-        font-weight: bold;
-        font-size: 12px;
-        text-align: center;
-        margin: -12px -12px 8px -12px;
-      }}
-
-      .detail-row {{
-        font-size: 11px;
-        margin-bottom: 4px;
-        line-height: 1.3;
-      }}
-
-      .bold {{
-        font-weight: bold;
-      }}
-
-      /* Dynamic Items Table */
-      .items-section {{
-        border-top: 1px solid #000;
-      }}
-
-      .items-table {{
-        width: 100%;
-        border-collapse: collapse;
-        margin: 0;
-        table-layout: fixed;
-      }}
-      
-      .items-table th {{
-        background-color: rgb(132, 125, 230);
-        color: white;
-        padding: 8px 4px;
-        border: 1px solid #000;
-        text-align: center;
-        font-size: 11px;
-        font-weight: bold;
-        white-space: nowrap;
-      }}
-      
-      .items-table td {{
-        padding: 6px 4px;
-        border: 1px solid #000;
-        font-size: 10px;
-        text-align: center;
-        vertical-align: top;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }}
-
-      /* Dynamic column widths */
-      .items-table th:nth-child(1), .items-table td:nth-child(1) {{ width: 5%; }}
-      .items-table th:nth-child(2), .items-table td:nth-child(2) {{ 
-        width: 30%; 
-        text-align: left;
-        padding-left: 8px;
-        line-height: 1.2;
-      }}
-      .items-table th:nth-child(3), .items-table td:nth-child(3) {{ width: 10%; }}
-      .items-table th:nth-child(4), .items-table td:nth-child(4) {{ width: 9%; }}
-      .items-table th:nth-child(5), .items-table td:nth-child(5) {{ width: 9%; }}
-      .items-table th:nth-child(6), .items-table td:nth-child(6) {{ width: 9%; }}
-      .items-table th:nth-child(7), .items-table td:nth-child(7) {{ width: 10%; }}
-      .items-table th:nth-child(8), .items-table td:nth-child(8) {{ width: 13%; }}
-
-      /* Item name special styling */
-      .item-name {{
-        font-weight: 500;
-        color: #333;
-        word-break: break-word;
-        hyphens: auto;
-        max-width: 100%;
-      }}
-
-      /* Batch info styling */
-      .batch-info {{
-        font-size: 9px;
-        color: #666;
-        font-style: italic;
-        margin-top: 2px;
-      }}
-
-      .amounts-section {{
-        width: 280px;
-        margin-left: auto;
-        border-left: 1px solid #000;
-        border-top: 1px solid #000;
-      }}
-      
-      .amounts-header {{
-        background-color: rgb(132, 125, 230);
-        color: white;
-        padding: 8px;
-        text-align: center;
-        font-weight: bold;
-        font-size: 12px;
-      }}
-      
-      .amount-row {{
-        display: flex;
-        justify-content: space-between;
-        padding: 6px 12px;
-        border-bottom: 1px solid #000;
-        font-size: 11px;
-      }}
-      
-      .amount-row.total {{
-        font-weight: bold;
-        background-color: #f8f8f8;
-      }}
-
-      .amount-words {{
-        background-color: #f8f8f8;
-        color: rgb(0, 0, 0);
-        padding: 12px;
-        text-align: center;
-        font-weight: bold;
-        font-size: 11px;
-        width: calc(100% - 280px);
-        border-right: 1px solid #000;
-        border-top: 1px solid #000;
-        display: inline-block;
-        vertical-align: top;
-        box-sizing: border-box;
-      }}
-      
-      .amount-word-header {{
-        background-color: rgb(132, 125, 230);
-        color: white;
-        padding: 6px 12px;
-        margin: -12px -12px 8px -12px;
-        font-weight: bold;
-        font-size: 12px;
-      }}
-
-      .amounts-container {{
-        display: flex;
-        border-top: 1px solid #000;
-      }}
-
-      .terms-section {{
-        display: flex;
-        border-top: 1px solid #000;
-      }}
-      
-      .term-section-header {{
-        background-color: rgb(132, 125, 230);
-        color: white;
-        padding: 6px 12px;
-        font-weight: bold;
-        font-size: 12px;
-        margin: -12px -12px 8px -12px;
-      }}
-      
-      .terms {{
-        flex: 2;
-        padding: 12px;
-        font-size: 9px;
-        border-right: 1px solid #000;
-        line-height: 1.4;
-      }}
-      
-      .signature-section {{
-        flex: 1;
-        padding: 12px;
-        text-align: center;
-        font-size: 11px;
-      }}
-
-      .signature-line {{
-        margin-top: 60px;
-        border-top: 1px solid #000;
-        padding-top: 8px;
-        font-weight: bold;
-      }}
-
-      /* Total row styling */
-      .total-row td {{
-        font-weight: bold;
-        background-color: #f0f0f0;
-      }}
-    </style>
-  </head>
-  <body>
-    <!-- Header -->
-    <div class="header">Bill/Cash Memo</div>
-    
-    <div class="invoice-container">
-      <!-- Company Header -->
-      <div class="company-header">
-        <div class="company-logo">Tru-Pharma</div>
-        <div class="company-contact">
-          {company_contact}<br />
-          {company_address_html}
-        </div>
-      </div>
-
-      <!-- Bill Details Section -->
-      <div class="bill-details">
-        <div class="bill-to">
-          <div class="section-header">Bill To</div>
-          <div class="bold" style="font-size: 12px; margin-bottom: 6px;">{customer_name}</div>
-          <div class="detail-row">{customer_address_html}</div>
-          <div class="detail-row"><span class="bold">Contact:</span> {customer_contact}</div>
-        </div>
-
-        <div class="transport-details">
-          <div class="section-header">Transportation Details</div>
-          <div class="detail-row">
-            <span class="bold">Transport Name:</span><br>{transport_name}
-          </div>
-          <div class="detail-row">
-            <span class="bold">Delivery Date:</span><br>{delivery_date}
-          </div>
-          <div class="detail-row">
-            <span class="bold">Delivery Location:</span><br>{delivery_location}
-          </div>
-        </div>
-
-        <div class="invoice-details">
-          <div class="section-header">Invoice Details</div>
-          <div class="detail-row">
-            <span class="bold">Invoice No.:</span><br>{invoice_number}
-          </div>
-          <div class="detail-row">
-            <span class="bold">Date:</span><br>{current_date}
-          </div>
-          <div class="detail-row">
-            <span class="bold">Due Date:</span><br>{due_date}
-          </div>
-        </div>
-      </div>
-
-      <!-- Items Section -->
-      <div class="items-section">
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Item Name</th>
-              <th>Product ID</th>
-              <th>MRP</th>
-              <th>Qty</th>
-              <th>Rate</th>
-              <th>Discount</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items_html}
-            <tr class="total-row">
-              <td colspan="7" style="text-align: right; font-weight: bold; padding-right: 12px;">
-                <strong>TOTAL</strong>
-              </td>
-              <td style="text-align: right; font-weight: bold;">
-                <strong>Rs {total:.0f}</strong>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Amounts and Words Container -->
-      <div class="amounts-container">
-        <!-- Amount in Words -->
-        <div class="amount-words">
-          <div class="amount-word-header">
-            Invoice Amount In Words
-          </div>
-          <div style="text-transform: capitalize; padding: 8px;">
-            {amount_in_words}
-          </div>
-        </div>
-
-        <!-- Amounts Section -->
-        <div class="amounts-section">
-          <div class="amounts-header">Amounts</div>
-          <div class="amount-row">
-            <span>Sub Total</span>
-            <span>Rs {subtotal:.0f}</span>
-          </div>
-          <div class="amount-row">
-            <span>Tax</span>
-            <span>Rs {tax_amount:.0f}</span>
-          </div>
-          <div class="amount-row total">
-            <span><strong>Total</strong></span>
-            <span><strong>Rs {total:.0f}</strong></span>
-          </div>
-          <div class="amount-row">
-            <span>Received</span>
-            <span>Rs 0.00</span>
-          </div>
-          <div class="amount-row total">
-            <span><strong>Balance</strong></span>
-            <span><strong>Rs {total:.0f}</strong></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Terms and Signature -->
-      <div class="terms-section">
-        <div class="terms">
-          <div class="term-section-header">
-            Terms and Conditions
-          </div>
-          <div style="text-align: justify;">
-            Form 2-A, as specified under Rules 19 and 30, pertains to the
-            warranty provided under Section 23(1)(1) of the Drug Act 1976. This
-            document, issued by Tru_pharma, serves as an assurance of the
-            quality and effectiveness of products. The warranty ensures that the
-            drugs manufactured by Tru_pharma comply with the prescribed
-            standards and meet the necessary regulatory requirements. By
-            utilizing Form 2-A, Tru_pharma demonstrates its commitment to
-            delivering safe and reliable pharmaceuticals to consumers. This form
-            acts as a legal document, emphasizing Tru_pharma's responsibility
-            and accountability in maintaining the highest standards in drug
-            manufacturing and distribution.
-          </div>
-        </div>
-
-        <div class="signature-section">
-          <div style="margin-bottom: 15px; font-weight: bold;">For: Tru_pharma</div>
-          <div class="signature-line">
-            Authorized Signatory
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
-        """
-        
-        return html
-    
-    def amount_to_words(self, amount):
-        """Convert amount to words"""
-        ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-        teens = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
-        tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
-        
-        try:
-            amount = int(amount)
-            if amount == 0:
-                return "zero rupees only"
-            
-            result = ""
-            if amount >= 1000:
-                thousands = amount // 1000
-                if thousands > 0:
-                    result += f"{ones[thousands]} thousand "
-                    amount %= 1000
-            
-            if amount >= 100:
-                hundreds = amount // 100
-                if hundreds > 0:
-                    result += f"{ones[hundreds]} hundred "
-                    amount %= 100
-            
-            if amount >= 20:
-                ten_digit = amount // 10
-                ones_digit = amount % 10
-                result += f"{tens[ten_digit]} "
-                if ones_digit > 0:
-                    result += f"{ones[ones_digit]} "
-            elif amount >= 10:
-                result += f"{teens[amount - 10]} "
-            elif amount > 0:
-                result += f"{ones[amount]} "
-            
-            return f"{result.strip()} rupees only"
-        except:
-            return "amount not specified"
+        # Reset received amount when switching entry types
+        if not is_credit:
+            self.received_amount_spin.setValue(0.0)
 
     def validateInputs(self):
         """Validate form inputs"""
@@ -1443,75 +1058,8 @@ class NewEntryTab(QWidget):
         self.refresh_products_table()
         self.calculate_total()
         self.is_credit.setChecked(True)
+        self.received_amount_spin.setValue(0.0)
         self.notes_edit.clear()
         self.status_label.clear()
-
-
-class InvoiceQuickViewDialog(QDialog):
-    """Quick view dialog to show invoice path and open options"""
-    
-    def __init__(self, invoice_path, parent=None):
-        super().__init__(parent)
-        self.invoice_path = invoice_path
-        self.setWindowTitle("Invoice Generated")
-        self.setModal(True)
-        self.setMinimumWidth(400)
-        
-        layout = QVBoxLayout()
-        
-        # Success icon and message
-        success_label = QLabel("✓ Invoice Generated Successfully!")
-        success_label.setStyleSheet("color: green; font-size: 16px; font-weight: bold;")
-        layout.addWidget(success_label)
-        
-        # Invoice path
-        path_label = QLabel(f"Saved to:\n{invoice_path}")
-        path_label.setWordWrap(True)
-        path_label.setStyleSheet("margin: 10px; padding: 10px; background-color: #f0f0f0;")
-        layout.addWidget(path_label)
-        
-        # Buttons
-        button_layout = QHBoxLayout()
-        
-        open_button = QPushButton("Open Invoice")
-        open_button.clicked.connect(self.open_invoice)
-        
-        open_folder_button = QPushButton("Open Folder")
-        open_folder_button.clicked.connect(self.open_folder)
-        
-        close_button = QPushButton("Close")
-        close_button.clicked.connect(self.accept)
-        
-        button_layout.addWidget(open_button)
-        button_layout.addWidget(open_folder_button)
-        button_layout.addWidget(close_button)
-        
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-    
-    def open_invoice(self):
-        """Open the invoice PDF"""
-        import subprocess
-        try:
-            if sys.platform == "win32":
-                os.startfile(self.invoice_path)
-            elif sys.platform == "darwin":
-                subprocess.call(["open", self.invoice_path])
-            else:
-                subprocess.call(["xdg-open", self.invoice_path])
-        except Exception as e:
-            QMessageBox.warning(self, "Error", f"Could not open invoice: {str(e)}")
-    
-    def open_folder(self):
-        """Open the folder containing the invoice"""
-        import subprocess
-        try:
-            folder = os.path.dirname(self.invoice_path)
-            if sys.platform == "win32":
-                os.startfile(folder)
-            elif sys.platform == "darwin":
-                subprocess.call(["open", folder])
-            else:
-                subprocess.call(["xdg-open", folder])
-        except Exception as e:
-            QMessageBox.warning(self, "Error", f"Could not open folder: {str(e)}")
+        # Update visibility after clearing
+        self.on_entry_type_changed()
