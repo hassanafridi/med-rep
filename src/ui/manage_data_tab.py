@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
     QPushButton, QLineEdit, QLabel, QMessageBox, QHeaderView, QGroupBox, QFormLayout,
     QDialog, QDialogButtonBox, QDoubleSpinBox, QTextEdit, QFileDialog, QAction, QMenu,
-    QDateEdit
+    QDateEdit, QCheckBox
 )
 from PyQt5.QtCore import Qt, QDate
 import sys
@@ -178,6 +178,151 @@ class ProductDialog(QDialog):
             'expiry_date': self.expiry_input.date().toString("yyyy-MM-dd")
         }
 
+class DeleteConfirmationDialog(QDialog):
+    def __init__(self, parent=None, item_type="item", item_name="", has_entries=False, entry_count=0):
+        super().__init__(parent)
+        self.item_type = item_type  # "customer" or "product"
+        self.item_name = item_name
+        self.has_entries = has_entries
+        self.entry_count = entry_count
+        self.delete_entries = False
+        
+        self.setWindowTitle(f"Confirm {item_type.title()} Deletion")
+        self.setMinimumWidth(500)
+        self.setModal(True)
+        self.initUI()
+        
+    def initUI(self):
+        """Initialize the 2FA deletion dialog UI"""
+        layout = QVBoxLayout()
+        
+        # Warning message
+        warning_label = QLabel()
+        if self.has_entries:
+            warning_text = (
+                f"⚠️ DANGER: You are about to delete {self.item_type} '{self.item_name}'\n\n"
+                f"This {self.item_type} has {self.entry_count} associated entries.\n"
+                f"You can either:\n"
+                f"• Delete only the {self.item_type} (entries will remain orphaned)\n"
+                f"• Delete the {self.item_type} AND all its entries (PERMANENT DATA LOSS)"
+            )
+        else:
+            warning_text = (
+                f"⚠️ You are about to delete {self.item_type} '{self.item_name}'\n\n"
+                f"This action cannot be undone."
+            )
+        
+        warning_label.setText(warning_text)
+        warning_label.setStyleSheet("""
+            QLabel {
+                color: #d32f2f;
+                font-weight: bold;
+                padding: 15px;
+                border: 2px solid #d32f2f;
+                border-radius: 5px;
+                background-color: #ffebee;
+            }
+        """)
+        warning_label.setWordWrap(True)
+        layout.addWidget(warning_label)
+        
+        # Option to delete entries (only if entries exist)
+        if self.has_entries:
+            self.delete_entries_checkbox = QCheckBox(f"Also delete all {self.entry_count} associated entries (IRREVERSIBLE)")
+            self.delete_entries_checkbox.setStyleSheet("""
+                QCheckBox {
+                    font-weight: bold;
+                    color: #d32f2f;
+                    padding: 10px;
+                }
+                QCheckBox::indicator:checked {
+                    background-color: #d32f2f;
+                }
+            """)
+            layout.addWidget(self.delete_entries_checkbox)
+        
+        # 2FA confirmation
+        confirmation_label = QLabel(f"To confirm deletion, type the exact name: <b>{self.item_name}</b>")
+        confirmation_label.setStyleSheet("font-weight: bold; margin-top: 20px;")
+        layout.addWidget(confirmation_label)
+        
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText(f"Type '{self.item_name}' here...")
+        self.name_input.setStyleSheet("""
+            QLineEdit {
+                border: 2px solid #4B0082;
+                padding: 8px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QLineEdit:focus {
+                border-color: #d32f2f;
+            }
+        """)
+        self.name_input.textChanged.connect(self.validateInput)
+        layout.addWidget(self.name_input)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.clicked.connect(self.reject)
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #6c757d;
+                color: white;
+                padding: 10px 20px;
+                font-weight: bold;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #545b62;
+            }
+        """)
+        
+        self.delete_btn = QPushButton(f"Delete {self.item_type.title()}")
+        self.delete_btn.clicked.connect(self.confirmDelete)
+        self.delete_btn.setEnabled(False)
+        self.delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #d32f2f;
+                color: white;
+                padding: 10px 20px;
+                font-weight: bold;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover:enabled {
+                background-color: #b71c1c;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+                color: #666666;
+            }
+        """)
+        
+        button_layout.addWidget(self.cancel_btn)
+        button_layout.addWidget(self.delete_btn)
+        layout.addLayout(button_layout)
+        
+        self.setLayout(layout)
+    
+    def validateInput(self):
+        """Enable delete button only if name matches exactly"""
+        input_name = self.name_input.text().strip()
+        self.delete_btn.setEnabled(input_name == self.item_name)
+    
+    def confirmDelete(self):
+        """Confirm the deletion and set delete_entries flag"""
+        if self.has_entries and hasattr(self, 'delete_entries_checkbox'):
+            self.delete_entries = self.delete_entries_checkbox.isChecked()
+        self.accept()
+    
+    def shouldDeleteEntries(self):
+        """Return whether entries should also be deleted"""
+        return self.delete_entries
+
 class ManageDataTab(QWidget):
     def __init__(self, mongo_adapter=None):
         super().__init__()
@@ -208,18 +353,39 @@ class ManageDataTab(QWidget):
     def retryInitialization(self):
         """Retry initializing the manage data tab"""
         try:
-            # Clear current layout
-            if self.layout():
-                QWidget().setLayout(self.layout())
+            # Clear current layout more safely
+            current_layout = self.layout()
+            if current_layout:
+                # Remove all widgets from layout
+                while current_layout.count():
+                    child = current_layout.takeAt(0)
+                    if child.widget():
+                        child.widget().deleteLater()
+                
+                # Delete the layout
+                current_layout.deleteLater()
+                self.setLayout(None)
             
-            # Retry initialization
-            self.__init__(self.mongo_adapter)
+            # Reset ALL attributes to None to avoid stale references
+            for attr in ['customers_table', 'products_table', 'customer_search', 'product_search', 
+                        'add_customer_btn', 'add_product_btn', 'check_expiry_btn', 
+                        'export_customers_btn', 'import_customers_btn']:
+                if hasattr(self, attr):
+                    setattr(self, attr, None)
+            
+            # Wait for deleteLater to complete
+            from PyQt5.QtWidgets import QApplication
+            QApplication.processEvents()
+            
+            # Retry initialization with fresh mongo adapter
+            self.mongo_adapter = MongoAdapter()
+            self.initUI()
             
         except Exception as e:
             print(f"Retry failed: {e}")
             QMessageBox.critical(self, "Initialization Failed", 
                                f"Failed to initialize Manage Data tab: {str(e)}")
-        
+
     def initUI(self):
         """Initialize the UI components"""
         main_layout = QVBoxLayout()
@@ -388,6 +554,19 @@ class ManageDataTab(QWidget):
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
             
+            # Check if customers_table exists and is valid
+            if not hasattr(self, 'customers_table') or self.customers_table is None:
+                print("Warning: customers_table not available, skipping load")
+                return
+            
+            # Additional safety check for Qt object validity
+            try:
+                # Test if the widget is still valid by accessing a property
+                self.customers_table.rowCount()
+            except RuntimeError as e:
+                print(f"customers_table widget has been deleted: {e}")
+                return
+            
             # Use MongoDB adapter to get customers
             customers = self.mongo_adapter.get_customers()
             
@@ -407,13 +586,28 @@ class ManageDataTab(QWidget):
             
         except Exception as e:
             print(f"Error loading customers: {e}")
-            QMessageBox.critical(self, "Database Error", f"Failed to load customers: {str(e)}")
+            # Don't show critical dialog for deleted widgets
+            if "deleted" not in str(e).lower():
+                QMessageBox.critical(self, "Database Error", f"Failed to load customers: {str(e)}")
 
     def loadProducts(self):
         """Load products from database using MongoDB"""
         try:
             if not self.mongo_adapter:
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+                return
+            
+            # Check if products_table exists and is valid
+            if not hasattr(self, 'products_table') or self.products_table is None:
+                print("Warning: products_table not available, skipping load")
+                return
+            
+            # Additional safety check for Qt object validity
+            try:
+                # Test if the widget is still valid by accessing a property
+                self.products_table.rowCount()
+            except RuntimeError as e:
+                print(f"products_table widget has been deleted: {e}")
                 return
             
             # Use MongoDB adapter to get products
@@ -467,36 +661,111 @@ class ManageDataTab(QWidget):
             
         except Exception as e:
             print(f"Error loading products: {e}")
-            QMessageBox.critical(self, "Database Error", f"Failed to load products: {str(e)}")
+            # Don't show critical dialog for deleted widgets
+            if "deleted" not in str(e).lower():
+                QMessageBox.critical(self, "Database Error", f"Failed to load products: {str(e)}")
+
+    def isWidgetValid(self, widget):
+        """Check if a Qt widget is still valid and not deleted"""
+        try:
+            if widget is None:
+                return False
+            # Try to access a basic property to check if widget exists
+            widget.objectName()
+            return True
+        except RuntimeError:
+            return False
 
     def filterCustomers(self):
         """Filter customers based on search text"""
-        search_text = self.customer_search.text().lower()
-        
-        for row in range(self.customers_table.rowCount()):
-            visible = False
-            for col in range(1, 4):  # Skip ID column
-                item = self.customers_table.item(row, col)
-                if item and search_text in item.text().lower():
-                    visible = True
-                    break
+        try:
+            if not self.isWidgetValid(self.customers_table) or not self.isWidgetValid(self.customer_search):
+                return
+                
+            search_text = self.customer_search.text().lower()
             
-            self.customers_table.setRowHidden(row, not visible)
+            for row in range(self.customers_table.rowCount()):
+                visible = False
+                for col in range(1, 4):  # Skip ID column
+                    item = self.customers_table.item(row, col)
+                    if item and search_text in item.text().lower():
+                        visible = True
+                        break
+                
+                self.customers_table.setRowHidden(row, not visible)
+        except Exception as e:
+            print(f"Error filtering customers: {e}")
     
+    def checkExpiredProducts(self):
+        """Check for expired or expiring products using MongoDB"""
+        try:
+            if not self.mongo_adapter:
+                QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+                return
+                
+            current_date = QDate.currentDate()
+            upcoming_date = current_date.addDays(30)
+            
+            # Get all products
+            products = self.mongo_adapter.get_products()
+            
+            expired_products = []
+            expiring_products = []
+            
+            for product in products:
+                expiry_date_str = product.get('expiry_date', '')
+                if expiry_date_str:
+                    try:
+                        expiry_date = QDate.fromString(expiry_date_str, "yyyy-MM-dd")
+                        if expiry_date.isValid():
+                            if expiry_date < current_date:
+                                expired_products.append(product)
+                            elif expiry_date <= upcoming_date:
+                                expiring_products.append(product)
+                    except:
+                        pass  # Skip invalid dates
+            
+            message = ""
+            
+            if expired_products:
+                message += "EXPIRED PRODUCTS:\n"
+                for product in expired_products:
+                    message += f"• {product.get('name', 'Unknown')} (Batch: {product.get('batch_number', 'Unknown')}) - Expired: {product.get('expiry_date', 'Unknown')}\n"
+                message += "\n"
+            
+            if expiring_products:
+                message += "PRODUCTS EXPIRING IN 30 DAYS:\n"
+                for product in expiring_products:
+                    message += f"• {product.get('name', 'Unknown')} (Batch: {product.get('batch_number', 'Unknown')}) - Expires: {product.get('expiry_date', 'Unknown')}\n"
+            
+            if not message:
+                message = "No expired or expiring products found."
+            
+            QMessageBox.information(self, "Product Expiry Check", message)
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to check expired products: {str(e)}")
+
     def filterProducts(self):
         """Filter products based on search text"""
-        search_text = self.product_search.text().lower()
-        
-        for row in range(self.products_table.rowCount()):
-            visible = False
-            for col in range(1, 7):  # Skip ID column
-                item = self.products_table.item(row, col)
-                if item and search_text in item.text().lower():
-                    visible = True
-                    break
+        try:
+            if not hasattr(self, 'products_table') or not self.isWidgetValid(self.products_table) or not self.isWidgetValid(self.product_search):
+                return
+                
+            search_text = self.product_search.text().lower()
             
-            self.products_table.setRowHidden(row, not visible)
-    
+            for row in range(self.products_table.rowCount()):
+                visible = False
+                for col in range(1, 7):  # Skip ID column
+                    item = self.products_table.item(row, col)
+                    if item and search_text in item.text().lower():
+                        visible = True
+                        break
+                
+                self.products_table.setRowHidden(row, not visible)
+        except Exception as e:
+            print(f"Error filtering products: {e}")
+
     def addCustomer(self):
         """Add a new customer using MongoDB"""
         dialog = CustomerDialog(self)
@@ -579,40 +848,84 @@ class ManageDataTab(QWidget):
             QMessageBox.critical(self, "Database Error", f"Failed to update customer: {str(e)}")
 
     def deleteCustomer(self, customer_id):
-        """Delete a customer using MongoDB"""
+        """Delete a customer with 2FA confirmation"""
         try:
             if not self.mongo_adapter:
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
                 
-            # Check if customer has entries
-            entries = self.mongo_adapter.get_entries()
-            entry_count = sum(1 for entry in entries if str(entry.get('customer_id')) == str(customer_id))
+            # Get customer details
+            customers = self.mongo_adapter.get_customers()
+            customer = None
             
-            if entry_count > 0:
-                QMessageBox.warning(
-                    self, "Cannot Delete",
-                    f"This customer has {entry_count} entries. Delete all entries first."
-                )
+            for c in customers:
+                if str(c.get('id')) == str(customer_id):
+                    customer = c
+                    break
+            
+            if not customer:
+                QMessageBox.warning(self, "Customer Not Found", f"Customer with ID {customer_id} not found.")
                 return
             
-            # Confirm deletion
-            reply = QMessageBox.question(
-                self, "Confirm Deletion",
-                "Are you sure you want to delete this customer?\nThis action cannot be undone.",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            customer_name = customer.get('name', 'Unknown')
+            
+            # Check if customer has entries
+            entries = self.mongo_adapter.get_entries()
+            customer_entries = [entry for entry in entries if str(entry.get('customer_id')) == str(customer_id)]
+            entry_count = len(customer_entries)
+            
+            # Show 2FA confirmation dialog
+            dialog = DeleteConfirmationDialog(
+                self, 
+                item_type="customer", 
+                item_name=customer_name,
+                has_entries=entry_count > 0,
+                entry_count=entry_count
             )
             
-            if reply == QMessageBox.Yes:
-                # Use MongoDB adapter to delete customer
-                result = self.mongo_adapter.mongo_db.delete_customer(customer_id)
+            if dialog.exec_() == QDialog.Accepted:
+                should_delete_entries = dialog.shouldDeleteEntries()
                 
-                if result:
-                    QMessageBox.information(self, "Success", "Customer deleted successfully.")
-                    # Reload customers
-                    self.loadCustomers()
-                else:
-                    QMessageBox.critical(self, "Error", "Failed to delete customer.")
+                try:
+                    # Delete entries first if requested
+                    if should_delete_entries and entry_count > 0:
+                        deleted_entries = 0
+                        deleted_transactions = 0
+                        
+                        for entry in customer_entries:
+                            entry_id = entry.get('id')
+                            
+                            # Delete associated transactions first
+                            transactions = self.mongo_adapter.get_transactions()
+                            for transaction in transactions:
+                                if str(transaction.get('entry_id')) == str(entry_id):
+                                    if self.mongo_adapter.mongo_db.delete_transaction(transaction.get('id')):
+                                        deleted_transactions += 1
+                            
+                            # Delete the entry
+                            if self.mongo_adapter.mongo_db.delete_entry(entry_id):
+                                deleted_entries += 1
+                        
+                        QMessageBox.information(
+                            self, "Entries Deleted", 
+                            f"Deleted {deleted_entries} entries and {deleted_transactions} transactions."
+                        )
+                    
+                    # Delete the customer
+                    result = self.mongo_adapter.mongo_db.delete_customer(customer_id)
+                    
+                    if result:
+                        success_msg = f"Customer '{customer_name}' deleted successfully."
+                        if should_delete_entries:
+                            success_msg += f"\nAlso deleted {entry_count} associated entries."
+                        
+                        QMessageBox.information(self, "Success", success_msg)
+                        self.loadCustomers()  # Reload the table
+                    else:
+                        QMessageBox.critical(self, "Error", "Failed to delete customer.")
+                        
+                except Exception as delete_error:
+                    QMessageBox.critical(self, "Deletion Error", f"Error during deletion: {str(delete_error)}")
                     
         except Exception as e:
             QMessageBox.critical(self, "Database Error", f"Failed to delete customer: {str(e)}")
@@ -752,154 +1065,222 @@ class ManageDataTab(QWidget):
             QMessageBox.critical(self, "Database Error", f"Failed to update product: {str(e)}")
 
     def deleteProduct(self, product_id):
-        """Delete a product using MongoDB"""
+        """Delete a product with 2FA confirmation"""
         try:
             if not self.mongo_adapter:
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
                 
-            # Check if product has entries
-            entries = self.mongo_adapter.get_entries()
-            entry_count = sum(1 for entry in entries if str(entry.get('product_id')) == str(product_id))
+            # Get product details
+            products = self.mongo_adapter.get_products()
+            product = None
             
-            if entry_count > 0:
-                QMessageBox.warning(
-                    self, "Cannot Delete",
-                    f"This product has {entry_count} entries. Delete all entries first."
-                )
+            for p in products:
+                if str(p.get('id')) == str(product_id):
+                    product = p
+                    break
+            
+            if not product:
+                QMessageBox.warning(self, "Product Not Found", f"Product with ID {product_id} not found.")
                 return
             
-            # Confirm deletion
-            reply = QMessageBox.question(
-                self, "Confirm Deletion",
-                "Are you sure you want to delete this product?\nThis action cannot be undone.",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            product_name = product.get('name', 'Unknown')
+            
+            # Check if product has entries
+            entries = self.mongo_adapter.get_entries()
+            product_entries = [entry for entry in entries if str(entry.get('product_id')) == str(product_id)]
+            entry_count = len(product_entries)
+            
+            # Show 2FA confirmation dialog
+            dialog = DeleteConfirmationDialog(
+                self, 
+                item_type="product", 
+                item_name=product_name,
+                has_entries=entry_count > 0,
+                entry_count=entry_count
             )
             
-            if reply == QMessageBox.Yes:
-                # Use MongoDB adapter to delete product
-                result = self.mongo_adapter.mongo_db.delete_product(product_id)
+            if dialog.exec_() == QDialog.Accepted:
+                should_delete_entries = dialog.shouldDeleteEntries()
                 
-                if result:
-                    QMessageBox.information(self, "Success", "Product deleted successfully.")
-                    # Reload products
-                    self.loadProducts()
-                else:
-                    QMessageBox.critical(self, "Error", "Failed to delete product.")
+                try:
+                    # Delete entries first if requested
+                    if should_delete_entries and entry_count > 0:
+                        deleted_entries = 0
+                        deleted_transactions = 0
+                        
+                        for entry in product_entries:
+                            entry_id = entry.get('id')
+                            
+                            # Delete associated transactions first
+                            transactions = self.mongo_adapter.get_transactions()
+                            for transaction in transactions:
+                                if str(transaction.get('entry_id')) == str(entry_id):
+                                    if self.mongo_adapter.mongo_db.delete_transaction(transaction.get('id')):
+                                        deleted_transactions += 1
+                            
+                            # Delete the entry
+                            if self.mongo_adapter.mongo_db.delete_entry(entry_id):
+                                deleted_entries += 1
+                        
+                        QMessageBox.information(
+                            self, "Entries Deleted", 
+                            f"Deleted {deleted_entries} entries and {deleted_transactions} transactions."
+                        )
+                    
+                    # Delete the product
+                    result = self.mongo_adapter.mongo_db.delete_product(product_id)
+                    
+                    if result:
+                        success_msg = f"Product '{product_name}' deleted successfully."
+                        if should_delete_entries:
+                            success_msg += f"\nAlso deleted {entry_count} associated entries."
+                        
+                        QMessageBox.information(self, "Success", success_msg)
+                        self.loadProducts()  # Reload the table
+                    else:
+                        QMessageBox.critical(self, "Error", "Failed to delete product.")
+                        
+                except Exception as delete_error:
+                    QMessageBox.critical(self, "Deletion Error", f"Error during deletion: {str(delete_error)}")
                     
         except Exception as e:
             QMessageBox.critical(self, "Database Error", f"Failed to delete product: {str(e)}")
 
-    def checkExpiredProducts(self):
-        """Check for expired or expiring products using MongoDB"""
+    def showCustomerContextMenu(self, position):
+        """Show enhanced context menu for customer table"""
         try:
-            if not self.mongo_adapter:
-                QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
+            if not self.isWidgetValid(self.customers_table):
                 return
                 
-            current_date = QDate.currentDate()
-            upcoming_date = current_date.addDays(30)
+            # Get the selected row
+            selected_rows = self.customers_table.selectionModel().selectedRows()
+            if not selected_rows:
+                return
             
-            # Get all products
-            products = self.mongo_adapter.get_products()
+            # Get customer ID and name from the table
+            row = selected_rows[0].row()
+            customer_id_item = self.customers_table.item(row, 0)
+            customer_name_item = self.customers_table.item(row, 1)
             
-            expired_products = []
-            expiring_products = []
+            if not customer_id_item or not customer_name_item:
+                return
+                
+            customer_id = customer_id_item.text()
+            customer_name = customer_name_item.text()
             
-            for product in products:
-                expiry_date_str = product.get('expiry_date', '')
-                if expiry_date_str:
-                    try:
-                        expiry_date = QDate.fromString(expiry_date_str, "yyyy-MM-dd")
-                        if expiry_date.isValid():
-                            if expiry_date < current_date:
-                                expired_products.append(product)
-                            elif expiry_date <= upcoming_date:
-                                expiring_products.append(product)
-                    except:
-                        pass  # Skip invalid dates
+            # Check if customer has entries
+            entries = self.mongo_adapter.get_entries()
+            entry_count = sum(1 for entry in entries if str(entry.get('customer_id')) == str(customer_id))
             
-            message = ""
+            # Create context menu
+            context_menu = QMenu(self)
             
-            if expired_products:
-                message += "EXPIRED PRODUCTS:\n"
-                for product in expired_products:
-                    message += f"• {product.get('name', 'Unknown')} (Batch: {product.get('batch_number', 'Unknown')}) - Expired: {product.get('expiry_date', 'Unknown')}\n"
-                message += "\n"
+            edit_action = QAction("Edit Customer", self)
+            edit_action.triggered.connect(lambda: self.editCustomer(customer_id))
             
-            if expiring_products:
-                message += "PRODUCTS EXPIRING IN 30 DAYS:\n"
-                for product in expiring_products:
-                    message += f"• {product.get('name', 'Unknown')} (Batch: {product.get('batch_number', 'Unknown')}) - Expires: {product.get('expiry_date', 'Unknown')}\n"
+            delete_action = QAction("Delete Customer Only", self)
+            delete_action.triggered.connect(lambda: self.deleteCustomer(customer_id))
             
-            if not message:
-                message = "No expired or expiring products found."
-            
-            QMessageBox.information(self, "Product Expiry Check", message)
+            # Add delete with entries option if entries exist
+            if entry_count > 0:
+                delete_with_entries_action = QAction(f"Delete Customer + {entry_count} Entries", self)
+                delete_with_entries_action.triggered.connect(lambda: self.deleteCustomer(customer_id))
+                
+                # Set red color for dangerous action using font
+                font = delete_with_entries_action.font()
+                font.setBold(True)
+                delete_with_entries_action.setFont(font)
+                
+                # Add separator and warning
+                context_menu.addAction(edit_action)
+                context_menu.addSeparator()
+                context_menu.addAction(delete_action)
+                context_menu.addAction(delete_with_entries_action)
+                
+                # Add info action
+                info_action = QAction(f"ℹCustomer has {entry_count} entries", self)
+                info_action.setEnabled(False)
+                context_menu.addSeparator()
+                context_menu.addAction(info_action)
+            else:
+                context_menu.addAction(edit_action)
+                context_menu.addSeparator()
+                context_menu.addAction(delete_action)
+        
+            # Show context menu at cursor position
+            context_menu.exec_(self.customers_table.viewport().mapToGlobal(position))
             
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to check expired products: {str(e)}")
-
-    def showCustomerContextMenu(self, position):
-        """Show context menu for customer table"""
-        # Get the selected row
-        selected_rows = self.customers_table.selectionModel().selectedRows()
-        if not selected_rows:
-            return
-        
-        # Get customer ID from the first column
-        row = selected_rows[0].row()
-        customer_id_item = self.customers_table.item(row, 0)
-        if not customer_id_item:
-            return
-            
-        customer_id = customer_id_item.text()
-        
-        # Create context menu
-        context_menu = QMenu(self)
-        
-        edit_action = QAction("Edit Customer", self)
-        edit_action.triggered.connect(lambda: self.editCustomer(customer_id))
-        
-        delete_action = QAction("Delete Customer", self)
-        delete_action.triggered.connect(lambda: self.deleteCustomer(customer_id))
-        
-        context_menu.addAction(edit_action)
-        context_menu.addAction(delete_action)
-        
-        # Show context menu at cursor position
-        context_menu.exec_(self.customers_table.viewport().mapToGlobal(position))
+            print(f"Error showing customer context menu: {e}")
     
     def showProductContextMenu(self, position):
-        """Show context menu for product table"""
-        # Get the selected row
-        selected_rows = self.products_table.selectionModel().selectedRows()
-        if not selected_rows:
-            return
-        
-        # Get product ID from the first column
-        row = selected_rows[0].row()
-        product_id_item = self.products_table.item(row, 0)
-        if not product_id_item:
-            return
+        """Show enhanced context menu for product table"""
+        try:
+            if not hasattr(self, 'products_table') or not self.isWidgetValid(self.products_table):
+                return
+                
+            # Get the selected row
+            selected_rows = self.products_table.selectionModel().selectedRows()
+            if not selected_rows:
+                return
             
-        product_id = product_id_item.text()
+            # Get product ID and name from the table
+            row = selected_rows[0].row()
+            product_id_item = self.products_table.item(row, 0)
+            product_name_item = self.products_table.item(row, 1)
+            
+            if not product_id_item or not product_name_item:
+                return
+                
+            product_id = product_id_item.text()
+            product_name = product_name_item.text()
+            
+            # Check if product has entries
+            entries = self.mongo_adapter.get_entries()
+            entry_count = sum(1 for entry in entries if str(entry.get('product_id')) == str(product_id))
+            
+            # Create context menu
+            context_menu = QMenu(self)
+            
+            edit_action = QAction("✏️ Edit Product", self)
+            edit_action.triggered.connect(lambda: self.editProduct(product_id))
+            
+            delete_action = QAction("🗑️ Delete Product Only", self)
+            delete_action.triggered.connect(lambda: self.deleteProduct(product_id))
+            
+            # Add delete with entries option if entries exist
+            if entry_count > 0:
+                delete_with_entries_action = QAction(f"💀 Delete Product + {entry_count} Entries", self)
+                delete_with_entries_action.triggered.connect(lambda: self.deleteProduct(product_id))
+                
+                # Set red color for dangerous action using font
+                font = delete_with_entries_action.font()
+                font.setBold(True)
+                delete_with_entries_action.setFont(font)
+                
+                # Add separator and warning
+                context_menu.addAction(edit_action)
+                context_menu.addSeparator()
+                context_menu.addAction(delete_action)
+                context_menu.addAction(delete_with_entries_action)
+                
+                # Add info action
+                info_action = QAction(f"ℹ️ Product has {entry_count} entries", self)
+                info_action.setEnabled(False)
+                context_menu.addSeparator()
+                context_menu.addAction(info_action)
+            else:
+                context_menu.addAction(edit_action)
+                context_menu.addSeparator()
+                context_menu.addAction(delete_action)
         
-        # Create context menu
-        context_menu = QMenu(self)
-        
-        edit_action = QAction("Edit Product", self)
-        edit_action.triggered.connect(lambda: self.editProduct(product_id))
-        
-        delete_action = QAction("Delete Product", self)
-        delete_action.triggered.connect(lambda: self.deleteProduct(product_id))
-        
-        context_menu.addAction(edit_action)
-        context_menu.addAction(delete_action)
-        
-        # Show context menu at cursor position
-        context_menu.exec_(self.products_table.viewport().mapToGlobal(position))
-        
+            # Show context menu at cursor position
+            context_menu.exec_(self.products_table.viewport().mapToGlobal(position))
+            
+        except Exception as e:
+            print(f"Error showing product context menu: {e}")
+
     def importData(self, data_type):
         """Import data from CSV using MongoDB"""
         try:

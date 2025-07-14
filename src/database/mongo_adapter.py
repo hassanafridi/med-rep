@@ -1679,5 +1679,21 @@ class MongoAdapter:
             logger.error(f"Error in debug_product_data: {e}")
             return {}
 
+    def delete_entry(self, entry_id):
+        """Delete an entry by ID"""
+        try:
+            return self.mongo_db.delete_entry(entry_id)
+        except Exception as e:
+            logger.error(f"Error deleting entry: {e}")
+            return False
+    
+    def delete_transaction(self, transaction_id):
+        """Delete a transaction by ID"""
+        try:
+            return self.mongo_db.delete_transaction(transaction_id)
+        except Exception as e:
+            logger.error(f"Error deleting transaction: {e}")
+            return False
+
 # Compatibility alias for easy replacement
 Database = MongoAdapter

@@ -636,3 +636,39 @@ class MongoDB:
         except Exception as e:
             logger.error(f"Error clearing database: {e}")
             return False
+    
+    def delete_entry(self, entry_id):
+        """Delete an entry by ID"""
+        try:
+            from bson import ObjectId
+            
+            # Convert to ObjectId if it's a string
+            if isinstance(entry_id, str):
+                try:
+                    entry_id = ObjectId(entry_id)
+                except:
+                    pass  # Keep as string if conversion fails
+            
+            result = self.db.entries.delete_one({"_id": entry_id})
+            return result.deleted_count > 0
+        except Exception as e:
+            logger.error(f"Error deleting entry: {e}")
+            return False
+    
+    def delete_transaction(self, transaction_id):
+        """Delete a transaction by ID"""
+        try:
+            from bson import ObjectId
+            
+            # Convert to ObjectId if it's a string
+            if isinstance(transaction_id, str):
+                try:
+                    transaction_id = ObjectId(transaction_id)
+                except:
+                    pass  # Keep as string if conversion fails
+            
+            result = self.db.transactions.delete_one({"_id": transaction_id})
+            return result.deleted_count > 0
+        except Exception as e:
+            logger.error(f"Error deleting transaction: {e}")
+            return False
