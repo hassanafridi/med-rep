@@ -2,77 +2,57 @@ import hashlib
 import logging
 import secrets
 import string
-import sqlite3
 from datetime import datetime, timezone
 from pymongo.errors import DuplicateKeyError
 
 class UserAuth:
-    """User authentication and management, backed by SQLite OR MongoDB"""
+    """User authentication and management, backed by MongoDB only"""
 
     def __init__(self, db_source):
         """
         db_source: either
-          - a string path to your SQLite file
           - a MongoDB instance (your MongoDB class)
           - a MongoAdapter instance
         """
-        # Detect mode
-        if isinstance(db_source, str):
-            # SQLITE MODE
-            self.use_sqlite = True
-            self.db_path = db_source
-            self._init_sqlite()
-        elif hasattr(db_source, 'mongo_db'):
+        # Determine the type of db_source and set up accordingly
+        if hasattr(db_source, 'mongo_db'):
             # MONGO ADAPTER MODE
-            self.use_sqlite = False
-            self.mongo_db = db_source.mongo_db
-            self._init_mongo()
+            self.mongo_adapter = db_source
+            self.db_source_type = 'adapter'
         else:
             # DIRECT MONGO MODE  
-            self.use_sqlite = False
             self.mongo_db = db_source
-            self._init_mongo()
-
-    #
-    # --- Initialization branches ---
-    #
-    def _init_sqlite(self):
-        """Create the users table if it doesn’t exist, and seed admin."""
-        try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                  id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  username TEXT UNIQUE NOT NULL,
-                  password_hash TEXT NOT NULL,
-                  salt TEXT NOT NULL,
-                  full_name TEXT,
-                  role TEXT NOT NULL DEFAULT 'user',
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  last_login TIMESTAMP
-                )
-            """)
-            # seed admin
-            c.execute("SELECT COUNT(*) FROM users WHERE username='admin'")
-            if c.fetchone()[0] == 0:
-                salt = self._generate_salt()
-                pw_hash = self._hash_password('admin', salt)
-                c.execute(
-                  "INSERT INTO users (username, password_hash, salt, full_name, role) VALUES (?, ?, ?, ?, 'admin')",
-                  ('admin', pw_hash, salt, 'Administrator')
-                )
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            logging.error(f"SQLite user-init error: {e}")
+            self.db_source_type = 'direct'
+        
+        self._init_mongo()
 
     def _init_mongo(self):
         """Create the users collection with unique username index."""
         try:
-            coll = self.mongo_db.db.users
+            # Get the collection based on source type
+            if self.db_source_type == 'adapter':
+                # Ensure adapter is connected
+                if not self.mongo_adapter.connect():
+                    logging.error("Failed to connect MongoAdapter")
+                    return False
+                
+                # Check if db attribute exists after connection
+                if not hasattr(self.mongo_adapter, 'db') or self.mongo_adapter.db is None:
+                    logging.error("MongoAdapter.db is not available after connection")
+                    return False
+                    
+                coll = self.mongo_adapter.db.users
+            else:
+                # Direct MongoDB instance
+                if not self.mongo_db.connect():
+                    logging.error("Failed to connect MongoDB directly")
+                    return False
+                    
+                coll = self.mongo_db.db.users
+                
             # ensure unique index on username
             coll.create_index("username", unique=True)
+            
             # seed admin if missing
             if coll.count_documents({"username": "admin"}) == 0:
                 salt = self._generate_salt()
@@ -86,12 +66,14 @@ class UserAuth:
                     "created_at":    datetime.now(timezone.utc),
                     "last_login":    None
                 })
+                logging.info("Created default admin user")
+                
+            return True
+            
         except Exception as e:
             logging.error(f"Mongo user-init error: {e}")
+            return False
 
-    #
-    # --- Common utilities ---
-    #
     def _generate_salt(self, length=16):
         alphabet = string.ascii_letters + string.digits
         return ''.join(secrets.choice(alphabet) for _ in range(length))
@@ -99,127 +81,96 @@ class UserAuth:
     def _hash_password(self, password, salt):
         return hashlib.sha256((password + salt).encode()).hexdigest()
 
-    #
-    # --- Public interface ---
-    #
-    def authenticate(self, username, password):
-        """Return (True, user_info) or (False, error_msg)."""
-        if self.use_sqlite:
-            return self._auth_sqlite(username, password)
-        else:
-            return self._auth_mongo(username, password)
-
+    def authenticate(self, username, password, validate_only=False):
+        """Authenticate user with username and password
+        
+        Args:
+            username: The username
+            password: The password (can be None if validate_only=True)
+            validate_only: If True, only check if user exists without password verification
+        
+        Returns:
+            tuple: (success: bool, result: dict or error message)
+        """
+        if not username:
+            return False, "Username is required"
+        
+        if not validate_only and not password:
+            return False, "Password is required"
+        
+        try:
+            return self._auth_mongodb(username, password, validate_only)
+        except Exception as e:
+            logging.error(f"Authentication error: {e}")
+            return False, str(e)
+    
     def add_user(self, username, password, full_name, role='user'):
-        if self.use_sqlite:
-            return self._add_sqlite(username, password, full_name, role)
-        else:
-            return self._add_mongo(username, password, full_name, role)
-
-    def change_password(self, user_id, current_password, new_password):
-        if self.use_sqlite:
-            return self._chg_sqlite(user_id, current_password, new_password)
-        else:
-            return self._chg_mongo(user_id, current_password, new_password)
+        return self._add_mongo(username, password, full_name, role)
 
     def get_users(self):
-        if self.use_sqlite:
-            return self._get_sqlite()
-        else:
-            return self._get_mongo()
+        return self._get_mongo()
 
     def delete_user(self, user_id):
-        if self.use_sqlite:
-            return self._del_sqlite(user_id)
-        else:
-            return self._del_mongo(user_id)
+        return self._del_mongo(user_id)
 
-    #
-    # --- SQLite implementations ---
-    #
-    def _auth_sqlite(self, username, password):
+    def _auth_mongodb(self, username, password, validate_only=False):
+        """Authenticate against MongoDB"""
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("SELECT id,password_hash,salt,role FROM users WHERE username=?", (username,))
-            row = c.fetchone()
-            if not row:
+            # Get the collection based on source type
+            if self.db_source_type == 'adapter':
+                if not hasattr(self.mongo_adapter, 'db') or self.mongo_adapter.db is None:
+                    return False, "Database not available"
+                coll = self.mongo_adapter.db.users
+            else:
+                if not hasattr(self.mongo_db, 'db') or self.mongo_db.db is None:
+                    return False, "Database not available"
+                coll = self.mongo_db.db.users
+            
+            user = coll.find_one({"username": username})
+            if not user:
                 return False, "Invalid username or password"
-            uid, stored, salt, role = row
-            if self._hash_password(password, salt) != stored:
+            
+            if validate_only:
+                # Just return user info without password verification
+                return True, {
+                    "user_id": str(user.get("_id")),
+                    "username": user.get("username"),
+                    "role": user.get("role", "user")
+                }
+            
+            stored_hash = user.get("password_hash")
+            salt = user.get("salt")
+            
+            if not stored_hash or not salt:
+                return False, "Invalid user data"
+            
+            if self._hash_password(password, salt) != stored_hash:
                 return False, "Invalid username or password"
-            c.execute("UPDATE users SET last_login=CURRENT_TIMESTAMP WHERE id=?", (uid,))
-            conn.commit()
-            conn.close()
-            return True, {"user_id": uid, "username": username, "role": role}
-        except Exception as e:
-            logging.error(f"SQLite auth error: {e}")
-            return False, str(e)
-
-    def _add_sqlite(self, username, password, full_name, role):
-        try:
-            salt = self._generate_salt()
-            pw_hash = self._hash_password(password, salt)
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute(
-                "INSERT INTO users (username,password_hash,salt,full_name,role) VALUES (?,?,?,?,?)",
-                (username, pw_hash, salt, full_name, role)
-            )
-            conn.commit()
-            conn.close()
-            return True, "User added successfully"
-        except sqlite3.IntegrityError:
-            return False, "Username already exists"
-        except Exception as e:
-            logging.error(f"SQLite add_user error: {e}")
-            return False, str(e)
-
-    def _chg_sqlite(self, user_id, current, new):
-        # same as your existing logic under change_password()
-        # …
-
-        # For brevity, you’d just copy/paste your existing method here.
-        pass
-
-    def _get_sqlite(self):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute("SELECT id,username,full_name,role,created_at,last_login FROM users")
-        rows = c.fetchall()
-        conn.close()
-        return rows
-
-    def _del_sqlite(self, user_id):
-        # your delete_user() logic here…
-        pass
-
-    #
-    # --- Mongo implementations ---
-    #
-    def _auth_mongo(self, username, password):
-        try:
-            coll = self.mongo_db.db.users
-            doc = coll.find_one({"username": username})
-            if not doc:
-                return False, "Invalid username or password"
-            if self._hash_password(password, doc["salt"]) != doc["password_hash"]:
-                return False, "Invalid username or password"
+            
+            # Update last login
             coll.update_one(
-                {"_id": doc["_id"]},
+                {"username": username},
                 {"$set": {"last_login": datetime.now(timezone.utc)}}
             )
+            
             return True, {
-                "user_id": str(doc["_id"]),
-                "username": doc["username"],
-                "role":     doc["role"]
+                "user_id": str(user.get("_id")),
+                "username": user.get("username"),
+                "role": user.get("role", "user")
             }
+            
         except Exception as e:
-            logging.error(f"Mongo auth error: {e}")
+            logging.error(f"MongoDB auth error: {e}")
             return False, str(e)
 
     def _add_mongo(self, username, password, full_name, role):
         try:
-            coll = self.mongo_db.db.users
+            # Get the collection based on source type
+            if self.db_source_type == 'adapter':
+                coll = self.mongo_adapter.db.users
+            else:
+                coll = self.mongo_db.db.users
+                
             salt = self._generate_salt()
             pw_hash = self._hash_password(password, salt)
             coll.insert_one({
@@ -238,20 +189,72 @@ class UserAuth:
             logging.error(f"Mongo add_user error: {e}")
             return False, str(e)
 
-    def _chg_mongo(self, user_id, current, new):
-        # implement the same flow as your sqlite version, but using find_one/​update_one
-        pass
-
     def _get_mongo(self):
-        coll = self.mongo_db.db.users
-        docs = list(coll.find({}, {
-            "username":1,"full_name":1,"role":1,"created_at":1,"last_login":1
-        }))
-        # convert ObjectId→str
-        for d in docs:
-            d["id"] = str(d.pop("_id"))
-        return docs
+        try:
+            # Get the collection based on source type
+            if self.db_source_type == 'adapter':
+                coll = self.mongo_adapter.db.users
+            else:
+                coll = self.mongo_db.db.users
+                
+            docs = list(coll.find({}, {
+                "username":1,"full_name":1,"role":1,"created_at":1,"last_login":1
+            }))
+            # convert ObjectId→str
+            for d in docs:
+                d["id"] = str(d.pop("_id"))
+            return docs
+        except Exception as e:
+            logging.error(f"Error getting users: {e}")
+            return []
 
     def _del_mongo(self, user_id):
-        # same guard logic against last-admin, but via count_documents + delete_one
-        pass
+        try:
+            # Get the collection based on source type
+            if self.db_source_type == 'adapter':
+                coll = self.mongo_adapter.db.users
+            else:
+                coll = self.mongo_db.db.users
+                
+            # Prevent deletion of last admin
+            admin_count = coll.count_documents({"role": "admin"})
+            user = coll.find_one({"_id": user_id})
+            
+            if user and user.get("role") == "admin" and admin_count <= 1:
+                return False, "Cannot delete the last admin user"
+            
+            result = coll.delete_one({"_id": user_id})
+            if result.deleted_count > 0:
+                return True, "User deleted successfully"
+            else:
+                return False, "User not found"
+        except Exception as e:
+            logging.error(f"Error deleting user: {e}")
+            return False, str(e)
+
+    def test_connection(self):
+        """Test the MongoDB connection"""
+        try:
+            if self.db_source_type == 'adapter':
+                # Test adapter connection
+                if not self.mongo_adapter.connect():
+                    return False
+                
+                if not hasattr(self.mongo_adapter, 'db') or self.mongo_adapter.db is None:
+                    return False
+                    
+                # Test by trying to access the database
+                self.mongo_adapter.db.users.find_one()
+                return True
+            else:
+                # Test direct MongoDB
+                if not self.mongo_db.connect():
+                    return False
+                    
+                # Test by trying to access the database
+                self.mongo_db.db.users.find_one()
+                return True
+                
+        except Exception as e:
+            logging.error(f"Connection test failed: {e}")
+            return False

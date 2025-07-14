@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QSettings
 import sys
 import os
+import json
+from datetime import datetime, timedelta
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,8 +27,15 @@ class LoginDialog(QDialog):
             self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
             self.setMinimumWidth(350)
             
+            # Always initialize UI first
             self.initUI()
             self.loadSavedUsername()
+            
+            # Check for existing session after UI is ready
+            if self.checkExistingSession():
+                # Close the dialog immediately if we have a valid session
+                self.accept()
+                
         except Exception as e:
             print(f"Error initializing Login Dialog: {e}")
             self.createErrorUI(str(e))
@@ -80,7 +89,6 @@ class LoginDialog(QDialog):
         """)
         layout.addWidget(title_label)
         
-      
         form_layout = QFormLayout()
         
         # Username
@@ -120,6 +128,12 @@ class LoginDialog(QDialog):
         self.remember_checkbox = QCheckBox("Remember username")
         self.remember_checkbox.setStyleSheet("color: #4B0082; font-weight: bold;")
         form_layout.addRow("", self.remember_checkbox)
+        
+        # Stay logged in checkbox
+        self.stay_logged_checkbox = QCheckBox("Keep me logged in")
+        self.stay_logged_checkbox.setStyleSheet("color: #4B0082; font-weight: bold;")
+        self.stay_logged_checkbox.setChecked(True)  # Default to checked
+        form_layout.addRow("", self.stay_logged_checkbox)
         
         layout.addLayout(form_layout)
         
@@ -220,6 +234,123 @@ class LoginDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to create demo user: {str(e)}")
     
+    def checkExistingSession(self):
+        """Check if there's a valid existing session"""
+        try:
+            settings = QSettings("MedRepApp", "Session")
+            session_data = settings.value("session_data", None)
+            session_expiry = settings.value("session_expiry", None)
+            
+            if not session_data or not session_expiry:
+                return False
+            
+            # Parse session data
+            if isinstance(session_data, str):
+                session_info = json.loads(session_data)
+            else:
+                session_info = session_data
+            
+            # Check if session is still valid
+            expiry_time = datetime.fromisoformat(session_expiry)
+            if datetime.now() > expiry_time:
+                self.clearSession()
+                return False
+            
+            # Validate session with database
+            if self.validateSessionWithDB(session_info):
+                self.user_info = session_info
+                # Don't show the message box during initialization
+                print(f"Auto-login successful for user: {session_info.get('username', 'User')}")
+                return True
+            else:
+                self.clearSession()
+                return False
+                
+        except Exception as e:
+            print(f"Session check error: {e}")
+            self.clearSession()
+            return False
+    
+    def validateSessionWithDB(self, session_info):
+        """Validate session with database"""
+        try:
+            if not self.user_auth or not session_info:
+                return False
+            
+            username = session_info.get('username')
+            user_id = session_info.get('user_id')
+            
+            if not username or not user_id:
+                return False
+            
+            # Simple validation - check if user still exists
+            success, result = self.user_auth.authenticate(username, None, validate_only=True)
+            return success and result.get('user_id') == user_id
+            
+        except Exception as e:
+            print(f"Session validation error: {e}")
+            return False
+    
+    def saveSession(self, user_info, remember_session=True):
+        """Save session information"""
+        if not remember_session:
+            return
+            
+        try:
+            settings = QSettings("MedRepApp", "Session")
+            
+            # Set session to expire in 7 days for "remember me", 1 day otherwise
+            expiry_days = 7 if remember_session else 1
+            expiry_time = datetime.now() + timedelta(days=expiry_days)
+            
+            # Save session data
+            settings.setValue("session_data", json.dumps(user_info))
+            settings.setValue("session_expiry", expiry_time.isoformat())
+            
+        except Exception as e:
+            print(f"Session save error: {e}")
+    
+    def clearSession(self):
+        """Clear saved session"""
+        settings = QSettings("MedRepApp", "Session")
+        settings.remove("session_data")
+        settings.remove("session_expiry")
+    
+    @staticmethod
+    def logout():
+        """Static method to logout user by clearing session"""
+        try:
+            settings = QSettings("MedRepApp", "Session")
+            settings.remove("session_data")
+            settings.remove("session_expiry")
+            return True
+        except Exception as e:
+            print(f"Logout error: {e}")
+            return False
+    
+    @staticmethod
+    def isUserLoggedIn():
+        """Check if there's a valid session without showing dialogs"""
+        try:
+            settings = QSettings("MedRepApp", "Session")
+            session_data = settings.value("session_data", None)
+            session_expiry = settings.value("session_expiry", None)
+            
+            if not session_data or not session_expiry:
+                return False
+            
+            # Check if session is still valid
+            expiry_time = datetime.fromisoformat(session_expiry)
+            if datetime.now() > expiry_time:
+                # Clear expired session
+                settings.remove("session_data")
+                settings.remove("session_expiry")
+                return False
+            
+            return True
+        except Exception:
+            return False
+    
     def login(self):
         """Attempt to login with provided credentials using UserAuth"""
         username = self.username_input.text().strip()
@@ -243,6 +374,10 @@ class LoginDialog(QDialog):
                     self.saveUsername(username)
                 else:
                     self.clearSavedUsername()
+                
+                # Save session if stay logged in is checked
+                if self.stay_logged_checkbox.isChecked():
+                    self.saveSession(result, True)
                 
                 # Store user info
                 self.user_info = result

@@ -5,12 +5,13 @@ Main Application Integration for Enhanced MedRep - Fixed for MongoDB
 import sys
 import os
 import logging
+import subprocess
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QMessageBox, QDialog,
     QAction, QVBoxLayout, QLabel, QPushButton, QMenuBar, QStatusBar, QHBoxLayout
 )
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QSettings
 
 # Add src directory to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -62,7 +63,11 @@ class MainWindow(QMainWindow):
         
         # Initialize user authentication with MongoDB
         try:
-            self.auth_manager = UserAuth(self.db)
+            # Create MongoAdapter for UserAuth
+            self.mongo_adapter = MongoAdapter(mongo_db_instance=self.db)
+            self.mongo_adapter.connect()
+            
+            self.auth_manager = UserAuth(self.mongo_adapter)
             self.current_user = None
             
             # Show login dialog
@@ -153,6 +158,16 @@ class MainWindow(QMainWindow):
         
         # File menu
         file_menu = menubar.addMenu('File')
+        
+        # Add logout action
+        logout_action = QAction('Logout', self)
+        logout_action.setShortcut('Ctrl+L')
+        logout_action.triggered.connect(self.logoutUser)
+        file_menu.addAction(logout_action)
+        
+        # Add separator
+        file_menu.addSeparator()
+        
         exit_action = QAction('Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.triggered.connect(self.close)
@@ -319,12 +334,16 @@ class MainWindow(QMainWindow):
     def create_settings_tab(self):
         """Create the settings tab"""
         try:
-            settings_tab = SettingsTab(self.config)
+            self.settings_tab = SettingsTab(self.config)
             # Set the MongoDB adapter properly
-            settings_tab.db = MongoAdapter(mongo_db_instance=self.db)
-            settings_tab.db.connect()  # Ensure connection
+            self.settings_tab.db = MongoAdapter(mongo_db_instance=self.db)
+            self.settings_tab.db.connect()  # Ensure connection
             
-            self.tabs.addTab(settings_tab, "Settings")
+            # Connect logout signal
+            if hasattr(self.settings_tab, 'logout_requested'):
+                self.settings_tab.logout_requested.connect(self.handleLogout)
+            
+            self.tabs.addTab(self.settings_tab, "Settings")
             
         except Exception as e:
             logging.error(f"Error creating settings tab: {e}")
@@ -334,15 +353,39 @@ class MainWindow(QMainWindow):
 
     def login(self):
         """Show login dialog and authenticate user"""
-        dialog = LoginDialog(self.auth_manager)
-        result = dialog.exec_()
-        
-        if result == QDialog.Accepted:
-            self.current_user = dialog.user_info
-            logging.info(f"User {self.current_user.get('username')} logged in successfully")
-            return True
-        
-        return False
+        try:
+            # First check if user is already logged in
+            from src.ui.login_dialog import LoginDialog
+            if LoginDialog.isUserLoggedIn():
+                # Try to validate existing session without showing dialog
+                settings = QSettings("MedRepApp", "Session")
+                session_data = settings.value("session_data", None)
+                if session_data:
+                    if isinstance(session_data, str):
+                        import json
+                        user_info = json.loads(session_data)
+                    else:
+                        user_info = session_data
+                    
+                    self.current_user = user_info
+                    logging.info(f"Auto-login successful for user: {user_info.get('username')}")
+                    return True
+            
+            # Show login dialog if no valid session
+            dialog = LoginDialog(self.mongo_adapter)
+            result = dialog.exec_()
+            
+            if result == QDialog.Accepted and dialog.user_info:
+                self.current_user = dialog.user_info
+                logging.info(f"User {self.current_user.get('username')} logged in successfully")
+                return True
+            
+            return False
+            
+        except Exception as e:
+            logging.error(f"Login error: {e}")
+            QMessageBox.critical(None, "Login Error", f"Failed to login: {str(e)}")
+            return False
 
     def showAbout(self):
         """Show the About dialog"""
@@ -389,6 +432,67 @@ class MainWindow(QMainWindow):
         about_dialog.setLayout(layout)
         about_dialog.exec_()
     
+    def logoutUser(self):
+        """Handle user logout from menu"""
+        try:
+            reply = QMessageBox.question(
+                self, "Confirm Logout",
+                "Are you sure you want to logout?\n\nThe application will restart and you'll need to login again.",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply == QMessageBox.Yes:
+                from src.ui.login_dialog import LoginDialog
+                if LoginDialog.logout():
+                    logging.info(f"User {self.current_user.get('username', 'Unknown')} logged out")
+                    self.handleLogout()
+                else:
+                    QMessageBox.warning(
+                        self, "Logout Error",
+                        "There was an error during logout. Please try again."
+                    )
+                
+        except Exception as e:
+            logging.error(f"Logout error: {e}")
+            QMessageBox.critical(self, "Logout Error", f"Failed to logout: {str(e)}")
+    
+    def handleLogout(self):
+        """Handle user logout by restarting the application"""
+        try:
+            logging.info("Handling logout - restarting application")
+            
+            # Close current window and database connections
+            if self.db:
+                self.db.close()
+                logging.info("MongoDB connection closed for logout")
+            
+            # Get the current script path
+            script_path = os.path.abspath(sys.argv[0])
+            
+            # Start new instance
+            if getattr(sys, 'frozen', False):
+                # If running as executable
+                subprocess.Popen([sys.executable])
+                logging.info("Restarting as executable")
+            else:
+                # If running as script
+                subprocess.Popen([sys.executable, script_path])
+                logging.info(f"Restarting script: {script_path}")
+            
+            # Exit current instance
+            QApplication.quit()
+            sys.exit(0)
+            
+        except Exception as e:
+            logging.error(f"Error during logout restart: {e}")
+            # Fallback: show message and exit
+            QMessageBox.information(
+                self, "Logout Complete",
+                "Logout successful. Please restart the application manually to login again."
+            )
+            QApplication.quit()
+            sys.exit(0)
+
     def closeEvent(self, event):
         """Handle window close event"""
         # Save window size to config

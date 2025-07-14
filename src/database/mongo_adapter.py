@@ -32,6 +32,9 @@ class MongoAdapter:
         self._lastrowid = None
         self._last_results = []  # Store results for fetchall/fetchone
         
+        # Expose the database directly for UserAuth compatibility
+        self.db = None
+        
         self.collections = {
             'customers': 'customers',
             'products': 'products', 
@@ -93,9 +96,20 @@ class MongoAdapter:
         """Connect to MongoDB"""
         if not self.connected:
             try:
-                # Connect through mongo_db, not user_auth
+                # Connect through mongo_db
                 result = self.mongo_db.connect()
                 self.connected = bool(result) if result is not None else False
+                
+                # Expose the database for UserAuth compatibility
+                if self.connected:
+                    # Ensure mongo_db has a valid db attribute - check for None explicitly
+                    if hasattr(self.mongo_db, 'db') and self.mongo_db.db is not None:
+                        self.db = self.mongo_db.db
+                    else:
+                        logging.error("MongoDB instance does not have valid db attribute")
+                        self.connected = False
+                        return False
+                    
                 return self.connected
             except Exception as e:
                 logger.error(f"MongoDB connection error: {e}")

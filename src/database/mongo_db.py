@@ -28,17 +28,25 @@ class MongoDB:
     def connect(self) -> bool:
         """Connect to MongoDB"""
         try:
-            self.client = MongoClient(self.connection_string, serverSelectionTimeoutMS=5000)
+            if self.client is None:
+                self.client = MongoClient(self.connection_string, serverSelectionTimeoutMS=5000)
+            
             # Test the connection
             self.client.admin.command('ping')
+            
+            # Set the database reference
             self.db = self.client[self.database_name]
+            
             logger.info(f"Connected to MongoDB database: {self.database_name}")
             return True
+            
         except ConnectionFailure as e:
             logger.error(f"MongoDB connection failed: {e}")
+            self.db = None
             return False
         except Exception as e:
             logger.error(f"MongoDB connection error: {e}")
+            self.db = None
             return False
     
     def close(self):

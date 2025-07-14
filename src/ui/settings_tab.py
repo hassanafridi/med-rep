@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
     QCheckBox, QTimeEdit, QSpinBox, QProgressDialog, QApplication, QLabel,
     QProgressBar
 )
-from PyQt5.QtCore import QDateTime, Qt, QTime
+from PyQt5.QtCore import QDateTime, Qt, QTime, pyqtSignal
 from PyQt5.QtGui import QColor
 import os
 import sys
@@ -77,6 +77,9 @@ class RestoreDialog(QDialog):
         super().accept()
 
 class SettingsTab(QWidget):
+    # Add signal for logout
+    logout_requested = pyqtSignal()
+    
     def __init__(self, config=None):
         super().__init__()
         try:
@@ -123,6 +126,54 @@ class SettingsTab(QWidget):
     def initUI(self):
         """Initialize the UI components"""
         main_layout = QVBoxLayout()
+        
+        # User Account Settings
+        account_group = QGroupBox("User Account")
+        account_layout = QVBoxLayout()
+        
+        # Current user info
+        try:
+            from src.ui.login_dialog import LoginDialog
+            if LoginDialog.isUserLoggedIn():
+                from PyQt5.QtCore import QSettings
+                import json
+                settings = QSettings("MedRepApp", "Session")
+                session_data = settings.value("session_data", None)
+                if session_data:
+                    if isinstance(session_data, str):
+                        user_info = json.loads(session_data)
+                    else:
+                        user_info = session_data
+                    
+                    user_label = QLabel(f"Logged in as: {user_info.get('username', 'Unknown')} ({user_info.get('role', 'user')})")
+                    user_label.setStyleSheet("font-weight: bold; color: #4B0082;")
+                    account_layout.addWidget(user_label)
+        except Exception:
+            pass
+        
+        # Logout button
+        self.logout_btn = QPushButton("Logout")
+        self.logout_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dc3545;
+                color: white;
+                padding: 10px;
+                font-weight: bold;
+                border-radius: 5px;
+                margin: 5px;
+            }
+            QPushButton:hover {
+                background-color: #c82333;
+            }
+            QPushButton:pressed {
+                background-color: #a71e2a;
+            }
+        """)
+        self.logout_btn.clicked.connect(self.logoutUser)
+        account_layout.addWidget(self.logout_btn)
+        
+        account_group.setLayout(account_layout)
+        main_layout.addWidget(account_group)
         
         # Database Settings
         db_group = QGroupBox("MongoDB Database Settings")
@@ -702,3 +753,33 @@ class SettingsTab(QWidget):
             
         except Exception as e:
             QMessageBox.warning(self, "Save Error", f"Could not save settings:\n{str(e)}")
+    
+    def logoutUser(self):
+        """Handle user logout"""
+        try:
+            reply = QMessageBox.question(
+                self, "Confirm Logout",
+                "Are you sure you want to logout?\n\nYou will need to login again to continue using the application.",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+            
+            if reply == QMessageBox.Yes:
+                # Clear session
+                from src.ui.login_dialog import LoginDialog
+                if LoginDialog.logout():
+                    QMessageBox.information(
+                        self, "Logged Out",
+                        "You have been logged out successfully."
+                    )
+                    # Emit signal to main window to handle logout
+                    self.logout_requested.emit()
+                else:
+                    QMessageBox.warning(
+                        self, "Logout Error",
+                        "There was an error during logout. Please try again."
+                    )
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Logout Error",
+                f"Failed to logout: {str(e)}"
+            )
