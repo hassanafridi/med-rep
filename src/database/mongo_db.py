@@ -259,6 +259,100 @@ class MongoDB:
                 result = self.db.users.insert_one(admin_user)
                 logger.info(f"Created default admin user (password: {default_password})")
             
+            # Insert sample entries (transactions)
+            import random
+            from datetime import datetime, timedelta
+            
+            sample_entries = []
+            current_balance = 0
+            
+            # Generate entries for the last 90 days with proper date formatting
+            # Create more recent entries to ensure good transaction history
+            for i in range(50):  # Increased to 50 entries for better history
+                # Weight towards more recent dates (last 30 days get 60% of entries)
+                if i < 30:
+                    days_back = random.randint(0, 30)  # Recent entries
+                else:
+                    days_back = random.randint(31, 90)  # Older entries
+                    
+                entry_datetime = datetime.now() - timedelta(days=days_back)
+                entry_date = entry_datetime.strftime('%Y-%m-%d')  # Ensure YYYY-MM-DD format
+                
+                customer_id = random.choice(customer_ids)
+                product_id = random.choice(product_ids)
+                
+                # Get product info for pricing
+                product_info = next((p for p in sample_products if str(product_ids[sample_products.index(p)]) == str(product_id)), sample_products[0])
+                
+                quantity = random.randint(1, 10)
+                unit_price = product_info['unit_price']
+                is_credit = random.choice([True, False])  # Mix of sales and purchases
+                
+                # Add some realistic notes
+                notes_options = [
+                    "Regular customer order",
+                    "Bulk purchase discount applied",
+                    "Emergency supply",
+                    "Monthly stock replenishment",
+                    "Special order for patient",
+                    "Urgent delivery requested",
+                    "Cash payment received",
+                    "Credit terms applied",
+                    ""
+                ]
+                notes = random.choice(notes_options)
+                
+                entry = {
+                    "date": entry_date,  # Ensure proper date format
+                    "customer_id": customer_id,
+                    "product_id": product_id,
+                    "quantity": quantity,
+                    "unit_price": unit_price,
+                    "is_credit": is_credit,
+                    "notes": notes,
+                    "created_at": entry_datetime  # Keep full datetime for creation tracking
+                }
+                
+                sample_entries.append(entry)
+                
+                # Calculate running balance
+                amount = quantity * unit_price
+                if is_credit:
+                    current_balance += amount
+                else:
+                    current_balance -= amount
+            
+            # Sort entries by date before inserting to maintain chronological order
+            sample_entries.sort(key=lambda x: x['date'])
+            
+            # Insert all entries
+            if sample_entries:
+                result = self.db.entries.insert_many(sample_entries)
+                logger.info(f"Inserted {len(result.inserted_ids)} entries")
+                
+                # Create corresponding transactions
+                transactions = []
+                running_balance = 0
+                
+                for i, entry in enumerate(sample_entries):
+                    amount = entry['quantity'] * entry['unit_price']
+                    if entry['is_credit']:
+                        running_balance += amount
+                    else:
+                        running_balance -= amount
+                    
+                    transaction = {
+                        "entry_id": result.inserted_ids[i],
+                        "amount": amount,
+                        "balance": running_balance,
+                        "created_at": entry['created_at']  # Use same datetime
+                    }
+                    transactions.append(transaction)
+                
+                if transactions:
+                    trans_result = self.db.transactions.insert_many(transactions)
+                    logger.info(f"Inserted {len(trans_result.inserted_ids)} transactions")
+            
             return True
             
         except Exception as e:
@@ -415,11 +509,16 @@ class MongoDB:
             if customer_id:
                 query["customer_id"] = ObjectId(customer_id)
             
-            cursor = self.db.entries.find(query).sort("date", -1)
+            # Sort by date descending, then by created_at descending for consistent ordering
+            cursor = self.db.entries.find(query).sort([("date", -1), ("created_at", -1)])
             if limit:
                 cursor = cursor.limit(limit)
                 
             entries = list(cursor)
+            
+            # Debug: Log the actual count
+            total_in_db = self.db.entries.count_documents(query)
+            logger.info(f"MongoDB get_entries: Retrieved {len(entries)} entries (Total in DB: {total_in_db}, Limit: {limit})")
             
             # Convert ObjectIds to strings and populate customer/product info
             for entry in entries:
@@ -431,6 +530,8 @@ class MongoDB:
             return entries
         except Exception as e:
             logger.error(f"Error getting entries: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     # Transaction operations

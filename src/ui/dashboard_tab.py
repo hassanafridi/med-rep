@@ -646,6 +646,9 @@ class DashboardTab(QWidget):
             entries = self.db.get_entries()
             transactions = self.db.get_transactions()
             
+            print(f"DEBUG: KPI Metrics - Total entries from DB: {len(entries)}")
+            print(f"DEBUG: KPI Metrics - Total transactions from DB: {len(transactions)}")
+            
             # Calculate current month metrics
             current_credits = 0
             current_debits = 0
@@ -657,6 +660,7 @@ class DashboardTab(QWidget):
             # Calculate cumulative balance (all time)
             total_credits = 0
             total_debits = 0
+            total_count = len(entries)  # Total transaction count
             
             for entry in entries:
                 entry_date = entry.get('date', '')
@@ -707,10 +711,13 @@ class DashboardTab(QWidget):
             if last_month_average > 0:
                 average_change = ((average_sale - last_month_average) / last_month_average) * 100
             
+            print(f"DEBUG: KPI Results - Total transactions: {total_count}, Current month: {current_count}")
+            print(f"DEBUG: KPI Results - Total sales: {current_sales}, Balance: {current_balance}")
+            
             return {
                 'total_sales': current_sales,
                 'sales_change': round(sales_change, 1),
-                'transaction_count': current_count,
+                'transaction_count': total_count,  # Use total count, not just current month
                 'transaction_change': round(transaction_change, 1),
                 'average_sale': average_sale,
                 'average_change': round(average_change, 1),
@@ -984,55 +991,85 @@ class DashboardTab(QWidget):
     def getRecentTransactions(self):
         """Get recent transactions with batch and expiry information from MongoDB"""
         try:
-            entries = self.db.get_entries()
-            customers = self.db.get_customers()
-            products = self.db.get_products()
+            # Get entries using the same method as ledger for consistency
+            recent_entries = self.db.get_entries_with_balance(limit=5)
             
-            # Create lookup dictionaries with string IDs
-            customer_lookup = {}
-            for c in customers:
-                customer_lookup[str(c.get('id', ''))] = c.get('name', 'Unknown')
+            print(f"DEBUG: Recent transactions - Retrieved {len(recent_entries)} enriched entries")
             
-            product_lookup = {}
-            for p in products:
-                product_lookup[str(p.get('id', ''))] = {
-                    'name': p.get('name', 'Unknown'),
-                    'batch_number': p.get('batch_number', ''),
-                    'expiry_date': p.get('expiry_date', '')
-                }
+            if not recent_entries:
+                print("DEBUG: No recent transactions found, trying direct method")
+                # Fallback to direct method if enriched method fails
+                entries = self.db.get_entries()
+                customers = self.db.get_customers()
+                products = self.db.get_products()
+                
+                # Create lookup dictionaries
+                customer_lookup = {str(c.get('id', '')): c for c in customers}
+                product_lookup = {str(p.get('id', '')): p for p in products}
+                
+                # Sort by date and get top 5
+                sorted_entries = sorted(entries, key=lambda x: x.get('date', ''), reverse=True)[:5]
+                
+                result = []
+                for entry in sorted_entries:
+                    customer_id = str(entry.get('customer_id', ''))
+                    product_id = str(entry.get('product_id', ''))
+                    
+                    customer_info = customer_lookup.get(customer_id, {})
+                    product_info = product_lookup.get(product_id, {})
+                    
+                    try:
+                        total = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
+                        quantity = float(entry.get('quantity', 0))
+                    except (ValueError, TypeError):
+                        total = 0
+                        quantity = 0
+                    
+                    # Format: [date, customer, product, is_credit, total, quantity, batch_number, expiry_date]
+                    result.append([
+                        entry.get('date', ''),
+                        customer_info.get('name', 'Unknown Customer'),
+                        product_info.get('name', 'Unknown Product'),
+                        entry.get('is_credit', False),
+                        total,
+                        quantity,
+                        product_info.get('batch_number', ''),
+                        product_info.get('expiry_date', '')
+                    ])
+                
+                print(f"DEBUG: Fallback method returned {len(result)} transactions")
+                return result
             
-            # Sort entries by date (most recent first) and get top 5
-            sorted_entries = sorted(entries, key=lambda x: x.get('date', ''), reverse=True)[:5]
-            
+            # Convert enriched entries to expected format
             result = []
-            for entry in sorted_entries:
-                customer_id = str(entry.get('customer_id', ''))
+            for entry in recent_entries:
+                # Find product info for batch and expiry
                 product_id = str(entry.get('product_id', ''))
-                
-                customer_name = customer_lookup.get(customer_id, 'Unknown Customer')
-                product_info = product_lookup.get(product_id, {})
-                product_name = product_info.get('name', 'Unknown Product')
-                batch_number = product_info.get('batch_number', '')
-                expiry_date = product_info.get('expiry_date', '')
-                
-                try:
-                    total = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
-                    quantity = float(entry.get('quantity', 0))
-                except (ValueError, TypeError):
-                    total = 0
-                    quantity = 0
+                products = self.db.get_products()
+                product_info = {}
+                for p in products:
+                    if str(p.get('id', '')) == product_id:
+                        product_info = p
+                        break
                 
                 # Format: [date, customer, product, is_credit, total, quantity, batch_number, expiry_date]
                 result.append([
                     entry.get('date', ''),
-                    customer_name,
-                    product_name,
+                    entry.get('customer_name', 'Unknown Customer'),
+                    entry.get('product_name', 'Unknown Product'),
                     entry.get('is_credit', False),
-                    total,
-                    quantity,
-                    batch_number,
-                    expiry_date
+                    entry.get('amount', 0),
+                    entry.get('quantity', 0),
+                    product_info.get('batch_number', ''),
+                    product_info.get('expiry_date', '')
                 ])
+            
+            print(f"DEBUG: Final recent transactions result: {len(result)} transactions")
+            if result:
+                print(f"DEBUG: First transaction date: {result[0][0]}")
+                print(f"DEBUG: First transaction customer: {result[0][1]}")
+                print(f"DEBUG: First transaction product: {result[0][2]}")
+                print(f"DEBUG: First transaction amount: {result[0][4]}")
             
             return result
             

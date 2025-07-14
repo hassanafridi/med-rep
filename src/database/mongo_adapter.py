@@ -522,7 +522,7 @@ class MongoAdapter:
     def get_entries(self, customer_id=None, limit=None):
         """Get all entries (compatibility method)"""
         try:
-            # Get raw entries from MongoDB
+            # Get raw entries from MongoDB with proper sorting
             query = {}
             if customer_id:
                 from bson import ObjectId
@@ -531,12 +531,13 @@ class MongoAdapter:
                 except:
                     query["customer_id"] = customer_id  # Try as string
             
-            cursor = self.mongo_db.db.entries.find(query)
+            # Sort by date descending, then by created_at descending to get most recent first
+            cursor = self.mongo_db.db.entries.find(query).sort([("date", -1), ("created_at", -1)])
             if limit:
                 cursor = cursor.limit(limit)
                 
             raw_entries = list(cursor)
-            logger.info(f"Retrieved {len(raw_entries)} entries directly from MongoDB")
+            logger.info(f"Retrieved {len(raw_entries)} entries directly from MongoDB (limit: {limit})")
             
             # Convert entries to match expected format for UI with proper data types
             formatted_entries = []
@@ -554,8 +555,20 @@ class MongoAdapter:
                     formatted_entry['quantity'] = float(entry.get('quantity', 0))
                     formatted_entry['unit_price'] = float(entry.get('unit_price', 0))
                     
-                    # Ensure date is string for consistency
-                    formatted_entry['date'] = str(entry.get('date', ''))
+                    # Ensure date is string for consistency and not None/empty
+                    date_value = entry.get('date', '')
+                    if not date_value:
+                        # Use creation date as fallback
+                        created_at = entry.get('created_at')
+                        if created_at:
+                            if hasattr(created_at, 'strftime'):
+                                date_value = created_at.strftime('%Y-%m-%d')
+                            else:
+                                date_value = str(created_at)[:10]  # Take first 10 chars
+                        else:
+                            date_value = '2024-01-01'  # Default fallback
+                    
+                    formatted_entry['date'] = str(date_value)
                     formatted_entry['is_credit'] = bool(entry.get('is_credit', False))
                     formatted_entry['notes'] = str(entry.get('notes', ''))
                     
@@ -564,6 +577,7 @@ class MongoAdapter:
                     # Use defaults for problematic values
                     formatted_entry['quantity'] = 0.0
                     formatted_entry['unit_price'] = 0.0
+                    formatted_entry['date'] = '2024-01-01'
                 
                 formatted_entries.append(formatted_entry)
             
@@ -1480,65 +1494,81 @@ class MongoAdapter:
             print(f"Error getting customer balances: {e}")
             return []
 
-    def get_entries_with_balance(self, filters=None):
+    def get_entries_with_balance(self, filters=None, limit=None):
         """Get entries with running balance calculation"""
         try:
-            entries = self.get_entries()
+            # Get ALL entries first, then apply filters
+            all_entries = self.get_entries()
             customers = self.get_customers()
             products = self.get_products()
+            
+            # Debug: Check how many entries we retrieved
+            logger.info(f"DEBUG: Retrieved {len(all_entries)} total entries from MongoDB")
             
             # Create lookups
             customer_lookup = {str(c.get('id')): c for c in customers}
             product_lookup = {str(p.get('id')): p for p in products}
             
             # Apply filters if provided
+            filtered_entries = []
+            
             if filters:
-                filtered_entries = []
-                for entry in entries:
+                print(f"DEBUG: Applying filters: {filters}")
+                
+                for entry in all_entries:
                     include_entry = True
                     
-                    # Date range filter
+                    # Date range filter - apply if both dates are provided
                     if filters.get('from_date') and filters.get('to_date'):
                         entry_date = entry.get('date', '')
-                        if not (filters['from_date'] <= entry_date <= filters['to_date']):
+                        from_date = filters['from_date']
+                        to_date = filters['to_date']
+                        
+                        # Use string comparison for dates in YYYY-MM-DD format
+                        if not (from_date <= entry_date <= to_date):
                             include_entry = False
+                            print(f"DEBUG: Date filter - excluded entry {entry_date} (not in {from_date} to {to_date})")
                     
                     # Customer filter
-                    if filters.get('customer_id') and str(entry.get('customer_id')) != str(filters['customer_id']):
-                        include_entry = False
+                    if filters.get('customer_id'):
+                        if str(entry.get('customer_id')) != str(filters['customer_id']):
+                            include_entry = False
+                            print(f"DEBUG: Customer filter - excluded entry for customer {entry.get('customer_id')}")
                     
                     # Entry type filter
                     if filters.get('entry_type'):
                         if filters['entry_type'] == 'credit' and not entry.get('is_credit'):
                             include_entry = False
+                            print(f"DEBUG: Type filter - excluded debit entry")
                         elif filters['entry_type'] == 'debit' and entry.get('is_credit'):
                             include_entry = False
+                            print(f"DEBUG: Type filter - excluded credit entry")
                     
                     # Notes search
                     if filters.get('notes_search'):
                         notes = entry.get('notes', '').lower()
-                        if filters['notes_search'].lower() not in notes:
+                        search_term = filters['notes_search'].lower()
+                        if search_term not in notes:
                             include_entry = False
+                            print(f"DEBUG: Notes filter - excluded entry ('{search_term}' not in notes)")
                     
                     if include_entry:
                         filtered_entries.append(entry)
                 
-                entries = filtered_entries
+                print(f"DEBUG: After filtering: {len(filtered_entries)} entries remain")
+            else:
+                # No filters - use all entries
+                filtered_entries = all_entries
             
-            # Sort by date
-            entries.sort(key=lambda x: x.get('date', ''))
+            # For balance calculation, we need to process ALL entries chronologically
+            # But we only show the filtered ones at the end
+            all_entries_sorted = sorted(all_entries, key=lambda x: (x.get('date', ''), x.get('id', '')))
             
-            # Calculate running balance and add customer/product info
+            # Calculate running balance for ALL entries to get accurate balance
             running_balance = 0
-            enriched_entries = []
+            entry_balances = {}
             
-            for entry in entries:
-                customer_id = str(entry.get('customer_id'))
-                product_id = str(entry.get('product_id'))
-                
-                customer_info = customer_lookup.get(customer_id, {})
-                product_info = product_lookup.get(product_id, {})
-                
+            for entry in all_entries_sorted:
                 amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
                 
                 # Update running balance
@@ -1546,6 +1576,21 @@ class MongoAdapter:
                     running_balance += amount
                 else:
                     running_balance -= amount
+                
+                # Store balance for this entry
+                entry_balances[entry.get('id')] = max(0, running_balance)
+            
+            # Now create enriched entries only for filtered entries
+            enriched_entries = []
+            
+            for entry in filtered_entries:
+                customer_id = str(entry.get('customer_id'))
+                product_id = str(entry.get('product_id'))
+                
+                customer_info = customer_lookup.get(customer_id, {})
+                product_info = product_lookup.get(product_id, {})
+                
+                amount = float(entry.get('quantity', 0)) * float(entry.get('unit_price', 0))
                 
                 enriched_entry = {
                     'id': entry.get('id'),
@@ -1560,17 +1605,34 @@ class MongoAdapter:
                     'is_credit': entry.get('is_credit'),
                     'type': 'Credit' if entry.get('is_credit') else 'Debit',
                     'notes': entry.get('notes', ''),
-                    'running_balance': max(0, running_balance)  # Show 0 if negative
+                    'running_balance': entry_balances.get(entry.get('id'), 0)
                 }
                 
                 enriched_entries.append(enriched_entry)
+            
+            # Sort by date DESCENDING to show most recent first for display
+            enriched_entries.sort(key=lambda x: (x.get('date', ''), x.get('id', '')), reverse=True)
+            
+            # Apply limit after processing and sorting if specified
+            if limit and len(enriched_entries) > limit:
+                print(f"DEBUG: Applying limit {limit} to {len(enriched_entries)} entries")
+                enriched_entries = enriched_entries[:limit]
+                logger.info(f"Limited results to {limit} entries")
+            
+            logger.info(f"Returning {len(enriched_entries)} enriched entries")
+            print(f"DEBUG: Final result count: {len(enriched_entries)} entries")
+            if enriched_entries:
+                print(f"DEBUG: First entry date (newest): {enriched_entries[0]['date']}")
+                print(f"DEBUG: Last entry date (oldest): {enriched_entries[-1]['date']}")
             
             return enriched_entries
             
         except Exception as e:
             print(f"Error getting entries with balance: {e}")
+            import traceback
+            traceback.print_exc()
             return []
-
+    
     def update_products_with_mrp(self):
         """Update existing products that have missing or zero MRP values"""
         try:

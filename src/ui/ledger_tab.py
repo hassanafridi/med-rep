@@ -291,10 +291,24 @@ class LedgerTab(QWidget):
         try:
             # Prepare filters
             filters = {}
+            has_meaningful_filters = False
             
-            # Date range
-            filters['from_date'] = self.from_date_edit.date().toString("yyyy-MM-dd")
-            filters['to_date'] = self.to_date_edit.date().toString("yyyy-MM-dd")
+            # Date range - always include but check if it's meaningful
+            from_date_str = self.from_date_edit.date().toString("yyyy-MM-dd")
+            to_date_str = self.to_date_edit.date().toString("yyyy-MM-dd")
+            
+            # Check if date range is different from default (last month to today)
+            default_from = QDate.currentDate().addMonths(-1).toString("yyyy-MM-dd")
+            default_to = QDate.currentDate().toString("yyyy-MM-dd")
+            
+            # Always set the date range in filters
+            filters['from_date'] = from_date_str
+            filters['to_date'] = to_date_str
+            
+            # Check if date range is meaningful (different from default)
+            if from_date_str != default_from or to_date_str != default_to:
+                has_meaningful_filters = True
+                print(f"DEBUG: Custom date range applied: {from_date_str} to {to_date_str}")
             
             # Customer filter
             if self.customer_filter.currentIndex() > 0:
@@ -303,22 +317,42 @@ class LedgerTab(QWidget):
                 for customer in customers:
                     if customer.get('name') == customer_name:
                         filters['customer_id'] = customer.get('id')
+                        has_meaningful_filters = True
+                        print(f"DEBUG: Customer filter applied: {customer_name}")
                         break
         
             # Entry type filter
             if not self.all_type_check.isChecked():
                 if self.credit_check.isChecked() and not self.debit_check.isChecked():
                     filters['entry_type'] = 'credit'
+                    has_meaningful_filters = True
+                    print("DEBUG: Credit-only filter applied")
                 elif self.debit_check.isChecked() and not self.credit_check.isChecked():
                     filters['entry_type'] = 'debit'
+                    has_meaningful_filters = True
+                    print("DEBUG: Debit-only filter applied")
         
             # Notes search
             search_text = self.search_edit.text().strip()
             if search_text:
                 filters['notes_search'] = search_text
-        
+                has_meaningful_filters = True
+                print(f"DEBUG: Notes search applied: '{search_text}'")
+            
+            print(f"DEBUG: Has meaningful filters: {has_meaningful_filters}")
+            print(f"DEBUG: All filters: {filters}")
+            
             # Get filtered entries with balance
-            entries = self.mongo_adapter.get_entries_with_balance(filters)
+            if not has_meaningful_filters:
+                # No meaningful filters applied - get last 50 transactions
+                print("DEBUG: No meaningful filters, getting last 50 transactions")
+                entries = self.mongo_adapter.get_entries_with_balance(None, limit=50)
+            else:
+                # Filters applied - get all matching entries
+                print("DEBUG: Filters applied, getting all matching entries")
+                entries = self.mongo_adapter.get_entries_with_balance(filters)
+        
+            print(f"DEBUG: Ledger received {len(entries)} entries")
         
             # Setup table
             self.entries_table.setRowCount(len(entries))
@@ -379,6 +413,30 @@ class LedgerTab(QWidget):
             self.total_credit_label.setText(f"Total Credit: PKR{total_credit:,.2f}")
             self.total_debit_label.setText(f"Total Debit: PKR{total_debit:,.2f}")
             self.net_label.setText(f"Net Balance: PKR{net_balance:,.2f}")
+            
+            # Show record count info
+            if not has_meaningful_filters:
+                total_entries = len(self.mongo_adapter.get_entries())
+                self.setWindowTitle(f"Ledger - Last {len(entries)} of {total_entries} Total Transactions (Newest First)")
+            else:
+                total_entries = len(self.mongo_adapter.get_entries())
+                filter_desc = []
+                if filters.get('customer_id'):
+                    filter_desc.append(f"Customer: {self.customer_filter.currentText()}")
+                if filters.get('entry_type'):
+                    filter_desc.append(f"Type: {filters['entry_type'].title()}")
+                if filters.get('notes_search'):
+                    filter_desc.append(f"Notes: '{filters['notes_search']}'")
+                if from_date_str != default_from or to_date_str != default_to:
+                    filter_desc.append(f"Date: {from_date_str} to {to_date_str}")
+                
+                filter_text = " | ".join(filter_desc) if filter_desc else "Filtered"
+                self.setWindowTitle(f"Ledger - {len(entries)} Transactions ({filter_text}) - Newest First")
+            
+            print(f"DEBUG: Ledger displaying {len(entries)} entries in table")
+            if entries:
+                print(f"DEBUG: First entry date (newest): {entries[0]['date']}")
+                print(f"DEBUG: Last entry date (oldest): {entries[-1]['date']}")
         
             # Color code net balance
             raw_net = total_credit - total_debit
@@ -389,6 +447,8 @@ class LedgerTab(QWidget):
         
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load entries: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     def loadCustomers(self):
         """Load customers for filter using MongoDB"""
