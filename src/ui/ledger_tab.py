@@ -21,6 +21,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import MongoDB adapter
 from src.database.mongo_adapter import MongoAdapter
+from src.utils.app_state import app_state
 
 class LedgerTab(QWidget):
     """
@@ -313,7 +314,7 @@ class LedgerTab(QWidget):
             # Customer filter
             if self.customer_filter.currentIndex() > 0:
                 customer_name = self.customer_filter.currentText()
-                customers = self.mongo_adapter.get_customers()
+                customers = app_state.get_customers()
                 for customer in customers:
                     if customer.get('name') == customer_name:
                         filters['customer_id'] = customer.get('id')
@@ -451,16 +452,16 @@ class LedgerTab(QWidget):
             traceback.print_exc()
     
     def loadCustomers(self):
-        """Load customers for filter using MongoDB"""
+        """Load customers for filter using app_state cache"""
         try:
             if not self.mongo_adapter:
                 return
-            
+
             # Clear existing items first to prevent duplicates
             self.customer_filter.clear()
             self.customer_filter.addItem("All Customers")
-            
-            customers = self.mongo_adapter.get_customers()
+
+            customers = app_state.get_customers()
             
             # Use a set to track unique customer names
             added_customers = set()
@@ -481,10 +482,10 @@ class LedgerTab(QWidget):
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
             
-            # Get entry details from MongoDB
-            entries = self.mongo_adapter.get_entries()
-            customers = self.mongo_adapter.get_customers()
-            products = self.mongo_adapter.get_products()
+            # Get entry details from app_state cache
+            entries = app_state.get_entries()
+            customers = app_state.get_customers()
+            products = app_state.get_products()
             transactions = self.mongo_adapter.get_transactions()
             
             # Find the specific entry

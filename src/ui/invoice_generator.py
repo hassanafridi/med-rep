@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QComboBox, 
+    QWidget, QVBoxLayout, QHBoxLayout, QComboBox,
     QLabel, QDateEdit, QGroupBox, QFormLayout,
     QPushButton, QDialog, QMessageBox, QFileDialog,
     QTableWidget, QTableWidgetItem, QHeaderView,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QCheckBox
+    QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QCheckBox,
+    QScrollArea, QFrame, QInputDialog
 )
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtPrintSupport import QPrinter, QPrintPreviewDialog
@@ -16,64 +17,276 @@ import tempfile
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.database.mongo_adapter import MongoAdapter
+from src.database.company_logo_manager import CompanyLogoManager
 from src.utils.pdf_generator import PDFGenerator
+from src.utils.app_state import app_state
+import base64
 
 class PDFInfoDialog(QDialog):
     """Dialog to collect additional information needed for PDF generation including company details"""
-    
-    def __init__(self, parent=None, existing_data=None):
+
+    def __init__(self, parent=None, existing_data=None, mongo_adapter=None):
         super().__init__(parent)
-        self.setWindowTitle("PDF Invoice Information")
+        self.setWindowTitle("Invoice Generation Details")
         self.setModal(True)
-        self.setMinimumWidth(600)
+        self.setMinimumWidth(900)
+        self.setMinimumHeight(750)
+        self.resize(900, 750)
         self.existing_data = existing_data or {}
+        self.mongo_adapter = mongo_adapter
+        self.logo_manager = CompanyLogoManager(mongo_adapter) if mongo_adapter else None
+        self.selected_logo_data = None
         self.initUI()
     
     def initUI(self):
-        """Initialize the dialog UI"""
-        layout = QVBoxLayout()
-        
-        # Instructions
-        instruction_label = QLabel("Please fill in the following information for the PDF invoice:")
-        instruction_label.setStyleSheet("font-weight: bold; color: #4B0082; margin-bottom: 10px;")
-        layout.addWidget(instruction_label)
-        
-        # Company Information Group
-        company_group = QGroupBox("Company Information")
-        company_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        """Initialize the dialog UI with scroll area"""
+        # Main layout
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # Header with instructions (fixed at top)
+        header_widget = QFrame()
+        header_widget.setStyleSheet("background-color: #F8F6FF; border-bottom: 2px solid #4B0082; padding: 15px;")
+        header_layout = QVBoxLayout(header_widget)
+        header_layout.setContentsMargins(20, 15, 20, 15)
+
+        title_label = QLabel("Invoice Generation Details")
+        title_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4B0082; margin-bottom: 5px;")
+
+        instruction_label = QLabel("Fill in the information below to customize your invoice PDF")
+        instruction_label.setStyleSheet("font-size: 13px; color: #666;")
+
+        header_layout.addWidget(title_label)
+        header_layout.addWidget(instruction_label)
+
+        main_layout.addWidget(header_widget)
+
+        # Scrollable content area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.NoFrame)
+        scroll_area.setStyleSheet("QScrollArea { border: none; background-color: white; }")
+
+        # Content widget inside scroll area
+        content_widget = QWidget()
+        layout = QVBoxLayout(content_widget)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+
+        # Header Information Group (NEW)
+        header_group = QGroupBox("📋 Header Information")
+        header_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
+        header_layout = QFormLayout()
+        header_layout.setVerticalSpacing(12)
+        header_layout.setLabelAlignment(Qt.AlignRight)
+        header_layout.setContentsMargins(15, 20, 15, 15)
+
+        # Header contact person and phone
+        header_contact_layout = QHBoxLayout()
+        self.header_contact_name = QLineEdit()
+        self.header_contact_name.setPlaceholderText("e.g., Mr. Behzad Aslam")
+        self.header_contact_name.setText(self.existing_data.get('header_contact_name', 'Mr. Behzad Aslam'))
+        self.header_contact_name.setMinimumHeight(35)
+        self.header_contact_name.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
+
+        self.header_contact_phone = QLineEdit()
+        self.header_contact_phone.setPlaceholderText("e.g., 03339911914")
+        self.header_contact_phone.setText(self.existing_data.get('header_contact_phone', '03339911914'))
+        self.header_contact_phone.setMinimumHeight(35)
+        self.header_contact_phone.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
+
+        header_contact_layout.addWidget(self.header_contact_name)
+        header_contact_layout.addWidget(self.header_contact_phone)
+        header_layout.addRow("Header Contact:", header_contact_layout)
+
+        # Header email
+        self.header_email = QLineEdit()
+        self.header_email.setPlaceholderText("e.g., trupharmaceuticalfsd@gmail.com")
+        self.header_email.setText(self.existing_data.get('header_email', 'trupharmaceuticalfsd@gmail.com'))
+        self.header_email.setMinimumHeight(35)
+        self.header_email.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
+        header_layout.addRow("Header Email:", self.header_email)
+
+        header_group.setLayout(header_layout)
+        layout.addWidget(header_group)
+
+        # Company Logo/Name Section (NEW)
+        logo_group = QGroupBox("🖼️ Company Logo / Name")
+        logo_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
+        logo_layout = QVBoxLayout()
+        logo_layout.setContentsMargins(15, 20, 15, 15)
+        logo_layout.setSpacing(12)
+
+        # Use logo or company name radio buttons
+        logo_option_layout = QHBoxLayout()
+        self.use_company_name_radio = QCheckBox("Use Company Name (Tru-Pharma)")
+        self.use_company_name_radio.setChecked(self.existing_data.get('use_company_name', True))
+        self.use_company_name_radio.setStyleSheet("font-weight: normal;")
+        self.use_company_name_radio.toggled.connect(self.toggle_logo_options)
+        logo_option_layout.addWidget(self.use_company_name_radio)
+        logo_layout.addLayout(logo_option_layout)
+
+        # Logo selection and upload
+        logo_select_layout = QHBoxLayout()
+
+        self.logo_dropdown = QComboBox()
+        self.logo_dropdown.setMinimumHeight(35)
+        self.logo_dropdown.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
+        self.logo_dropdown.addItem("-- Select Saved Logo --")
+        if self.logo_manager:
+            logo_names = self.logo_manager.get_logo_names()
+            self.logo_dropdown.addItems(logo_names)
+        self.logo_dropdown.currentIndexChanged.connect(self.on_logo_selected)
+        logo_select_layout.addWidget(QLabel("Select Logo:"))
+        logo_select_layout.addWidget(self.logo_dropdown)
+
+        self.upload_logo_btn = QPushButton("Upload New Logo")
+        self.upload_logo_btn.setMinimumHeight(35)
+        self.upload_logo_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 3px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #6B0AC2;
+            }
+        """)
+        self.upload_logo_btn.clicked.connect(self.upload_logo)
+        logo_select_layout.addWidget(self.upload_logo_btn)
+
+        logo_layout.addLayout(logo_select_layout)
+
+        # Logo preview
+        self.logo_preview_label = QLabel("No logo selected")
+        self.logo_preview_label.setAlignment(Qt.AlignCenter)
+        self.logo_preview_label.setMaximumHeight(100)
+        self.logo_preview_label.setStyleSheet("border: 1px dashed #4B0082; padding: 10px; background-color: #f9f9f9;")
+        logo_layout.addWidget(self.logo_preview_label)
+
+        logo_group.setLayout(logo_layout)
+        layout.addWidget(logo_group)
+
+        # Company Information Group (kept for other details)
+        company_group = QGroupBox("🏢 Company Information")
+        company_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
         company_layout = QFormLayout()
-        
-        # Company contact
+        company_layout.setVerticalSpacing(12)
+        company_layout.setLabelAlignment(Qt.AlignRight)
+        company_layout.setContentsMargins(15, 20, 15, 15)
+
+        # Company contact (this is for internal use, not header)
         self.company_contact = QLineEdit()
         self.company_contact.setPlaceholderText("e.g., 0333-99-11-514")
         self.company_contact.setText(self.existing_data.get('company_contact', '0333-99-11-514'))
-        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.company_contact.setMinimumHeight(35)
+        self.company_contact.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
         company_layout.addRow("Company Contact:", self.company_contact)
-        
+
         # Company address
         self.company_address = QTextEdit()
-        self.company_address.setMaximumHeight(80)
+        self.company_address.setMinimumHeight(70)
+        self.company_address.setMaximumHeight(100)
         self.company_address.setPlaceholderText("Enter your company address...")
-        default_address = self.existing_data.get('company_address', 
+        default_address = self.existing_data.get('company_address',
             'info@trupharma.com')
         self.company_address.setText(default_address)
-        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.company_address.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
         company_layout.addRow("Company Address:", self.company_address)
-        
+
         company_group.setLayout(company_layout)
         layout.addWidget(company_group)
         
         # Transport Information Group
-        transport_group = QGroupBox("Transport & Delivery Information")
-        transport_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        transport_group = QGroupBox("🚚 Transport & Delivery Information")
+        transport_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
         transport_layout = QFormLayout()
+        transport_layout.setVerticalSpacing(12)
+        transport_layout.setLabelAlignment(Qt.AlignRight)
+        transport_layout.setContentsMargins(15, 20, 15, 15)
         
         self.transport_name = QLineEdit()
         self.transport_name.setPlaceholderText("e.g., Jawad Aslam, TCS, Standard Delivery")
         self.transport_name.setText(self.existing_data.get('transport_name', 'Standard Delivery'))
-        self.transport_name.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.transport_name.setMinimumHeight(35)
+        self.transport_name.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
         transport_layout.addRow("Transport Name:", self.transport_name)
-        
+
         self.delivery_date = QDateEdit()
         self.delivery_date.setCalendarPopup(True)
         delivery_date_str = self.existing_data.get('delivery_date', '')
@@ -81,39 +294,121 @@ class PDFInfoDialog(QDialog):
             self.delivery_date.setDate(QDate.fromString(delivery_date_str, "dd-MM-yy"))
         else:
             self.delivery_date.setDate(QDate.currentDate())
-        self.delivery_date.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.delivery_date.setMinimumHeight(35)
+        self.delivery_date.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
         transport_layout.addRow("Delivery Date:", self.delivery_date)
-        
+
         self.delivery_location = QLineEdit()
         self.delivery_location.setPlaceholderText("e.g., adda johal, Main Market Faisalabad")
         self.delivery_location.setText(self.existing_data.get('delivery_location', ''))
-        self.delivery_location.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.delivery_location.setMinimumHeight(35)
+        self.delivery_location.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
         transport_layout.addRow("Delivery Location:", self.delivery_location)
         
         transport_group.setLayout(transport_layout)
         layout.addWidget(transport_group)
         
+        # Signatory Information Group (NEW)
+        signatory_group = QGroupBox("✍️ Authorized Signatory (Optional)")
+        signatory_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
+        signatory_layout = QFormLayout()
+        signatory_layout.setVerticalSpacing(12)
+        signatory_layout.setLabelAlignment(Qt.AlignRight)
+        signatory_layout.setContentsMargins(15, 20, 15, 15)
+
+        self.signatory_name = QLineEdit()
+        self.signatory_name.setPlaceholderText("e.g., Mr. Jawad Aslam Yahya (leave empty for blank space with underline)")
+        self.signatory_name.setText(self.existing_data.get('authorized_signatory', ''))
+        self.signatory_name.setMinimumHeight(35)
+        self.signatory_name.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
+        signatory_layout.addRow("Signatory Name:", self.signatory_name)
+
+        signatory_info = QLabel("Note: If left empty, the PDF will show a blank line for signature")
+        signatory_info.setStyleSheet("color: #666; font-size: 11px; font-style: italic; padding: 5px;")
+        signatory_layout.addRow("", signatory_info)
+
+        signatory_group.setLayout(signatory_layout)
+        layout.addWidget(signatory_group)
+
         # Terms and Conditions Group
-        terms_group = QGroupBox("Terms & Conditions")
-        terms_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        terms_group = QGroupBox("📜 Terms & Conditions")
+        terms_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
         terms_layout = QVBoxLayout()
-        
+        terms_layout.setContentsMargins(15, 20, 15, 15)
+        terms_layout.setSpacing(8)
+
         self.terms_text = QTextEdit()
-        self.terms_text.setMaximumHeight(100)
-        default_terms = self.existing_data.get('terms', 
+        self.terms_text.setMinimumHeight(90)
+        self.terms_text.setMaximumHeight(120)
+        default_terms = self.existing_data.get('terms',
             'Thank you for your business! Payment is due within 30 days.\n'
             'All products are subject to our standard terms and conditions.')
         self.terms_text.setText(default_terms)
-        self.terms_text.setStyleSheet("border: 1px solid #4B0082; padding: 5px;")
+        self.terms_text.setStyleSheet("border: 1px solid #4B0082; padding: 8px; font-size: 13px;")
         terms_layout.addWidget(self.terms_text)
-        
+
         terms_group.setLayout(terms_layout)
         layout.addWidget(terms_group)
         
         # Customer Information (read-only display)
-        customer_group = QGroupBox("Customer Information (from invoice)")
-        customer_group.setStyleSheet("QGroupBox { font-weight: bold; color: #4B0082; }")
+        customer_group = QGroupBox("👤 Customer Information (from invoice)")
+        customer_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #4B0082;
+                font-size: 14px;
+                border: 2px solid #E0D7FF;
+                border-radius: 8px;
+                margin-top: 12px;
+                padding-top: 15px;
+                background-color: #FAFAFA;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 5px 10px;
+                background-color: white;
+                border-radius: 4px;
+            }
+        """)
         customer_layout = QFormLayout()
+        customer_layout.setContentsMargins(15, 20, 15, 15)
         
         customer_name = self.existing_data.get('customer_name', 'N/A')
         customer_address = self.existing_data.get('customer_address', 'N/A')
@@ -125,51 +420,191 @@ class PDFInfoDialog(QDialog):
         
         customer_group.setLayout(customer_layout)
         layout.addWidget(customer_group)
-        
-        # Buttons
-        button_layout = QHBoxLayout()
-        
+
+        # Add stretch to push content to top
+        layout.addStretch()
+
+        # Set the content widget to scroll area
+        scroll_area.setWidget(content_widget)
+        main_layout.addWidget(scroll_area)
+
+        # Button bar (fixed at bottom)
+        button_bar = QFrame()
+        button_bar.setStyleSheet("background-color: #F8F6FF; border-top: 2px solid #4B0082;")
+        button_layout = QHBoxLayout(button_bar)
+        button_layout.setContentsMargins(20, 15, 20, 15)
+        button_layout.setSpacing(10)
+
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.setMinimumHeight(40)
+        self.cancel_btn.setMinimumWidth(120)
+        self.cancel_btn.clicked.connect(self.reject)
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #4B0082;
+                border: 2px solid #4B0082;
+                padding: 10px 25px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #F8F6FF;
+            }
+        """)
+
         self.generate_btn = QPushButton("Generate PDF")
+        self.generate_btn.setMinimumHeight(40)
+        self.generate_btn.setMinimumWidth(150)
         self.generate_btn.clicked.connect(self.accept)
         self.generate_btn.setStyleSheet("""
             QPushButton {
                 background-color: #4B0082;
                 color: white;
-                padding: 10px 20px;
+                padding: 10px 30px;
                 font-weight: bold;
                 font-size: 14px;
                 border-radius: 5px;
+                border: none;
             }
             QPushButton:hover {
                 background-color: #6B0AC2;
             }
         """)
-        
-        self.cancel_btn = QPushButton("Cancel")
-        self.cancel_btn.clicked.connect(self.reject)
-        self.cancel_btn.setStyleSheet("""
-            QPushButton {
-                padding: 10px 20px;
-                font-size: 14px;
-                border-radius: 5px;
-            }
-        """)
-        
+
+        button_layout.addStretch()
         button_layout.addWidget(self.cancel_btn)
         button_layout.addWidget(self.generate_btn)
-        
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-    
+
+        main_layout.addWidget(button_bar)
+
+        # Set main layout to dialog
+        self.setLayout(main_layout)
+
+        # Initialize logo options visibility
+        self.toggle_logo_options(self.use_company_name_radio.isChecked())
+
+    def toggle_logo_options(self, use_name):
+        """Toggle logo selection options based on checkbox"""
+        self.logo_dropdown.setEnabled(not use_name)
+        self.upload_logo_btn.setEnabled(not use_name)
+
+        print(f"Toggle logo options - use_name: {use_name}, button enabled: {not use_name}")  # Debug
+
+        if use_name:
+            self.logo_preview_label.setText("Using Company Name")
+        else:
+            self.logo_preview_label.setText("No logo selected - click 'Upload New Logo' to add one")
+
+    def upload_logo(self):
+        """Upload a new company logo"""
+        print("Upload logo method called")  # Debug
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Company Logo",
+            "",
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
+        )
+
+        print(f"Selected file: {file_path}")  # Debug
+
+        if file_path:
+            try:
+                # Read image file
+                with open(file_path, 'rb') as f:
+                    image_data = f.read()
+
+                # Convert to base64
+                logo_base64 = base64.b64encode(image_data).decode('utf-8')
+
+                # Ask for logo name
+                logo_name, ok = QInputDialog.getText(
+                    self,
+                    "Logo Name",
+                    "Enter a name for this logo:",
+                    text=os.path.basename(file_path).split('.')[0]
+                )
+
+                print(f"Logo name: {logo_name}, OK: {ok}")  # Debug
+
+                if ok and logo_name:
+                    # Save to database
+                    if self.logo_manager:
+                        print("Saving to database...")  # Debug
+                        logo_id = self.logo_manager.save_logo(logo_name, file_path, logo_base64)
+                        print(f"Logo ID: {logo_id}")  # Debug
+
+                        if logo_id:
+                            # Update dropdown
+                            if self.logo_dropdown.findText(logo_name) == -1:
+                                self.logo_dropdown.addItem(logo_name)
+                            self.logo_dropdown.setCurrentText(logo_name)
+
+                            # Update preview
+                            pixmap = QPixmap(file_path)
+                            scaled_pixmap = pixmap.scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                            self.logo_preview_label.setPixmap(scaled_pixmap)
+
+                            # Store logo data
+                            self.selected_logo_data = logo_base64
+
+                            QMessageBox.information(self, "Success", f"Logo '{logo_name}' saved successfully!")
+                        else:
+                            QMessageBox.warning(self, "Error", "Failed to save logo to database")
+                    else:
+                        QMessageBox.warning(self, "Error", "Logo manager not initialized")
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()  # Print full error
+                QMessageBox.warning(self, "Error", f"Failed to load logo: {str(e)}")
+
+    def on_logo_selected(self, index):
+        """Handle logo selection from dropdown"""
+        if index <= 0 or not self.logo_manager:
+            self.logo_preview_label.setText("No logo selected")
+            self.selected_logo_data = None
+            return
+
+        logo_name = self.logo_dropdown.currentText()
+        logo = self.logo_manager.get_logo_by_name(logo_name)
+
+        if logo and 'logo_data' in logo:
+            try:
+                # Decode base64 and display
+                logo_bytes = base64.b64decode(logo['logo_data'])
+                pixmap = QPixmap()
+                pixmap.loadFromData(logo_bytes)
+                scaled_pixmap = pixmap.scaled(200, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.logo_preview_label.setPixmap(scaled_pixmap)
+
+                # Store logo data
+                self.selected_logo_data = logo['logo_data']
+
+            except Exception as e:
+                self.logo_preview_label.setText(f"Error loading logo: {str(e)}")
+                self.selected_logo_data = None
+        else:
+            self.logo_preview_label.setText("Logo data not found")
+            self.selected_logo_data = None
+
     def get_pdf_data(self):
         """Get the collected PDF data"""
         return {
+            'header_contact_name': self.header_contact_name.text().strip(),
+            'header_contact_phone': self.header_contact_phone.text().strip(),
+            'header_email': self.header_email.text().strip(),
+            'use_company_name': self.use_company_name_radio.isChecked(),
+            'logo_data': self.selected_logo_data if not self.use_company_name_radio.isChecked() else None,
             'company_contact': self.company_contact.text().strip() or '0333-99-11-514',
             'company_address': self.company_address.toPlainText().strip() or 'Main Market, Faisalabad\nPunjab, Pakistan',
             'transport_name': self.transport_name.text().strip() or 'Standard Delivery',
             'delivery_date': self.delivery_date.date().toString("dd-MM-yy"),
             'delivery_location': self.delivery_location.text().strip() or 'Customer Location',
-            'terms': self.terms_text.toPlainText().strip()
+            'terms': self.terms_text.toPlainText().strip(),
+            'authorized_signatory': self.signatory_name.text().strip()  # Can be empty
         }
 
 class InvoicePreviewDialog(QDialog):
@@ -474,8 +909,8 @@ class InvoiceGenerator(QWidget):
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
             
-            # Get all customers from MongoDB
-            customers = self.mongo_adapter.get_customers()
+            # Get all customers from app_state cache
+            customers = app_state.get_customers()
             
             # Clear and populate combo box
             self.customer_combo.clear()
@@ -534,7 +969,7 @@ class InvoiceGenerator(QWidget):
         # Load products into dropdown
         try:
             if self.mongo_adapter:
-                products = self.mongo_adapter.get_products()
+                products = app_state.get_products()
                 self.product_data = {}
                 
                 product_combo.clear()
@@ -811,9 +1246,9 @@ class InvoiceGenerator(QWidget):
                     QMessageBox.warning(dialog, "Error", "Please select a customer first.")
                     return
                 
-                # Get all entries and products from MongoDB
-                entries = self.mongo_adapter.get_entries()
-                products = self.mongo_adapter.get_products()
+                # Get all entries and products from app_state cache
+                entries = app_state.get_entries()
+                products = app_state.get_products()
                 
                 # Create product lookup with proper MRP handling
                 product_lookup = {}
@@ -1616,8 +2051,8 @@ class InvoiceGenerator(QWidget):
             'company_address': 'info@trupharma.com'
         }
         
-        # Show PDF info dialog
-        pdf_dialog = PDFInfoDialog(self, existing_data)
+        # Show PDF info dialog with mongo_adapter
+        pdf_dialog = PDFInfoDialog(self, existing_data, self.mongo_adapter)
         if pdf_dialog.exec_() == QDialog.Accepted:
             # Get PDF-specific information
             pdf_info = pdf_dialog.get_pdf_data()
@@ -1649,8 +2084,8 @@ class InvoiceGenerator(QWidget):
             'company_address': 'info@trupharma.com'
         }
         
-        # Show PDF info dialog
-        pdf_dialog = PDFInfoDialog(self, existing_data)
+        # Show PDF info dialog with mongo_adapter
+        pdf_dialog = PDFInfoDialog(self, existing_data, self.mongo_adapter)
         if pdf_dialog.exec_() != QDialog.Accepted:
             return
         
@@ -1723,8 +2158,8 @@ class InvoiceGenerator(QWidget):
             'company_address': 'info@trupharma.com'
         }
         
-        # Show PDF info dialog
-        pdf_dialog = PDFInfoDialog(self, existing_data)
+        # Show PDF info dialog with mongo_adapter
+        pdf_dialog = PDFInfoDialog(self, existing_data, self.mongo_adapter)
         pdf_dialog.setWindowTitle("Print Invoice Information")
         if pdf_dialog.exec_() != QDialog.Accepted:
             return

@@ -30,6 +30,9 @@ from src.user_auth import UserAuth
 from src.ui.login_dialog import LoginDialog
 from src.ui.dashboard_tab import DashboardTab
 
+# Import centralized state management
+from src.utils.app_state import app_state
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -69,7 +72,11 @@ class MainWindow(QMainWindow):
             
             self.auth_manager = UserAuth(self.mongo_adapter)
             self.current_user = None
-            
+
+            # Initialize centralized app state with database
+            app_state.set_database(self.mongo_adapter)
+            logging.info("App state initialized with database connection")
+
             # Show login dialog
             if not self.login():
                 sys.exit(0)
@@ -189,8 +196,32 @@ class MainWindow(QMainWindow):
             self.create_graphs_tab()
             self.create_reports_tab()
             self.create_settings_tab()
+
+            # Connect app_state signals to refresh tabs when data changes
+            self.connect_state_signals()
         except Exception as e:
             logging.error(f"Error creating tabs: {e}")
+
+    def connect_state_signals(self):
+        """Connect app_state signals to tab refresh methods for cross-tab updates"""
+        try:
+            # When customers change, refresh all tabs that display customer data
+            if hasattr(self, 'new_entry_tab'):
+                app_state.customers_changed.connect(self.new_entry_tab.loadCustomersAndProducts)
+            if hasattr(self, 'ledger_tab'):
+                app_state.customers_changed.connect(self.ledger_tab.loadCustomers)
+
+            # When products change, refresh all tabs that display product data
+            if hasattr(self, 'new_entry_tab'):
+                app_state.products_changed.connect(self.new_entry_tab.loadCustomersAndProducts)
+
+            # When entries change, refresh relevant tabs
+            if hasattr(self, 'ledger_tab'):
+                app_state.entries_changed.connect(self.ledger_tab.loadEntries)
+
+            logging.info("App state signals connected successfully")
+        except Exception as e:
+            logging.error(f"Error connecting state signals: {e}")
     
     def create_dashboard_tab(self):
         """Create the dashboard tab with MongoDB data"""

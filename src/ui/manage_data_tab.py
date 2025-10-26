@@ -12,6 +12,7 @@ import csv
 # Make sure we can import from parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.database.mongo_adapter import MongoAdapter
+from src.utils.app_state import app_state
 
 class CustomerDialog(QDialog):
     def __init__(self, parent=None, customer_data=None):
@@ -548,17 +549,17 @@ class ManageDataTab(QWidget):
         self.loadProducts()
     
     def loadCustomers(self):
-        """Load customers from database using MongoDB"""
+        """Load customers from database using app_state cache"""
         try:
             if not self.mongo_adapter:
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
-            
+
             # Check if customers_table exists and is valid
             if not hasattr(self, 'customers_table') or self.customers_table is None:
                 print("Warning: customers_table not available, skipping load")
                 return
-            
+
             # Additional safety check for Qt object validity
             try:
                 # Test if the widget is still valid by accessing a property
@@ -566,9 +567,9 @@ class ManageDataTab(QWidget):
             except RuntimeError as e:
                 print(f"customers_table widget has been deleted: {e}")
                 return
-            
-            # Use MongoDB adapter to get customers
-            customers = self.mongo_adapter.get_customers()
+
+            # Use app_state to get cached customers
+            customers = app_state.get_customers()
             
             # Clear and set row count
             self.customers_table.setRowCount(0)
@@ -591,17 +592,17 @@ class ManageDataTab(QWidget):
                 QMessageBox.critical(self, "Database Error", f"Failed to load customers: {str(e)}")
 
     def loadProducts(self):
-        """Load products from database using MongoDB"""
+        """Load products from database using app_state cache"""
         try:
             if not self.mongo_adapter:
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
-            
+
             # Check if products_table exists and is valid
             if not hasattr(self, 'products_table') or self.products_table is None:
                 print("Warning: products_table not available, skipping load")
                 return
-            
+
             # Additional safety check for Qt object validity
             try:
                 # Test if the widget is still valid by accessing a property
@@ -609,9 +610,9 @@ class ManageDataTab(QWidget):
             except RuntimeError as e:
                 print(f"products_table widget has been deleted: {e}")
                 return
-            
-            # Use MongoDB adapter to get products
-            products = self.mongo_adapter.get_products()
+
+            # Use app_state to get cached products
+            products = app_state.get_products()
             
             # Clear and set row count
             self.products_table.setRowCount(0)
@@ -781,69 +782,69 @@ class ManageDataTab(QWidget):
                 if not self.mongo_adapter:
                     QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                     return
-                    
-                # Use MongoDB adapter to add customer
-                result = self.mongo_adapter.add_customer(
-                    customer_data['name'], 
-                    customer_data['contact'], 
-                    customer_data['address']
+
+                # Use app_state to add customer (handles cache invalidation and signals)
+                result = app_state.add_customer(
+                    customer_data['name'],
+                    customer_data['address'],
+                    customer_data['contact']
                 )
-                
+
                 if result:
                     QMessageBox.information(self, "Success", "Customer added successfully.")
-                    # Reload customers
+                    # Reload customers (will use fresh cache)
                     self.loadCustomers()
                 else:
                     QMessageBox.critical(self, "Error", "Failed to add customer.")
-                    
+
             except Exception as e:
                 QMessageBox.critical(self, "Database Error", f"Failed to add customer: {str(e)}")
 
     def editCustomer(self, customer_id):
-        """Edit an existing customer using MongoDB"""
+        """Edit an existing customer using app_state"""
         try:
             if not self.mongo_adapter:
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
-                
-            # Get all customers and find the one with matching ID
-            customers = self.mongo_adapter.get_customers()
+
+            # Get all customers from app_state and find the one with matching ID
+            customers = app_state.get_customers()
             customer = None
-            
+
             for c in customers:
                 if str(c.get('id')) == str(customer_id):
                     customer = (c.get('id'), c.get('name'), c.get('contact'), c.get('address'))
                     break
-            
+
             if not customer:
                 QMessageBox.warning(self, "Customer Not Found", f"Customer with ID {customer_id} not found.")
                 return
-            
+
             dialog = CustomerDialog(self, customer)
-            
+
             if dialog.exec_() == QDialog.Accepted:
                 customer_data = dialog.getCustomerData()
-                
+
                 # Validate input
                 if not customer_data['name']:
                     QMessageBox.warning(self, "Validation Error", "Customer name is required.")
                     return
-                
-                # Use MongoDB adapter to update customer
-                result = self.mongo_adapter.mongo_db.update_customer(
+
+                # Use app_state to update customer (handles cache invalidation and signals)
+                result = app_state.update_customer(
                     customer_id,
-                    customer_data['name'], 
-                    customer_data['contact'], 
-                    customer_data['address']
+                    customer_data['name'],
+                    customer_data['address'],
+                    customer_data['contact']
                 )
-                
+
                 if result:
                     QMessageBox.information(self, "Success", "Customer updated successfully.")
-                    # Reload customers
+                    # Reload customers (will use fresh cache)
                     self.loadCustomers()
                 else:
                     QMessageBox.critical(self, "Error", "Failed to update customer.")
-                    
+
         except Exception as e:
             QMessageBox.critical(self, "Database Error", f"Failed to update customer: {str(e)}")
 
@@ -854,23 +855,23 @@ class ManageDataTab(QWidget):
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
                 
-            # Get customer details
-            customers = self.mongo_adapter.get_customers()
+            # Get customer details from app_state
+            customers = app_state.get_customers()
             customer = None
-            
+
             for c in customers:
                 if str(c.get('id')) == str(customer_id):
                     customer = c
                     break
-            
+
             if not customer:
                 QMessageBox.warning(self, "Customer Not Found", f"Customer with ID {customer_id} not found.")
                 return
-            
+
             customer_name = customer.get('name', 'Unknown')
-            
+
             # Check if customer has entries
-            entries = self.mongo_adapter.get_entries()
+            entries = app_state.get_entries()
             customer_entries = [entry for entry in entries if str(entry.get('customer_id')) == str(customer_id)]
             entry_count = len(customer_entries)
             
@@ -911,14 +912,14 @@ class ManageDataTab(QWidget):
                             f"Deleted {deleted_entries} entries and {deleted_transactions} transactions."
                         )
                     
-                    # Delete the customer
-                    result = self.mongo_adapter.mongo_db.delete_customer(customer_id)
-                    
+                    # Delete the customer using app_state (handles cache invalidation and signals)
+                    result = app_state.delete_customer(customer_id)
+
                     if result:
                         success_msg = f"Customer '{customer_name}' deleted successfully."
                         if should_delete_entries:
                             success_msg += f"\nAlso deleted {entry_count} associated entries."
-                        
+
                         QMessageBox.information(self, "Success", success_msg)
                         self.loadCustomers()  # Reload the table
                     else:
@@ -959,14 +960,14 @@ class ManageDataTab(QWidget):
                     return
                     
                 # Check if batch number already exists
-                products = self.mongo_adapter.get_products()
+                products = app_state.get_products()
                 for product in products:
                     if product.get('batch_number') == product_data['batch_number']:
                         QMessageBox.warning(self, "Validation Error", "Batch number already exists. Please use a unique batch number.")
                         return
-                
-                # Use MongoDB adapter to add product with MRP
-                result = self.mongo_adapter.add_product(
+
+                # Use app_state to add product (handles cache invalidation and signals)
+                result = app_state.add_product(
                     product_data['name'],
                     product_data['description'],
                     product_data['unit_price'],
@@ -974,10 +975,10 @@ class ManageDataTab(QWidget):
                     product_data['expiry_date'],
                     product_data['mrp']
                 )
-                
+
                 if result:
                     QMessageBox.information(self, "Success", "Product added successfully.")
-                    # Reload products
+                    # Reload products (will use fresh cache)
                     self.loadProducts()
                 else:
                     QMessageBox.critical(self, "Error", "Failed to add product.")
@@ -992,59 +993,59 @@ class ManageDataTab(QWidget):
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
                 
-            # Get all products and find the one with matching ID
-            products = self.mongo_adapter.get_products()
+            # Get all products from app_state and find the one with matching ID
+            products = app_state.get_products()
             product = None
-            
+
             for p in products:
                 if str(p.get('id')) == str(product_id):
                     product = (
-                        p.get('id'), 
-                        p.get('name'), 
-                        p.get('description'), 
+                        p.get('id'),
+                        p.get('name'),
+                        p.get('description'),
                         p.get('unit_price'),
                         p.get('mrp'),
                         p.get('batch_number'),
                         p.get('expiry_date')
                     )
                     break
-            
+
             if not product:
                 QMessageBox.warning(self, "Product Not Found", f"Product with ID {product_id} not found.")
                 return
-            
+
             dialog = ProductDialog(self, product)
-            
+
             if dialog.exec_() == QDialog.Accepted:
                 product_data = dialog.getProductData()
-                
+
                 # Validate input
                 if not product_data['name']:
                     QMessageBox.warning(self, "Validation Error", "Product name is required.")
                     return
-                
+
                 if not product_data['batch_number']:
                     QMessageBox.warning(self, "Validation Error", "Batch number is required.")
                     return
-                
+
                 if product_data['unit_price'] <= 0:
                     QMessageBox.warning(self, "Validation Error", "Unit price must be greater than zero.")
                     return
-                    
+
                 if product_data['mrp'] <= 0:
                     QMessageBox.warning(self, "Validation Error", "MRP must be greater than zero.")
                     return
-                
+
                 # Check if batch number already exists (excluding current product)
-                all_products = self.mongo_adapter.get_products()
+                all_products = app_state.get_products()
                 for p in all_products:
-                    if (p.get('batch_number') == product_data['batch_number'] and 
+                    if (p.get('batch_number') == product_data['batch_number'] and
                         str(p.get('id')) != str(product_id)):
                         QMessageBox.warning(self, "Validation Error", "Batch number already exists. Please use a unique batch number.")
                         return
-                
-                # Use MongoDB adapter to update product
-                result = self.mongo_adapter.mongo_db.update_product(
+
+                # Use app_state to update product (handles cache invalidation and signals)
+                result = app_state.update_product(
                     product_id,
                     product_data['name'],
                     product_data['description'],
@@ -1053,10 +1054,10 @@ class ManageDataTab(QWidget):
                     product_data['expiry_date'],
                     product_data['mrp']
                 )
-                
+
                 if result:
                     QMessageBox.information(self, "Success", "Product updated successfully.")
-                    # Reload products
+                    # Reload products (will use fresh cache)
                     self.loadProducts()
                 else:
                     QMessageBox.critical(self, "Error", "Failed to update product.")
@@ -1071,23 +1072,23 @@ class ManageDataTab(QWidget):
                 QMessageBox.warning(self, "Database Error", "MongoDB connection not available")
                 return
                 
-            # Get product details
-            products = self.mongo_adapter.get_products()
+            # Get product details from app_state
+            products = app_state.get_products()
             product = None
-            
+
             for p in products:
                 if str(p.get('id')) == str(product_id):
                     product = p
                     break
-            
+
             if not product:
                 QMessageBox.warning(self, "Product Not Found", f"Product with ID {product_id} not found.")
                 return
-            
+
             product_name = product.get('name', 'Unknown')
-            
+
             # Check if product has entries
-            entries = self.mongo_adapter.get_entries()
+            entries = app_state.get_entries()
             product_entries = [entry for entry in entries if str(entry.get('product_id')) == str(product_id)]
             entry_count = len(product_entries)
             
@@ -1128,14 +1129,14 @@ class ManageDataTab(QWidget):
                             f"Deleted {deleted_entries} entries and {deleted_transactions} transactions."
                         )
                     
-                    # Delete the product
-                    result = self.mongo_adapter.mongo_db.delete_product(product_id)
-                    
+                    # Delete the product using app_state (handles cache invalidation and signals)
+                    result = app_state.delete_product(product_id)
+
                     if result:
                         success_msg = f"Product '{product_name}' deleted successfully."
                         if should_delete_entries:
                             success_msg += f"\nAlso deleted {entry_count} associated entries."
-                        
+
                         QMessageBox.information(self, "Success", success_msg)
                         self.loadProducts()  # Reload the table
                     else:

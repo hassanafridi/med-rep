@@ -98,30 +98,53 @@ class ImprovedPDFGenerator:
             
             # Build the inner content
             inner_content = []
-            
-            # 1. Header
-            header = Paragraph("Bill/Cash Memo", self.styles['InvoiceTitle'])
-            inner_content.append(header)
-            inner_content.append(Spacer(1, 10))
-            
-            # 2. Company header
-            company_data = [[
-                Paragraph("Tru-Pharma", self.styles['CompanyLogo']),
-                Paragraph(f"{invoice_data.get('company_contact', '')}<br/>{invoice_data.get('company_address', '').replace(chr(10), '<br/>')}", 
-                         self.styles['CompanyContact'])
-            ]]
-            
+
+            # 1. Company header - Dynamic with logo or company name
+            # Get header contact info (dynamic)
+            header_contact_name = invoice_data.get('header_contact_name', 'Mr. Behzad Aslam')
+            header_contact_phone = invoice_data.get('header_contact_phone', '03339911914')
+            header_email = invoice_data.get('header_email', 'trupharmaceuticalfsd@gmail.com')
+            use_company_name = invoice_data.get('use_company_name', True)
+            logo_data = invoice_data.get('logo_data', None)
+
+            # Left side - Logo or Company Name
+            if use_company_name or not logo_data:
+                # Use company name text
+                left_content = Paragraph("<font size=24><b>Tru-Pharma</b></font>", self.styles['CompanyLogo'])
+            else:
+                # Use logo image
+                try:
+                    import base64
+                    from io import BytesIO
+                    logo_bytes = base64.b64decode(logo_data)
+                    logo_image = Image(BytesIO(logo_bytes))
+                    # Scale logo to fit
+                    logo_image.drawHeight = 20*mm
+                    logo_image.drawWidth = 40*mm
+                    left_content = logo_image
+                except Exception as e:
+                    print(f"Error loading logo: {e}")
+                    # Fallback to company name
+                    left_content = Paragraph("<font size=24><b>Tru-Pharma</b></font>", self.styles['CompanyLogo'])
+
+            # Right side - Dynamic contact info
+            header_contact_text = f"<b>{header_contact_name}</b>  {header_contact_phone}<br/>{header_email}"
+            right_content = Paragraph(header_contact_text, self.styles['CompanyContact'])
+
+            company_data = [[left_content, right_content]]
+
             company_table = Table(company_data, colWidths=[95*mm, 95*mm])
             company_table.setStyle(TableStyle([
                 ('ALIGN', (0, 0), (0, 0), 'LEFT'),
                 ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                ('LEFTPADDING', (0, 0), (-1, -1), 15),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
-                ('TOPPADDING', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 10)
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
             ]))
-            
+
             inner_content.append(company_table)
             
             # 3. Section headers
@@ -177,84 +200,66 @@ class ImprovedPDFGenerator:
             
             inner_content.append(details_table)
             
-            # 5. Items table
-            items_data = [['#', 'Item name', 'MRP', 'Quantity', 'Rate', 'Discount', 'Amount']]
-            
+            # 5. Items table (matching image layout - no MRP column)
+            items_data = [[
+                Paragraph('<b>#</b>', ParagraphStyle('TableHeader', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER)),
+                Paragraph('<b>Item name</b>', ParagraphStyle('TableHeader', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER)),
+                Paragraph('<b>Quantity</b>', ParagraphStyle('TableHeader', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER)),
+                Paragraph('<b>Rate</b>', ParagraphStyle('TableHeader', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER)),
+                Paragraph('<b>Discount</b>', ParagraphStyle('TableHeader', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER)),
+                Paragraph('<b>Amount</b>', ParagraphStyle('TableHeader', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER))
+            ]]
+
             total_amount = 0
             for i, item in enumerate(invoice_data.get('items', []), 1):
-                amount = item.get('amount', 0)
-                total_amount += amount
-                
-                # Include batch number in item name
-                item_name = item.get('product_name', '')
-                batch_info = item.get('batch_number', '')
-                
-                if batch_info and batch_info != 'N/A':
-                    item_name += f" (Batch: {batch_info})"
-                
-                # Calculate discount (if any)
+                # Get unit price and quantity
+                unit_price_value = item.get('unit_price', 0)
+                quantity = item.get('quantity', 0)
+
+                # Convert to float for calculations
+                try:
+                    unit_price_float = float(unit_price_value) if unit_price_value is not None else 0.0
+                    quantity_float = float(quantity) if quantity is not None else 0.0
+                except (ValueError, TypeError):
+                    unit_price_float = 0.0
+                    quantity_float = 0.0
+
+                # Calculate amount before discount
+                item_total = quantity_float * unit_price_float
+
+                # Calculate discount
                 discount_percent = item.get('discount', 0)
-                # Use 'amount' if 'total' doesn't exist, with fallback calculation
-                item_total = item.get('total', item.get('amount', item.get('quantity', 0) * item.get('unit_price', 0)))
                 discount_amount = item_total * (discount_percent / 100)
                 final_amount = item_total - discount_amount
-                
-                # Enhanced MRP and rate handling with proper validation
-                mrp_value = item.get('mrp', 0)
-                unit_price_value = item.get('unit_price', 0)
-                
-                print(f"PDF Generator - Item {i}: {item_name}")
-                print(f"  Raw MRP: {mrp_value} (type: {type(mrp_value)}), Raw Unit Price: {unit_price_value} (type: {type(unit_price_value)})")
-                print(f"  Item Total: {item_total}, Final Amount: {final_amount}")
-                
-                # Convert to float for calculations but validate first
-                try:
-                    mrp_float = float(mrp_value) if mrp_value is not None else 0.0
-                    unit_price_float = float(unit_price_value) if unit_price_value is not None else 0.0
-                except (ValueError, TypeError):
-                    print(f"  Warning: Could not convert MRP/unit_price to float, using defaults")
-                    mrp_float = 0.0
-                    unit_price_float = 0.0
-                
-                # Enhanced MRP validation and fallback logic
-                if mrp_float <= 0:
-                    if unit_price_float > 0:
-                        # Calculate MRP as 120% of unit price only when MRP is missing/zero
-                        mrp_float = unit_price_float * 1.2
-                        print(f"  MRP was missing/zero, calculated fallback: {mrp_float:.2f}")
-                    else:
-                        # Both are zero/invalid, use a minimum value
-                        mrp_float = 1.0
-                        print(f"  Both MRP and unit price invalid, using minimum MRP: {mrp_float:.2f}")
-                else:
-                    print(f"  Using provided MRP: {mrp_float:.2f}")
-                
-                # Ensure unit_price has a minimum value if zero
-                if unit_price_float <= 0:
-                    unit_price_float = mrp_float * 0.8  # Unit price as 80% of MRP
-                    print(f"  Unit price was zero, calculated as 80% of MRP: {unit_price_float:.2f}")
-                
-                # Format for display with consistent decimal places
-                mrp_display = f"{mrp_float:.0f}"  # Show MRP without decimals for clean display
-                rate_display = f"{unit_price_float:.0f}"  # Show rate without decimals for clean display
-                
-                print(f"  Final - MRP Display: {mrp_display}, Rate Display: {rate_display}")
-                
+
+                total_amount += final_amount
+
+                # Item name (without batch for cleaner look matching image)
+                item_name = item.get('product_name', '')
+
                 items_data.append([
                     str(i),
                     item_name,
-                    mrp_display,  # Market retail price - validated and formatted
-                    str(item.get('quantity', 0)),
-                    rate_display,  # Wholesale/billing rate - validated and formatted
-                    f"{item.get('discount', 0)}%",
-                    f"{final_amount:.0f}"  # Amount without decimals for clean display
+                    str(int(quantity_float)),
+                    str(int(unit_price_float)),
+                    f"{int(discount_percent)}%",
+                    str(int(final_amount))
                 ])
-            
-            # Add total row with float precision
-            items_data.append(['', '', '', '', '', 'Total', f"{total_amount:.2f}"])
-            
-            # Adjusted column widths without the "No." column
-            items_table = Table(items_data, colWidths=[8*mm, 85*mm, 18*mm, 18*mm, 18*mm, 18*mm, 25*mm])
+
+            # Add empty rows to fill space (like in the image)
+            for _ in range(max(0, 2 - len(invoice_data.get('items', [])))):
+                items_data.append(['', '', '', '', '', ''])
+
+            # Add total row
+            items_data.append([
+                '',
+                Paragraph('<b>Total</b>', ParagraphStyle('TotalLabel', fontSize=10, fontName='Helvetica-Bold', alignment=TA_LEFT)),
+                '', '', '',
+                str(int(total_amount))
+            ])
+
+            # Column widths matching image proportions
+            items_table = Table(items_data, colWidths=[10*mm, 95*mm, 23*mm, 20*mm, 20*mm, 22*mm])
             items_table.setStyle(TableStyle([
                 # Header row
                 ('BACKGROUND', (0, 0), (-1, 0), self.purple_color),
@@ -262,42 +267,62 @@ class ImprovedPDFGenerator:
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, 0), 10),
                 ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-                
+
                 # Data rows
-                ('ALIGN', (0, 1), (-1, -2), 'CENTER'),
-                ('ALIGN', (1, 1), (1, -2), 'LEFT'),  # Item name left aligned
-                ('FONTSIZE', (0, 1), (-1, -1), 9),  # Smaller font for better fit
-                ('VALIGN', (0, 1), (-1, -1), 'MIDDLE'),
-                
+                ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # # column centered
+                ('ALIGN', (1, 1), (1, -2), 'LEFT'),     # Item name left aligned
+                ('ALIGN', (2, 1), (-1, -2), 'CENTER'),  # Quantity, Rate, Discount, Amount centered
+                ('FONTSIZE', (0, 1), (-1, -1), 10),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+
                 # Total row
-                ('ALIGN', (-2, -1), (-1, -1), 'RIGHT'),
-                ('FONTNAME', (-2, -1), (-1, -1), 'Helvetica-Bold'),
-                
+                ('ALIGN', (1, -1), (1, -1), 'LEFT'),
+                ('ALIGN', (-1, -1), (-1, -1), 'CENTER'),
+                ('FONTNAME', (1, -1), (-1, -1), 'Helvetica-Bold'),
+
                 # Grid and padding
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('LEFTPADDING', (0, 0), (-1, -1), 4),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-                ('TOPPADDING', (0, 0), (-1, -1), 4),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 4)
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6)
             ]))
             
             inner_content.append(items_table)
             inner_content.append(Spacer(1, 0))
             
-            # 6. Amounts section and Amount in words (side by side)
+            # 6. Amounts section (matching image layout)
             # Get received and balance amounts from invoice data
             received_amount = invoice_data.get('received_amount', 0.0)
             balance_amount = invoice_data.get('balance_amount', total_amount)
-            
+
+            # Left side - Invoice Amount in Words
+            amount_words = self._amount_to_words(int(total_amount))
+            words_header = Paragraph('<b>Invoice Amount In Words</b>',
+                ParagraphStyle('WordsHeader', fontSize=11, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_LEFT))
+
+            words_data = [[words_header], ['']]
+            words_table = Table(words_data, colWidths=[120*mm], rowHeights=[7*mm, 15*mm])
+            words_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), self.purple_color),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
+            ]))
+
+            # Right side - Amounts
             amounts_data = [
-                [Paragraph('<b>Amounts</b>', ParagraphStyle('AmountHeader', fontSize=11, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER))],
-                ['Sub Total', f"{total_amount:.0f}"],
-                ['Total', f"{total_amount:.0f}"],
+                [Paragraph('<b>Amounts</b>', ParagraphStyle('AmountHeader', fontSize=11, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER)), ''],
+                ['Sub Total', str(int(total_amount))],
+                ['Total', str(int(total_amount))],
                 ['Received', f"{received_amount:.2f}"],
-                ['Balance', f"{balance_amount:.0f}"]
+                ['Balance', str(int(balance_amount))]
             ]
-            
-            amounts_table = Table(amounts_data, colWidths=[40*mm, 30*mm])
+
+            amounts_table = Table(amounts_data, colWidths=[35*mm, 35*mm])
             amounts_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), self.purple_color),
                 ('SPAN', (0, 0), (-1, 0)),
@@ -307,86 +332,86 @@ class ImprovedPDFGenerator:
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('LEFTPADDING', (0, 0), (-1, -1), 10),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-                ('TOPPADDING', (0, 0), (-1, -1), 6),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')  # Make balance row bold
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')
             ]))
-            
-            # Amount in words - use balance amount for words conversion
-            amount_for_words = balance_amount if balance_amount > 0 else total_amount
-            amount_words = self._amount_to_words(amount_for_words)
-            
-            words_header = Paragraph('<b>Invoice Amount In Words</b>', 
-                ParagraphStyle('WordsHeader', fontSize=11, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_CENTER))
-            words_content = Paragraph(amount_words, 
-                ParagraphStyle('WordsContent', fontSize=11, fontName='Helvetica-Bold', alignment=TA_CENTER))
-            
-            words_data = [[words_header], [words_content]]
-            words_table = Table(words_data, colWidths=[120*mm])
-            words_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), self.purple_color),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#F8F8F8')),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('LEFTPADDING', (0, 0), (-1, -1), 8),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-                ('TOPPADDING', (0, 0), (-1, -1), 8),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 8)
-            ]))
-            
-            # Combine amounts and words
+
+            # Combine amounts and words (words on left, amounts on right)
             amounts_words_data = [[words_table, amounts_table]]
             amounts_words_table = Table(amounts_words_data, colWidths=[120*mm, 70*mm])
             amounts_words_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (0, 0), 'LEFT'),
                 ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
                 ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                 ('LEFTPADDING', (0, 0), (-1, -1), 0),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 0)
+                ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ('TOPPADDING', (0, 0), (-1, -1), 0),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 0)
             ]))
-            
+
             inner_content.append(amounts_words_table)
             
-            # 7. Terms and signature section
-            company_name = invoice_data.get('company_name', 'Tru_pharma')
-            
-            terms_header = Paragraph('<b>Terms and Conditions</b>', 
+            # 7. Terms and signature section (matching image layout)
+            company_name = invoice_data.get('company_name', 'Tru_Pharma')
+
+            terms_header = Paragraph('<b>Terms and Conditions</b>',
                 ParagraphStyle('TermsHeader', fontSize=11, textColor=colors.white, fontName='Helvetica-Bold', alignment=TA_LEFT))
-            
-            terms_text = (f"Form 2-A, as specified under Rules 19 and 30, pertains to the warranty provided under Section 23(1)(1) of the Drug Act 1976. "
-                         f"This document, issued by {company_name}, serves as an assurance of the quality and effectiveness of products. "
-                         f"The warranty ensures that the drugs manufactured by {company_name} comply with the prescribed standards and meet the necessary regulatory requirements. "
-                         f"By utilizing Form 2-A, {company_name} demonstrates its commitment to delivering safe and reliable pharmaceuticals to consumers. "
-                         f"This form acts as a legal document, emphasizing {company_name}'s responsibility and accountability in maintaining the highest standards in drug manufacturing and distribution.")
-            
+
+            terms_text = (f"Form 2-A, as specified under Rules 19 and 30, pertains to the warranty "
+                         f"provided under Section 23(1)(1) of the Drug Act 1976. This document, "
+                         f"issued by {company_name}, serves as an assurance of the quality and "
+                         f"effectiveness of their products. The warranty ensures that the drugs "
+                         f"manufactured by {company_name} comply with the prescribed standards and "
+                         f"meet the necessary regulatory requirements. By utilizing Form 2-A, "
+                         f"{company_name} demonstrates its commitment to delivering safe and reliable "
+                         f"pharmaceuticals to consumers. This form acts as a legal document, "
+                         f"emphasizing {company_name}'s responsibility and accountability in "
+                         f"maintaining the highest standards in drug manufacturing and distribution.")
+
             terms_content = Paragraph(terms_text, self.styles['TermsText'])
-            
-            signature_content = Paragraph(f"""For: {company_name}
-            <br/><br/><br/><br/>
-            ____________________<br/>
-            <b>Authorized Signatory</b>""", 
-                ParagraphStyle('SignatureStyle', fontSize=10, alignment=TA_CENTER))
-            
+
+            # Signature section matching image - optional signatory
+            signature_name = invoice_data.get('authorized_signatory', '')
+
+            if signature_name:
+                # Signatory name provided
+                signature_content = Paragraph(f"""<para alignment="center">For : {company_name}
+                <br/><br/><br/><br/>
+                <b>{signature_name}</b><br/>
+                <b>Authorized Signatory</b></para>""",
+                    ParagraphStyle('SignatureStyle', fontSize=10, alignment=TA_CENTER))
+            else:
+                # No signatory - show blank line with underline
+                signature_content = Paragraph(f"""<para alignment="center">For : {company_name}
+                <br/><br/><br/><br/>
+                ____________________<br/>
+                <b>Authorized Signatory</b></para>""",
+                    ParagraphStyle('SignatureStyle', fontSize=10, alignment=TA_CENTER))
+
             # Terms header spans both columns
             terms_header_table = Table([[terms_header]], colWidths=[190*mm])
             terms_header_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, -1), self.purple_color),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('LEFTPADDING', (0, 0), (-1, -1), 8),
-                ('TOPPADDING', (0, 0), (-1, -1), 5),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 5)
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4)
             ]))
-            
+
             # Terms content and signature
             terms_content_table = Table([[terms_content, signature_content]], colWidths=[126.67*mm, 63.33*mm])
             terms_content_table.setStyle(TableStyle([
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('LEFTPADDING', (0, 0), (-1, -1), 10),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-                ('TOPPADDING', (0, 0), (-1, -1), 9),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 11),
-                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('VALIGN', (0, 0), (0, 0), 'TOP'),
+                ('VALIGN', (1, 0), (1, 0), 'MIDDLE'),
                 ('ALIGN', (1, 0), (1, 0), 'CENTER')
             ]))
-            
+
             inner_content.append(terms_header_table)
             inner_content.append(terms_content_table)
             

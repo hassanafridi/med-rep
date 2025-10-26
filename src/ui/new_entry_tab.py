@@ -25,6 +25,14 @@ except ImportError:
 
 # Import MongoDB database module only
 from src.database.mongo_adapter import MongoAdapter
+from src.utils.app_state import app_state
+
+# Import enhanced PDF dialog
+try:
+    from src.ui.invoice_generator import PDFInfoDialog
+except ImportError:
+    print("Warning: PDFInfoDialog not available")
+    PDFInfoDialog = None
 
 
 class ProductItemDialog(QDialog):
@@ -569,35 +577,35 @@ class NewEntryTab(QWidget):
         self.setLayout(main_layout)
     
     def loadCustomersAndProducts(self):
-        """Load customers and products from MongoDB database"""
+        """Load customers and products from app_state cache"""
         try:
             # Ensure we have a valid database connection
             if not self.db:
                 self.db = MongoAdapter()
-            
+
             if not self.db.connected:
                 self.db.connect()
-            
-            # Load customers from MongoDB
+
+            # Load customers from app_state (cached)
             self.customer_data = {}
             self.customer_combo.clear()
             self.customer_combo.addItem("-- Select Customer --")
-            
-            customers = self.db.get_customers()
-            
+
+            customers = app_state.get_customers()
+
             for customer in customers:
                 customer_id = str(customer.get('id', ''))
                 name = customer.get('name', 'Unknown')
                 contact = customer.get('contact', '')
-                
+
                 display_name = f"{name} ({contact})" if contact else name
                 self.customer_combo.addItem(display_name)
                 self.customer_data[display_name] = customer_id
-            
-            # Load products from MongoDB
+
+            # Load products from app_state (cached)
             self.product_data = {}
-            
-            products = self.db.get_products()
+
+            products = app_state.get_products()
             
             for product in products:
                 product_id = str(product.get('id', ''))
@@ -769,23 +777,49 @@ class NewEntryTab(QWidget):
                 # Get customer info for the dialog
                 customers = self.db.get_customers()
                 customer_info = next((c for c in customers if str(c.get('id')) == str(customer_id)), {})
-                
-                # Show invoice details dialog
-                invoice_dialog = InvoiceDetailsDialog(self, customer_info)
-                if invoice_dialog.exec_() == QDialog.Accepted:
-                    invoice_details = invoice_dialog.get_invoice_data()
+
+                # Prepare existing data for the enhanced dialog
+                existing_data = {
+                    'customer_name': customer_info.get('name', ''),
+                    'customer_address': customer_info.get('address', ''),
+                    'customer_contact': customer_info.get('contact', ''),
+                    'delivery_location': customer_info.get('address', '').split('\n')[0] if customer_info.get('address') else '',
+                }
+
+                # Show enhanced PDF info dialog
+                if PDFInfoDialog:
+                    invoice_dialog = PDFInfoDialog(self, existing_data, self.db)
+                    if invoice_dialog.exec_() == QDialog.Accepted:
+                        invoice_details = invoice_dialog.get_pdf_data()
+                    else:
+                        # User cancelled invoice generation
+                        reply = QMessageBox.question(
+                            self, "Continue Without Invoice?",
+                            "Do you want to save the entry without generating an invoice?",
+                            QMessageBox.Yes | QMessageBox.No,
+                            QMessageBox.No
+                        )
+                        if reply == QMessageBox.No:
+                            return
+                        # Continue without invoice
+                        self.auto_invoice_check.setChecked(False)
                 else:
-                    # User cancelled invoice generation, ask if they want to continue without invoice
-                    reply = QMessageBox.question(
-                        self, "Continue Without Invoice?",
-                        "Do you want to save the entry without generating an invoice?",
-                        QMessageBox.Yes | QMessageBox.No,
-                        QMessageBox.No
-                    )
-                    if reply == QMessageBox.No:
-                        return
-                    # Continue without invoice
-                    self.auto_invoice_check.setChecked(False)
+                    # Fallback to old dialog if enhanced one not available
+                    invoice_dialog = InvoiceDetailsDialog(self, customer_info)
+                    if invoice_dialog.exec_() == QDialog.Accepted:
+                        invoice_details = invoice_dialog.get_invoice_data()
+                    else:
+                        # User cancelled invoice generation, ask if they want to continue without invoice
+                        reply = QMessageBox.question(
+                            self, "Continue Without Invoice?",
+                            "Do you want to save the entry without generating an invoice?",
+                            QMessageBox.Yes | QMessageBox.No,
+                            QMessageBox.No
+                        )
+                        if reply == QMessageBox.No:
+                            return
+                        # Continue without invoice
+                        self.auto_invoice_check.setChecked(False)
             
             # Prepare notes with invoice information and transport details
             base_notes = self.notes_edit.text().strip()
@@ -824,8 +858,8 @@ class NewEntryTab(QWidget):
                 QMessageBox.warning(self, "Error", "Please add at least one product.")
                 return
             
-            # Save entry with invoice number and transport details in notes
-            success = self.db.add_entry(
+            # Save entry with invoice number and transport details in notes using app_state
+            success = app_state.add_entry(
                 date=date,
                 customer_id=customer_id,
                 product_id=main_product['product_id'],
@@ -968,31 +1002,40 @@ class NewEntryTab(QWidget):
                 final_received_amount = total_amount
                 balance_amount = 0.0
             
-            # Prepare invoice data for the improved PDF generator
+            # Prepare invoice data for the improved PDF generator with dynamic fields
             invoice_data = {
-                'company_name': 'Tru_pharma',  # Hardcoded
-                'company_logo': None,  # No logo needed
-                'company_contact': invoice_details['company_contact'],  # From dialog
-                'company_address': invoice_details['company_address'],  # From dialog
+                # NEW DYNAMIC FIELDS from enhanced PDFInfoDialog
+                'header_contact_name': invoice_details.get('header_contact_name', 'Mr. Behzad Aslam'),
+                'header_contact_phone': invoice_details.get('header_contact_phone', '03339911914'),
+                'header_email': invoice_details.get('header_email', 'trupharmaceuticalfsd@gmail.com'),
+                'use_company_name': invoice_details.get('use_company_name', True),
+                'logo_data': invoice_details.get('logo_data', None),
+                'authorized_signatory': invoice_details.get('authorized_signatory', ''),
+
+                # EXISTING FIELDS
+                'company_name': 'Tru_pharma',
+                'company_logo': None,
+                'company_contact': invoice_details.get('company_contact', '0333-99-11-514'),
+                'company_address': invoice_details.get('company_address', 'info@trupharma.com'),
                 'customer_info': {
                     'name': customer.get('name', ''),
                     'address': customer.get('address', ''),
                     'contact': customer.get('contact', '')
                 },
                 'transport_info': {
-                    'transport_name': invoice_details['transport_name'],
-                    'delivery_date': invoice_details['delivery_date'],
-                    'delivery_location': invoice_details['delivery_location']
+                    'transport_name': invoice_details.get('transport_name', 'Standard Delivery'),
+                    'delivery_date': invoice_details.get('delivery_date', QDate.currentDate().toString("dd-MM-yy")),
+                    'delivery_location': invoice_details.get('delivery_location', '')
                 },
                 'invoice_details': {
                     'invoice_number': invoice_number,
                     'invoice_date': QDate.fromString(date, "yyyy-MM-dd").toString("dd-MM-yy")
                 },
                 'items': invoice_items,
-                'terms': 'Thank you for your business! Payment is due within 30 days.\nAll products are subject to our standard terms and conditions.',
+                'terms': invoice_details.get('terms', 'Thank you for your business! Payment is due within 30 days.\nAll products are subject to our standard terms and conditions.'),
                 'total_amount': total_amount,
-                'received_amount': final_received_amount,  # Use calculated received amount
-                'balance_amount': balance_amount     # Use calculated balance amount
+                'received_amount': final_received_amount,
+                'balance_amount': balance_amount
             }
             
             # Create invoices directory if it doesn't exist

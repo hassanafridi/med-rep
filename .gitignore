@@ -185,3 +185,5 @@ cython_debug/
 *.log
 *.pdf
 *.pyc
+/src/ui/__pycache__
+*/*/__pycache__
